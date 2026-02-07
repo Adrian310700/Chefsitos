@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-UamishopApplication<uamishop>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.chefsitos.uamishop.UamishopApplication",
+            "projectName": "uamishop",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

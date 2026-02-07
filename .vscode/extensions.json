@@ -1,0 +1,12 @@
+//Escribe el pack de extensiones de sprning y java
+{
+  "recommendations": [
+    "vmware.vscode-boot-dev-pack",
+    "vscjava.vscode-java-pack",
+    "redhat.vscode-xml",
+    "editorconfig.editorconfig",
+    "aaron-bond.better-comments",
+    "usernamehw.errorlens",
+    "esbenp.prettier-vscode"
+  ]
+}
