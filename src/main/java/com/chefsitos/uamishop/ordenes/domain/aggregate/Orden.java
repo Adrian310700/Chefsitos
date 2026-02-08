@@ -23,7 +23,7 @@ public class Orden {
   private List<CambioEstado> historialEstados;
 
   public Orden(OrdenId id, String numeroOrden, ClienteId clienteId,
-               List<ItemOrden> items, DireccionEnvio direccionEnvio) {
+      List<ItemOrden> items, DireccionEnvio direccionEnvio) {
 
     if (items == null || items.isEmpty()) {
       throw new IllegalArgumentException(" Una orden debe tener al menos un item"); // RN-ORD-01
@@ -42,7 +42,8 @@ public class Orden {
   }
 
   private void calcularTotal() {
-    if (items.isEmpty()) return;
+    if (items.isEmpty())
+      return;
     String moneda = items.get(0).precioUnitario().moneda();
     Money suma = Money.zero(moneda);
     for (ItemOrden item : items) {
@@ -69,7 +70,8 @@ public class Orden {
       throw new IllegalArgumentException(" La referencia de pago no puede estar vacía"); // RN-ORD-08
     }
 
-    // Se crea el resumen respetando el orden del Record: metodo, referencia, estado, fecha
+    // Se crea el resumen respetando el orden del Record: metodo, referencia,
+    // estado, fecha
     this.resumenPago = new ResumenPago("TARJETA", referenciaPago, EstadoPago.APROBADO, LocalDateTime.now());
     registrarCambioEstado(EstadoOrden.PAGO_PROCESADO, "Pago aprobado exitosamente!!");
   }
@@ -89,21 +91,29 @@ public class Orden {
   }
 
   private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo) {
-    // Se crea el cambio respetando el orden del Record: anterior, nuevo, fecha, motivo, usuario
+    // Se crea el cambio respetando el orden del Record: anterior, nuevo, fecha,
+    // motivo, usuario
 
     CambioEstado cambio = new CambioEstado(
-      this.estado,
-      nuevoEstado,
-      LocalDateTime.now(),
-      motivo,
-      "SYSTEM"
-    );
+        this.estado,
+        nuevoEstado,
+        LocalDateTime.now(),
+        motivo,
+        "SYSTEM");
     this.historialEstados.add(cambio);
     this.estado = nuevoEstado;
   }
 
   // Para las pruebas
-  public OrdenId getId() { return id; }
-  public EstadoOrden getEstado() { return estado; }
-  public Money getTotal() { return total; }
+  public OrdenId getId() {
+    return id;
+  }
+
+  public EstadoOrden getEstado() {
+    return estado;
+  }
+
+  public Money getTotal() {
+    return total;
+  }
 }

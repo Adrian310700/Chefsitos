@@ -11,5 +11,6 @@
   },
   "[xml]": {
     "editor.defaultFormatter": "redhat.vscode-xml"
-  }
+  },
+  "java.compile.nullAnalysis.mode": "automatic"
 }

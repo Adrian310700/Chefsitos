@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 public class Producto {
   private ProductoId id;
