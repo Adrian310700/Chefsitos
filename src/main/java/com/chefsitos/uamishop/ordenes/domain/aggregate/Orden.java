@@ -83,12 +83,7 @@ public class Orden {
     registrarCambioEstado(EstadoOrden.EN_PREPARACION, "La orden ha entrado a almacén");
   }
 
-  public void cancelar(String motivo) {
-    if (this.estado == EstadoOrden.ENVIADA || this.estado == EstadoOrden.ENTREGADA) {
-      throw new IllegalStateException("No se puede cancelar una orden que ya fue enviada o entregada");
-    }
-    registrarCambioEstado(EstadoOrden.CANCELADA, motivo);
-  }
+
 
   private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo) {
     // Se crea el cambio respetando el orden del Record: anterior, nuevo, fecha,
@@ -116,4 +111,53 @@ public class Orden {
   public Money getTotal() {
     return total;
   }
+
+
+
+  // reglas faltantes
+  // RN-ORD-10 a 12: Marcar como enviada y validar guía
+  public void marcarEnviada(String guiaEnvio) {
+    if (this.estado != EstadoOrden.EN_PREPARACION) {
+      throw new IllegalStateException("RN-ORD-10: Solo se puede enviar si está EN_PREPARACION");
+    }
+    if (guiaEnvio == null || guiaEnvio.isBlank()) {
+      throw new IllegalArgumentException("RN-ORD-11: La guía de envío es obligatoria");
+    }
+    if (guiaEnvio.length() < 10) {
+      throw new IllegalArgumentException("RN-ORD-12: La guía debe tener al menos 10 caracteres");
+    }
+
+    this.infoEnvio = new InfoEnvio(guiaEnvio, "ESTAFETA", LocalDateTime.now()); // Simulado
+    registrarCambioEstado(EstadoOrden.ENVIADA, "La orden ha sido despachada");
+  }
+
+  // RN-ORD-13: Marcar como entregada
+  public void marcarEntregada() {
+    if (this.estado != EstadoOrden.ENVIADA) {
+      throw new IllegalStateException("RN-ORD-13: Solo se puede marcar entregada si ya fue ENVIADA");
+    }
+    registrarCambioEstado(EstadoOrden.ENTREGADA, "El cliente ha recibido el paquete");
+  }
+
+  public void cancelar(String motivo) {
+    // RN-ORD-14: No se puede cancelar si ya se envió o entregó
+    if (this.estado == EstadoOrden.ENVIADA || this.estado == EstadoOrden.ENTREGADA) {
+      throw new IllegalStateException("RN-ORD-14: No se puede cancelar una orden enviada o entregada");
+    }
+
+    // RN-ORD-15 y 16: Validación de longitud del motivo
+    if (motivo == null || motivo.isBlank()) {
+      throw new IllegalArgumentException("RN-ORD-15: El motivo de cancelación es obligatorio");
+    }
+    if (motivo.trim().length() < 10) {
+      throw new IllegalArgumentException("RN-ORD-16: El motivo debe tener al menos 10 caracteres");
+    }
+
+    registrarCambioEstado(EstadoOrden.CANCELADA, motivo);
+  }
+
+
+
+
+
 }
