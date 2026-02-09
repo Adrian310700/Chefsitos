@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.chefsitos.uamishop.shared.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
@@ -185,7 +185,7 @@ class CarritoTest {
         TipoDescuento.CUPON,
         BigDecimal.valueOf(20)));
 
-    assertEquals(new Money(BigDecimal.valueOf(80), "MXN"), carrito.calcularTotal());
+    assertEquals(new Money(BigDecimal.valueOf(80.0), "MXN"), carrito.calcularTotal());
   }
 
   // RN-VEN-16
