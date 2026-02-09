@@ -4,6 +4,7 @@ import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoOrden;
 import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoPago;
 import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
+import com.chefsitos.uamishop.shared.domain.valueObject.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +84,6 @@ public class Orden {
     registrarCambioEstado(EstadoOrden.EN_PREPARACION, "La orden ha entrado a almacén");
   }
 
-
-
   private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo) {
     // Se crea el cambio respetando el orden del Record: anterior, nuevo, fecha,
     // motivo, usuario
@@ -111,8 +110,6 @@ public class Orden {
   public Money getTotal() {
     return total;
   }
-
-
 
   // reglas faltantes
   // RN-ORD-10 a 12: Marcar como enviada y validar guía
@@ -155,9 +152,5 @@ public class Orden {
 
     registrarCambioEstado(EstadoOrden.CANCELADA, motivo);
   }
-
-
-
-
 
 }
