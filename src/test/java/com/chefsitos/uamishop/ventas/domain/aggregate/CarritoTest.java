@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.ventas.domain;
+package com.chefsitos.uamishop.ventas.domain.aggregate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
-import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
