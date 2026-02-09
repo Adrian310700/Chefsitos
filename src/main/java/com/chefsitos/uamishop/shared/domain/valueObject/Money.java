@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.shared;
+package com.chefsitos.uamishop.shared.domain.valueObject;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -6,7 +6,7 @@ import java.util.Objects;
 public record Money(BigDecimal valor, String moneda) {
 
   public Money {
-    Objects.requireNonNull(valor, "El valor  puede ser nulo");
+    Objects.requireNonNull(valor, "El valor no puede ser nulo");
     Objects.requireNonNull(moneda, "La moneda no puede ser nula");
   }
 
@@ -30,7 +30,7 @@ public record Money(BigDecimal valor, String moneda) {
 
   private void validarMoneda(Money otro) {
     if (!this.moneda.equals(otro.moneda)) {
-      throw new IllegalArgumentException("No se pueden operar  monedas distintas");
+      throw new IllegalArgumentException("No se pueden operar monedas distintas");
     }
   }
 

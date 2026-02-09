@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 public class Producto {
   private ProductoId id;
@@ -17,11 +17,12 @@ public class Producto {
   private boolean disponible;
   private LocalDateTime fechaCreacion;
 
-  public Producto crear(String nombre, String descripcion, Money precio, CategoriaId categoria) {
+  // Constructor privado para forzar el uso del metodo de crear
+  private Producto() {
+  }
 
-    if (this.id != null) {
-      throw new IllegalStateException("El producto ya fue creado");
-    }
+  // Factory method para crear un nuevo producto con validaciones de negocio
+  public static Producto crear(String nombre, String descripcion, Money precio, CategoriaId categoria) {
 
     // RN-CAT-01
     if (nombre == null || nombre.trim().length() < 3 || nombre.trim().length() > 100) {
@@ -35,17 +36,17 @@ public class Producto {
     if (descripcion == null || descripcion.trim().length() > 500) {
       throw new IllegalArgumentException("La descripción no debe exceder los 500 caracteres");
     }
-    this.id = ProductoId.generar();
-    this.nombre = nombre.trim();
-    this.descripcion = descripcion.trim();
-    this.precio = precio;
-    this.categoriaId = categoria;
-    this.imagenes = new ArrayList<>();
-    // Asumiendo que debe validarse las reglas de negocio antes que un nuevo
-    // producto pueda ser activado
-    this.disponible = false;
-    this.fechaCreacion = LocalDateTime.now();
-    return this;
+    Producto producto = new Producto();
+    producto.id = ProductoId.generar();
+    producto.nombre = nombre.trim();
+    producto.descripcion = descripcion.trim();
+    producto.precio = precio;
+    producto.categoriaId = categoria;
+    producto.imagenes = new ArrayList<>();
+    // El producto esta disponible si tiene al menos una imagen
+    producto.disponible = false;
+    producto.fechaCreacion = LocalDateTime.now();
+    return producto;
   }
 
   public void actualizarInformacion(String nombre, String descripcion) {
@@ -76,13 +77,13 @@ public class Producto {
 
   public void activar() {
     // RN-CAT-09
-    if (this.imagenes.size() == 0) {
-      throw new IllegalArgumentException(
+    if (this.imagenes.isEmpty()) {
+      throw new IllegalStateException(
           "El producto solo puede volver a activarse si tiene al menos una imagen");
     }
     // RN-CAT-10
     if (!(this.precio.esMayorQueCero())) {
-      throw new IllegalArgumentException(
+      throw new IllegalStateException(
           "El producto solo puede volver a activarse si tiene un precio mayor a cero");
     }
     this.disponible = true;
@@ -91,7 +92,7 @@ public class Producto {
   public void desactivar() {
     // RN-CAT-08
     if (!(this.disponible)) {
-      throw new IllegalArgumentException("No se puede volver a desactivar un producto ya desactivado");
+      throw new IllegalStateException("No se puede volver a desactivar un producto ya desactivado");
     }
     this.disponible = false;
   }
@@ -99,12 +100,9 @@ public class Producto {
   public void agregarImagen(Imagen imagen) {
     // RN-CAT-06
     if (this.imagenes.size() >= 5) {
-      throw new IllegalArgumentException("Un producto no puede tener mas de 5 imagenes");
+      throw new IllegalStateException("Un producto no puede tener mas de 5 imagenes");
     }
     // RN-CAT-07
-    if (!(imagen.getUrl().startsWith("http://") || imagen.getUrl().startsWith("https://"))) {
-      throw new IllegalArgumentException("La URL debe ser valida, empezar con http:// o https://");
-    }
     this.imagenes.add(imagen);
   }
 
@@ -145,7 +143,7 @@ public class Producto {
     return this.imagenes;
   }
 
-  public boolean getDisponible() {
+  public boolean isDisponible() {
     return this.disponible;
   }
 

@@ -9,9 +9,24 @@ public class Categoria {
   private String descripcion;
   private CategoriaId categoriaPadreId;
 
-  public Categoria(String nombre, String descripcion) {
-    this.id = CategoriaId.generar();
-    actualizar(nombre, descripcion);
+  private Categoria() {}
+
+  public static Categoria crear(CategoriaId id, String nombre, String descripcion) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la categoría no puede ser nulo");
+    }
+    if (nombre == null || nombre.isBlank() || nombre.trim().length() < 3 || nombre.trim().length() > 100) {
+      throw new IllegalArgumentException("El nombre de la categoría debe tener entre 3 y 100 caracteres");
+    }
+    if (descripcion == null || descripcion.isBlank() || descripcion.length() > 500) {
+      throw new IllegalArgumentException("La descripción de la categoría no debe exceder los 500 caracteres");
+    }
+
+    Categoria categoria = new Categoria();
+    categoria.nombre = nombre.trim();
+    categoria.descripcion = descripcion.trim();
+    categoria.id = id;
+    return categoria;
   }
 
   public void actualizar(String nombre, String descripcion) {

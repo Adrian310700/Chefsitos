@@ -8,6 +8,16 @@ public class Imagen {
   private Integer orden;
 
   public Imagen(String url, String altText, Integer orden) {
+    // Validar campos obligatorios primero
+    if (url == null || url.isBlank()) {
+      throw new IllegalArgumentException("La URL no puede ser nula o vacía");
+    }
+    if (altText == null || altText.isBlank()) {
+      throw new IllegalArgumentException("El texto alternativo no puede ser nulo o vacío");
+    }
+    if (orden == null) {
+      throw new IllegalArgumentException("El orden no puede ser nulo");
+    }
     // RN-CAT-07
     if (!(url.startsWith("http://") || url.startsWith("https://"))) {
       throw new IllegalArgumentException("La URL debe ser valida, empezar con http:// o https://");

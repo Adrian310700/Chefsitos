@@ -1,6 +1,6 @@
 # Chefsitos
 
-Es el repositorio para almacenar el proyecto de la UEA Temas Selectos de Ingeniería de Software
+Repositorio para almacenar el proyecto UAMIShop de la UEA Temas Selectos de Ingeniería de Software
 
 ## Requisitos
 
