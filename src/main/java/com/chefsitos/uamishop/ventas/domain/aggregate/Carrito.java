@@ -1,5 +1,9 @@
 package com.chefsitos.uamishop.ventas.domain.aggregate;
 
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Embeddable;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,12 +20,16 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
+@Entity
 public class Carrito {
   private static final int MAX_ITEMS = 20;
   private static final Money MONTO_MINIMO = new Money(BigDecimal.valueOf(50), "MXN");
 
+  @Embeddable
   private final CarritoId id;
+  @Embeddable
   private final ClienteId clienteId;
+
   private final List<ItemCarrito> items = new ArrayList<>();
   // Se cambio la lista de descuentos por un solo descuento aplicado, para
   // validar RN-VEN-15
