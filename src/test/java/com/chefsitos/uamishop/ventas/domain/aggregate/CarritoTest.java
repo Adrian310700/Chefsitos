@@ -91,10 +91,19 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 3, precio10);
 
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.modificarCantidad(producto1.getProductoId(), 0));
+        () -> carrito.modificarCantidad(producto1.getProductoId(), -3));
 
     assertThrows(IllegalArgumentException.class,
         () -> carrito.modificarCantidad(producto1.getProductoId(), 11));
+  }
+
+  @Test
+  void modificarCantidadACeroEliminaProducto() {
+    carrito.agregarProducto(producto1, 3, precio10);
+    carrito.modificarCantidad(producto1.getProductoId(), 0);
+
+    assertEquals(0, carrito.obtenerCantidadItems());
+    assertEquals(Money.zero("MXN"), carrito.calcularSubtotal());
   }
 
   // RN-VEN-06
