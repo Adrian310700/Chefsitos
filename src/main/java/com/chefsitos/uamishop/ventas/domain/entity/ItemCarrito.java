@@ -50,8 +50,8 @@ public class ItemCarrito {
 	public void actualizarCantidad(Integer nuevaCantidad) {
 		// Valida que la nueva cantidad de un producto en el carrito sea positiva y no
 		// exceda las 10 unidades para cumplir con las RN-VEN-01 y RN-VEN-02
-		if (nuevaCantidad <= 0) {
-			throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
+		if (nuevaCantidad < 0) { // Permite modificar a cero para eliminar el producto del carrito, RN-VEN-05
+			throw new IllegalArgumentException("La cantidad debe ser igual o mayor a cero");
 		}
 		if (nuevaCantidad > MAX_UNIDADES) {
 			throw new IllegalArgumentException("La cantidad máxima por producto son 10 unidades");
