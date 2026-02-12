@@ -9,6 +9,8 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.repository.CarritoRepository;
 
+import jakarta.transaction.Transactional;
+
 public class CarritoService {
 
   @Autowired
@@ -27,71 +29,59 @@ public class CarritoService {
 
   }
 
+  @Transactional
   public Carrito vaciar(CarritoId carritoId) {
 
-    Carrito carrito = carritoRepository.findById(carritoId).orElse(null);
     // Validamos que el carrito exista
-    if (carrito == null) {
-      throw new IllegalArgumentException("Carrito inexistente");
-    }
+    Carrito carrito = carritoRepository.findById(carritoId)
+        .orElseThrow(() -> new IllegalArgumentException("Carrito inexistente"));
 
     // Vaciamos el carrito
     carrito.vaciar();
 
     // Guardamos
-    carritoRepository.save(carrito);
-
-    return carrito;
+    return carritoRepository.save(carrito);
   }
 
+  @Transactional
   public Carrito iniciarCheckout(CarritoId carritoId) {
 
-    Carrito carrito = carritoRepository.findById(carritoId).orElse(null);
     // Validamos que el carrito exista
-    if (carrito == null) {
-      throw new IllegalArgumentException("Carrito inexistente");
-    }
+    Carrito carrito = carritoRepository.findById(carritoId)
+        .orElseThrow(() -> new IllegalArgumentException("Carrito inexistente"));
 
     // Iniciamos checkout
     carrito.iniciarCheckout();
 
-    // Guardamo
-    carritoRepository.save(carrito);
-
-    return carrito;
+    // Guardamos
+    return carritoRepository.save(carrito);
   }
 
+  @Transactional
   public Carrito completarCheckout(CarritoId carritoId) {
 
-    Carrito carrito = carritoRepository.findById(carritoId).orElse(null);
     // Validamos que el carrito exista
-    if (carrito == null) {
-      throw new IllegalArgumentException("Carrito inexistente");
-    }
+    Carrito carrito = carritoRepository.findById(carritoId)
+        .orElseThrow(() -> new IllegalArgumentException("Carrito inexistente"));
 
     // Completamos Checkout
     carrito.completarCheckout();
 
     // Guardamos
-    carritoRepository.save(carrito);
-
-    return carrito;
+    return carritoRepository.save(carrito);
   }
 
+  @Transactional
   public Carrito abandonar(CarritoId carritoId) {
 
-    Carrito carrito = carritoRepository.findById(carritoId).orElse(null);
     // Validamos que el carrito exista
-    if (carrito == null) {
-      throw new IllegalArgumentException("Carrito inexistente");
-    }
+    Carrito carrito = carritoRepository.findById(carritoId)
+        .orElseThrow(() -> new IllegalArgumentException("Carrito inexistente"));
 
     // Abandonamos
     carrito.abandonar();
 
     // Guardamos
-    carritoRepository.save(carrito);
-
-    return carrito;
+    return carritoRepository.save(carrito);
   }
 }
