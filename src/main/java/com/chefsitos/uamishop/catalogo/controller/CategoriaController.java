@@ -53,7 +53,7 @@ public class CategoriaController {
       @PathVariable UUID id,
       @RequestBody @Valid CategoriaRequest request) {
 
-    categoriaResponse response = productoService.actualizarCategoria(id, request);
+    CategoriaResponse response = productoService.actualizarCategoria(id, request);
 
     return ResponseEntity.ok(response);
   }
