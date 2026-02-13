@@ -2,14 +2,22 @@ package com.chefsitos.uamishop.catalogo.domain.entity;
 
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Categorias")
 public class Categoria {
 
+  @Id
   private CategoriaId id;
   private String nombre;
   private String descripcion;
   private CategoriaId categoriaPadreId;
 
-  private Categoria() {}
+  private Categoria() {
+  }
 
   public static Categoria crear(CategoriaId id, String nombre, String descripcion) {
     if (id == null) {
