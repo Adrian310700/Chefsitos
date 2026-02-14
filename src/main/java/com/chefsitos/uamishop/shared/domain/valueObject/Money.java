@@ -3,6 +3,9 @@ package com.chefsitos.uamishop.shared.domain.valueObject;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record Money(BigDecimal valor, String moneda) {
 
   public Money {

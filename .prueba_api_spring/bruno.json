@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": ".prueba_api_spring",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

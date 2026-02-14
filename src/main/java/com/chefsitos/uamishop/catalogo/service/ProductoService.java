@@ -29,7 +29,7 @@ public class ProductoService {
   @Autowired
   private CategoriaJpaRepository categoriaRepository;
 
-  ProductoResponse crear(ProductoRequest request) {
+  public ProductoResponse crear(ProductoRequest request) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(request.idCategoria()))
         .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
 
@@ -44,40 +44,90 @@ public class ProductoService {
     return ProductoResponse.from(nuevoProducto);
   }
 
-  ProductoResponse buscarPorId(UUID id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public ProductoResponse buscarPorId(UUID id) {
+    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+
+    return ProductoResponse.from(producto);
   }
 
-  List<ProductoResponse> buscarTodos() {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public List<ProductoResponse> buscarTodos() {
+    List<Producto> productos = productoRepository.findAll();
+    return productos.stream().map(ProductoResponse::from).toList();
   }
 
-  ProductoResponse actualizar(UUID id, ProductoRequest request) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public ProductoResponse actualizar(UUID id, ProductoRequest request) {
+    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+
+    producto.actualizarInformacion(request.nombreProducto(), request.descripcion());
+    producto = productoRepository.save(producto);
+
+    return ProductoResponse.from(producto);
   }
 
-  void activar(UUID id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public void activar(UUID id) {
+    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+    producto.activar();
+    productoRepository.save(producto);
   }
 
-  void desactivar(UUID id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public void desactivar(UUID id) {
+    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+    producto.desactivar();
+    productoRepository.save(producto);
   }
 
-  CategoriaResponse crearCategoria(CategoriaRequest request) {
-    throw new UnsupportedOperationException("Not implemented yet");
+public CategoriaResponse crearCategoria(CategoriaRequest request) {
+    Categoria nuevaCategoria = Categoria.crear(
+        CategoriaId.generar(),
+        request.nombreCategoria(),
+        request.descripcion());
+
+    nuevaCategoria = categoriaRepository.save(nuevaCategoria);
+
+    return new CategoriaResponse(
+        nuevaCategoria.getCategoriaId().valor(),
+        nuevaCategoria.getNombre(),
+        nuevaCategoria.getDescripcion(),
+        nuevaCategoria.getCategoriaPadreId() != null ? nuevaCategoria.getCategoriaPadreId().valor() : null
+    );
+}
+
+  public CategoriaResponse buscarCategoriaPorId(UUID id) {
+    Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + id));
+
+    return new CategoriaResponse(
+        categoria.getCategoriaId().valor(),
+        categoria.getNombre(),
+        categoria.getDescripcion(),
+        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
   }
 
-  CategoriaResponse buscarCategoriaPorId(UUID id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public List<CategoriaResponse> buscarTodasCategorias() {
+    List<Categoria> categorias = categoriaRepository.findAll();
+    return categorias.stream().map(categoria -> new CategoriaResponse(
+        categoria.getCategoriaId().valor(),
+        categoria.getNombre(),
+        categoria.getDescripcion(),
+        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null)).toList();
   }
 
-  List<CategoriaResponse> buscarTodasCategorias() {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+  public CategoriaResponse actualizarCategoria(UUID id, CategoriaRequest request) {
+    Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
+        .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + id));
 
-  CategoriaResponse actualizarCategoria(UUID id, CategoriaRequest request) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    categoria.actualizar(request.nombreCategoria(), request.descripcion());
+    categoria = categoriaRepository.save(categoria);
+
+    return new CategoriaResponse(
+        categoria.getCategoriaId().valor(),
+        categoria.getNombre(),
+        categoria.getDescripcion(),
+        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
   }
 
 }

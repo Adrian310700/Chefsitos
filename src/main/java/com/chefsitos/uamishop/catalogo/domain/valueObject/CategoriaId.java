@@ -22,8 +22,4 @@ public record CategoriaId(UUID valor) implements Serializable {
       throw new IllegalArgumentException("Formato de UUID inválido: " + id, e);
     }
   }
-
-  public UUID getValue() {
-    return valor;
-  }
 }

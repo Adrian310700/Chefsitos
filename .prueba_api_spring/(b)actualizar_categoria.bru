@@ -1,0 +1,23 @@
+meta {
+  name: (b)actualizar_categoria
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/categorias/43ac1462-331f-4b3c-a356-cd7ecb7c1352
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreCategoria": "Electrónica y Computación",
+    "descripcion": "Categoría actualizada que incluye laptops y componentes de PC"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

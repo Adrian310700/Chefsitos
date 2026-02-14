@@ -2,6 +2,9 @@ package com.chefsitos.uamishop.catalogo.domain.valueObject;
 
 import java.util.UUID;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record ImagenId(UUID valor) {
 
   public static ImagenId generar() {

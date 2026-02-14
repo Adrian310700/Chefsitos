@@ -15,8 +15,7 @@ public record ProductoResponse(
     String moneda,
     boolean disponible,
     LocalDateTime fechaCreacion,
-    UUID idCategoria,
-    String nombreCategoria) {
+    UUID idCategoria) {
 
   public static ProductoResponse from(Producto producto) {
     return new ProductoResponse(
@@ -27,7 +26,6 @@ public record ProductoResponse(
         producto.getPrecio().moneda(),
         producto.isDisponible(),
         producto.getFechaCreacion(),
-        producto.getCategoriaId().valor(),
-        );
+        producto.getCategoriaId().valor());
   }
 }

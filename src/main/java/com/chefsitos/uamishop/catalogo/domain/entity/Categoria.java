@@ -14,13 +14,14 @@ import jakarta.persistence.Table;
 public class Categoria {
 
   @EmbeddedId
+  @AttributeOverride(name = "valor", column = @Column(name = "id")) // Aseguramos nombre 'id'
   private CategoriaId id;
 
   private String nombre;
   private String descripcion;
 
   @Embedded
-  @AttributeOverride(name = "valor", column = @Column(name = "padre_id"))
+  @AttributeOverride(name = "valor", column = @Column(name = "padre_id", nullable = true))
   private CategoriaId categoriaPadreId;
 
   private Categoria() {
