@@ -8,5 +8,4 @@ import com.chefsitos.uamishop.catalogo.domain.valueObject.ProductoId;
 
 @Repository
 public interface ProductoJpaRepository extends JpaRepository<Producto, ProductoId> {
-
 }

@@ -2,18 +2,25 @@ package com.chefsitos.uamishop.catalogo.domain.entity;
 
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Categorias")
+@Table(name = "categorias")
 public class Categoria {
 
-  @Id
+  @EmbeddedId
   private CategoriaId id;
+
   private String nombre;
   private String descripcion;
+
+  @Embedded
+  @AttributeOverride(name = "valor", column = @Column(name = "padre_id"))
   private CategoriaId categoriaPadreId;
 
   private Categoria() {

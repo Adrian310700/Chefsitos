@@ -1,8 +1,12 @@
 package com.chefsitos.uamishop.catalogo.domain.valueObject;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public record ProductoId(UUID valor) {
+import jakarta.persistence.Embeddable;
+
+@Embeddable
+public record ProductoId(UUID valor) implements Serializable {
 
   public static ProductoId generar() {
     return new ProductoId(UUID.randomUUID());

@@ -7,8 +7,16 @@ import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "productos")
 public class Producto {
+  @EmbeddedId
   private ProductoId id;
+  
   private String nombre;
   private String descripcion;
   private Money precio;
