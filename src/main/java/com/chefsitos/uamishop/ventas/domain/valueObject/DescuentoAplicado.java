@@ -4,6 +4,8 @@ import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
 
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import java.math.BigDecimal;
 
 // Este record representa un descuento aplicado a un carrito de compras. 
@@ -12,7 +14,7 @@ import java.math.BigDecimal;
 // y el valor del descuento en porcentaje (ej 10 para un 10% de descuento).
 
 @Embeddable
-public record DescuentoAplicado(String codigo, TipoDescuento tipo, BigDecimal valor) {
+public record DescuentoAplicado(String codigo, @Enumerated(EnumType.STRING) TipoDescuento tipo, BigDecimal valor) {
 	private static final BigDecimal MAX_DESCUENTO = BigDecimal.valueOf(30);
 
 	// Constructor compacto (caracteristico de los records) solo incluye

@@ -15,33 +15,54 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ItemCarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "carritos")
 public class Carrito {
   private static final Integer MAX_ITEMS = 20;
   private static final Money MONTO_MINIMO = new Money(BigDecimal.valueOf(50), "MXN");
 
   @EmbeddedId
+  @AttributeOverride(name = "valor", column = @Column(name = "carrito_id"))
   private CarritoId id;
+
   @Embedded
+  @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
+
   // Se cambio la lista de descuentos por un solo descuento aplicado, para validar
   // RN-VEN-15
   @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "codigo", column = @Column(name = "descuento_codigo")),
+      @AttributeOverride(name = "tipo", column = @Column(name = "descuento_tipo")),
+      @AttributeOverride(name = "valor", column = @Column(name = "porcentaje_descuento"))
+  })
   private DescuentoAplicado descuento;
-  @OneToMany(cascade = CascadeType.ALL, // Si guardas Carrito, guarda sus ítems
-      orphanRemoval = true, // Si quitas un ítem de la lista, bórralo de la BD
+
+  @OneToMany(cascade = CascadeType.ALL, // Si se guarda Carrito, se guardan sus ítems
+      orphanRemoval = true, // Si se quita un ítem de la lista, se borra de la BD
       fetch = FetchType.LAZY) // Carga los ítems solo cuando se necesiten
+  @JoinColumn(name = "carrito_id") // Columna en la tabla items que referencia al carrito
   private List<ItemCarrito> items = new ArrayList<>();
-  @JoinColumn(name = "carrito_id")
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private EstadoCarrito estado;
+
   private LocalDateTime fechaCreacion;
   private LocalDateTime fechaActualizacion;
 
