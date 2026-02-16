@@ -53,8 +53,9 @@ public class OrdenService {
             i.nombreProducto(),
             i.sku(),
             i.cantidad(),
-            i.precioUnitario()))
-        .toList();
+             new Money(i.precioUnitario(),"MXN")))
+
+      .toList();
 
     Orden orden = new Orden(
         OrdenId.generar(),

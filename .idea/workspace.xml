@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0455a4a-833b-46f0-8557-c71abac788f8" name="Changes" comment="Imprementacion de bounded context ordenes" />
+    <list default="true" id="c0455a4a-833b-46f0-8557-c71abac788f8" name="Changes" comment="Imprementacion de bounded context ordenes">
+      <change afterPath="$PROJECT_DIR$/.idea/CoolRequestCookiePersistent.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/CoolRequestSetting.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/controller/OrdenController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/service/ItemOrdenRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/service/OrdenRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/service/OrdenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/service/OrdenService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,7 +29,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="develop" />
+        <entry key="$PROJECT_DIR$" value="orden-servicios" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -37,6 +45,9 @@
     &quot;url&quot;: &quot;https://github.com/Adrian310700/Chefsitos.git&quot;,
     &quot;accountId&quot;: &quot;81dd0d7a-479b-440c-bff1-41157db0bc4b&quot;
   }
+}</component>
+  <component name="HttpClientOnboardingState">{
+  &quot;isOnboardingCommentShown&quot;: true
 }</component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -58,15 +69,19 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.UamishopApplication.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "ordenes-dominio",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "Orden-Controller",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/Leonardo/IdeaProjects/Chefsitos/src/main/java/com/chefsitos/uamishop/ordenes/domain/Enumeration",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -108,6 +123,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1770422171261</updated>
+      <workItem from="1770926270981" duration="33000" />
     </task>
     <task id="LOCAL-00001" summary="Imprementacion de bounded context ordenes">
       <option name="closed" value="true" />
@@ -134,5 +150,16 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Imprementacion de bounded context ordenes" />
     <option name="LAST_COMMIT_MESSAGE" value="Imprementacion de bounded context ordenes" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/chefsitos/uamishop/ordenes/domain/aggregate/Orden.java</url>
+          <line>28</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
