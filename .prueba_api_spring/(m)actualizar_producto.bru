@@ -1,0 +1,26 @@
+meta {
+  name: (m)actualizar_producto
+  type: http
+  seq: 11
+}
+
+put {
+  url: http://localhost:8080/api/productos/995774a5-4c0f-4649-8958-e67243093d97
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreProducto": "Mo",
+    "descripcion": "Descripción válida",
+    "precio": 9200.00,
+    "moneda": "MXN",
+    "idCategoria": "1450cfb5-2de8-4815-81f4-0b737ea637cb"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

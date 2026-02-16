@@ -66,21 +66,23 @@ public class ProductoService {
     return ProductoResponse.from(producto);
   }
 
-  public void activar(UUID id) {
+  public ProductoResponse activar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
         .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
     producto.activar();
-    productoRepository.save(producto);
+    producto = productoRepository.save(producto);
+    return ProductoResponse.from(producto);
   }
 
-  public void desactivar(UUID id) {
+  public ProductoResponse desactivar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
         .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
     producto.desactivar();
-    productoRepository.save(producto);
+    producto = productoRepository.save(producto);
+    return ProductoResponse.from(producto);
   }
 
-public CategoriaResponse crearCategoria(CategoriaRequest request) {
+  public CategoriaResponse crearCategoria(CategoriaRequest request) {
     Categoria nuevaCategoria = Categoria.crear(
         CategoriaId.generar(),
         request.nombreCategoria(),
@@ -92,9 +94,8 @@ public CategoriaResponse crearCategoria(CategoriaRequest request) {
         nuevaCategoria.getCategoriaId().valor(),
         nuevaCategoria.getNombre(),
         nuevaCategoria.getDescripcion(),
-        nuevaCategoria.getCategoriaPadreId() != null ? nuevaCategoria.getCategoriaPadreId().valor() : null
-    );
-}
+        nuevaCategoria.getCategoriaPadreId() != null ? nuevaCategoria.getCategoriaPadreId().valor() : null);
+  }
 
   public CategoriaResponse buscarCategoriaPorId(UUID id) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))

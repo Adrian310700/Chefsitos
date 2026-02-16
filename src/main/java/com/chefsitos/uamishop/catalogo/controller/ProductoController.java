@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chefsitos.uamishop.catalogo.controller.dto.CambioEstadoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.service.ProductoService;
@@ -54,15 +55,17 @@ public class ProductoController {
     return ResponseEntity.ok(response);
   }
 
-  @PatchMapping("/{id}/activar")
-  public ResponseEntity<Void> activar(@PathVariable UUID id) {
-    productoService.activar(id);
-    return ResponseEntity.noContent().build();
-  }
+  //TODO: considerar las imagenes para poder activar el producto y diseño de endpoint
+  // Sub-recurso: estado activo del producto
+  @PatchMapping("/{id}/activo")
+  public ResponseEntity<ProductoResponse> cambiarEstado(
+      @PathVariable UUID id,
+      @RequestBody @Valid CambioEstadoRequest request) {
 
-  @PatchMapping("/{id}/desactivar")
-  public ResponseEntity<Void> desactivar(@PathVariable UUID id) {
-    productoService.desactivar(id);
-    return ResponseEntity.noContent().build();
+    ProductoResponse response = request.activo()
+        ? productoService.activar(id)
+        : productoService.desactivar(id);
+
+    return ResponseEntity.ok(response);
   }
 }
