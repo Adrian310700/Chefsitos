@@ -1,8 +1,12 @@
 package com.chefsitos.uamishop.catalogo.domain.valueObject;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public record CategoriaId(UUID valor) {
+import jakarta.persistence.Embeddable;
+
+@Embeddable
+public record CategoriaId(UUID valor) implements Serializable {
 
   public static CategoriaId generar() {
     return new CategoriaId(UUID.randomUUID());
@@ -17,9 +21,5 @@ public record CategoriaId(UUID valor) {
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Formato de UUID inválido: " + id, e);
     }
-  }
-
-  public UUID getValue() {
-    return valor;
   }
 }

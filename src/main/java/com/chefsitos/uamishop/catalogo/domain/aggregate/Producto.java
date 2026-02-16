@@ -7,12 +7,40 @@ import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "productos")
 public class Producto {
+  @EmbeddedId
+  @AttributeOverride(name = "valor", column = @Column(name = "id")) // Cambia 'valor' por 'id'
   private ProductoId id;
+
   private String nombre;
   private String descripcion;
+
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "valor", column = @Column(name = "precio_monto")),
+      @AttributeOverride(name = "moneda", column = @Column(name = "precio_moneda"))
+  })
   private Money precio;
+
+  @Embedded
+  @AttributeOverride(name = "valor", column = @Column(name = "categoria_id"))
   private CategoriaId categoriaId;
+
+  @ElementCollection
+  @CollectionTable(name = "producto_imagenes", joinColumns = @JoinColumn(name = "producto_id"))
   private List<Imagen> imagenes;
   private boolean disponible;
   private LocalDateTime fechaCreacion;
@@ -107,15 +135,20 @@ public class Producto {
   }
 
   public void removerImagen(ImagenId imagenId) {
-    // RN-CAT-13
-    if (imagenes.size() <= 1) {
-      throw new IllegalArgumentException("El producto debe tener al menos una imagen");
+
+    if (this.disponible && imagenes.size() <= 1) {
+      throw new IllegalStateException(
+          "Un producto activo debe tener al menos una imagen. Desactiva el producto primero.");
     }
 
-    boolean removido = imagenes.removeIf(img -> img.getId().equals(imagenId));
+    boolean removido = imagenes.removeIf(img -> img.id().equals(imagenId));
 
     if (!removido) {
       throw new IllegalArgumentException("La imagen no existe en el producto");
+    }
+
+    if (imagenes.isEmpty()) {
+      this.disponible = false;
     }
   }
 

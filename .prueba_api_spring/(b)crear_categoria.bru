@@ -1,0 +1,23 @@
+meta {
+  name: (b)crear_categoria
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/categorias
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreCategoria": "Electrónica",
+    "descripcion": "Dispositivos tecnológicos, gadgets y accesorios de última generación"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

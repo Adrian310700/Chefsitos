@@ -1,0 +1,26 @@
+meta {
+  name: (b)crear_producto
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:8080/api/productos
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreProducto": "Monitor Gamer 27\"",
+    "descripcion": "Resolución 4K, 144Hz, Panel IPS con HDR",
+    "precio": 8500.50,
+    "moneda": "MXN",
+    "idCategoria": "1450cfb5-2de8-4815-81f4-0b737ea637cb"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

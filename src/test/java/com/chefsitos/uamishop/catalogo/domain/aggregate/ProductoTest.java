@@ -125,11 +125,12 @@ class ProductoTest {
     @Test
     @DisplayName("Máximo 5 imágenes permitidas")
     void limiteImagenes() {
-      // Agregar 5 imágenes
-      IntStream.range(0, 5).forEach(i -> producto.agregarImagen(new Imagen("http://sitio.com/img" + i, "Alt", i)));
+      // Agregar 5 imágenes - Se agrega ImagenId.generar() como primer parámetro
+      IntStream.range(0, 5)
+          .forEach(i -> producto.agregarImagen(new Imagen(ImagenId.generar(), "http://sitio.com/img" + i, "Alt", i)));
 
       // Intentar agregar la 6ta
-      Imagen extra = new Imagen("http://sitio.com/extra", "Alt", 6);
+      Imagen extra = new Imagen(ImagenId.generar(), "http://sitio.com/extra", "Alt", 6);
       assertThrows(IllegalStateException.class, () -> producto.agregarImagen(extra),
           "Debe lanzar excepción al exceder límite");
     }
@@ -137,7 +138,8 @@ class ProductoTest {
     @Test
     @DisplayName("Debe agregar imagen válida correctamente")
     void agregarImagenOk() {
-      Imagen img = new Imagen("https://img.com/1.png", "Frontal", 1);
+      // Se agrega ImagenId.generar()
+      Imagen img = new Imagen(ImagenId.generar(), "https://img.com/1.png", "Frontal", 1);
       producto.agregarImagen(img);
       assertEquals(1, producto.getImagenes().size());
       assertTrue(producto.getImagenes().contains(img));
@@ -146,12 +148,15 @@ class ProductoTest {
     @Test
     @DisplayName("Debe remover imagen por ID")
     void removerImagen() {
-      Imagen img1 = new Imagen("https://img.com/1.png", "Frontal", 1);
-      Imagen img2 = new Imagen("https://img.com/2.png", "Trasera", 2);
+      // Se agrega ImagenId.generar() a ambas
+      Imagen img1 = new Imagen(ImagenId.generar(), "https://img.com/1.png", "Frontal", 1);
+      Imagen img2 = new Imagen(ImagenId.generar(), "https://img.com/2.png", "Trasera", 2);
       producto.agregarImagen(img1);
       producto.agregarImagen(img2);
-      // Remover una imagen (debe quedar al menos 1)
-      producto.removerImagen(img1.getId());
+
+      // CORRECCIÓN: img1.id() en lugar de img1.getId()
+      producto.removerImagen(img1.id());
+
       assertEquals(1, producto.getImagenes().size());
       assertFalse(producto.getImagenes().contains(img1));
       assertTrue(producto.getImagenes().contains(img2));
@@ -178,8 +183,8 @@ class ProductoTest {
     @Test
     @DisplayName("Debe activar si cumple condiciones (Precio > 0 y tiene imagen)")
     void activarExitoso() {
-      producto.agregarImagen(new Imagen("http://img.com/1", "Alt", 1));
-      // Precio ya es > 0 por creación
+      // Se agrega ImagenId.generar()
+      producto.agregarImagen(new Imagen(ImagenId.generar(), "http://img.com/1", "Alt", 1));
       producto.activar();
       assertTrue(producto.isDisponible());
     }
@@ -187,7 +192,8 @@ class ProductoTest {
     @Test
     @DisplayName("Desactivar producto activo")
     void desactivarExitoso() {
-      producto.agregarImagen(new Imagen("http://img.com/1", "Alt", 1));
+      // Se agrega ImagenId.generar()
+      producto.agregarImagen(new Imagen(ImagenId.generar(), "http://img.com/1", "Alt", 1));
       producto.activar();
 
       producto.desactivar();

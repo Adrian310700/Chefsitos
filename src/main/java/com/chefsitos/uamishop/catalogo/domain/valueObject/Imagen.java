@@ -1,14 +1,18 @@
 package com.chefsitos.uamishop.catalogo.domain.valueObject;
 
-public class Imagen {
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import java.io.Serializable;
 
-  private ImagenId id;
-  private String url;
-  private String altText;
-  private Integer orden;
+@Embeddable
+public record Imagen(
+    @AttributeOverride(name = "valor", column = @Column(name = "id")) ImagenId id,
+    String url,
+    String altText,
+    Integer orden) implements Serializable {
 
-  public Imagen(String url, String altText, Integer orden) {
-    // Validar campos obligatorios primero
+  public Imagen {
     if (url == null || url.isBlank()) {
       throw new IllegalArgumentException("La URL no puede ser nula o vacía");
     }
@@ -18,29 +22,19 @@ public class Imagen {
     if (orden == null) {
       throw new IllegalArgumentException("El orden no puede ser nulo");
     }
-    // RN-CAT-07
     if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-      throw new IllegalArgumentException("La URL debe ser valida, empezar con http:// o https://");
+      throw new IllegalArgumentException("La URL debe ser válida (http/https)");
     }
-    this.id = ImagenId.generar();
-    this.url = url.trim();
-    this.altText = altText;
-    this.orden = orden;
+
+    url = url.trim();
+
+    if (id == null) {
+      id = ImagenId.generar();
+    }
+
   }
 
-  public ImagenId getId() {
-    return this.id;
-  }
-
-  public String getUrl() {
-    return this.url;
-  }
-
-  public String getAltText() {
-    return this.altText;
-  }
-
-  public Integer getOrden() {
-    return this.orden;
+  public static Imagen crear(String url, String altText, Integer orden) {
+    return new Imagen(ImagenId.generar(), url, altText, orden);
   }
 }
