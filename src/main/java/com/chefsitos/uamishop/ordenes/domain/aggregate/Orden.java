@@ -5,22 +5,27 @@ import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoPago;
 import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.*;
+
+import jakarta.persistence.Entity;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 public class Orden {
   private final OrdenId id;
   private final String numeroOrden;
   private final ClienteId clienteId;
   private final List<ItemOrden> items;
   private final DireccionEnvio direccionEnvio;
-  private final LocalDateTime fechaCreacion;
-
-  private EstadoOrden estado;
-  private Money total;
   private ResumenPago resumenPago;
   private InfoEnvio infoEnvio;
+  private Money subtotal;
+  private Money descuento;
+  private Money total;
+  private EstadoOrden estado;
+  private final LocalDateTime fechaCreacion;
   private List<CambioEstado> historialEstados;
 
   public Orden(OrdenId id, String numeroOrden, ClienteId clienteId,
@@ -40,6 +45,13 @@ public class Orden {
     this.historialEstados = new ArrayList<>();
 
     calcularTotal();
+  }
+
+  public static Orden crear(ClienteId clienteId, List<ItemOrden> items, DireccionEnvio direccionEnvio,  pago) {
+    OrdenId id = new OrdenId(); // Genera un nuevo ID
+    String numeroOrden = "ORD-" + id.toString().substring(0, 8).toUpperCase(); // Ejemplo de formato
+    return new Orden(id, numeroOrden, clienteId, items, direccionEnvio);
+
   }
 
   private void calcularTotal() {

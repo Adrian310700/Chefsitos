@@ -1,9 +1,24 @@
 package com.chefsitos.uamishop.ordenes.domain.valueObject;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public record ClienteId(UUID valor) {
+import jakarta.persistence.Embeddable;
+
+@Embeddable
+public record ClienteId(UUID valor) implements Serializable {
+  public static ClienteId generar() {
+    return new ClienteId(UUID.randomUUID());
+  }
+
   public static ClienteId of(String id) {
-    return new ClienteId(UUID.fromString(id));
+    if (id == null || id.isBlank()) {
+      throw new IllegalArgumentException("El ID no puede ser nulo o vacío");
+    }
+    try {
+      return new ClienteId(UUID.fromString(id));
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Formato de UUID inválido: " + id, e);
+    }
   }
 }
