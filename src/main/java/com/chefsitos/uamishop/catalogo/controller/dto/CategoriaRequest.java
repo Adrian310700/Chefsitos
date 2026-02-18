@@ -5,7 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 public record CategoriaRequest(
 
     @NotBlank String nombreCategoria,
-    String descripcion)
-
-{
+    String descripcion) {
 }

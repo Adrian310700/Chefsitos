@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
-import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
 
 public record ProductoResponse(
     UUID idProducto,

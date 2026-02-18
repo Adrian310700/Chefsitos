@@ -1,9 +1,5 @@
 package com.chefsitos.uamishop.catalogo.domain.aggregate;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
@@ -17,6 +13,11 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -104,6 +105,10 @@ public class Producto {
   }
 
   public void activar() {
+
+    if (this.disponible) {
+      throw new IllegalStateException("El producto ya esta activo");
+    }
     // RN-CAT-09
     if (this.imagenes.isEmpty()) {
       throw new IllegalStateException(
@@ -148,6 +153,8 @@ public class Producto {
     }
 
     if (imagenes.isEmpty()) {
+      System.out.println(
+          "Advertencia: El producto se ha quedado sin imagenes. El producto será desactivado. Se recomienda agregar una nueva imagen para volver a activarlo.");
       this.disponible = false;
     }
   }
