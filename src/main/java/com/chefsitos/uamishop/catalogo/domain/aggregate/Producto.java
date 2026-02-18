@@ -2,6 +2,7 @@ package com.chefsitos.uamishop.catalogo.domain.aggregate;
 
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
