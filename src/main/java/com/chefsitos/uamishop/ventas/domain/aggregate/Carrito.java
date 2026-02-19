@@ -227,4 +227,16 @@ public class Carrito {
   public LocalDateTime getFechaActualizacion() {
     return fechaActualizacion;
   }
+
+  public ClienteId getClienteId() {
+    return clienteId;
+  }
+
+  public List<ItemCarrito> getItems() {
+    return items;
+  }
+
+  public DescuentoAplicado getDescuento() {
+    return descuento;
+  }
 }

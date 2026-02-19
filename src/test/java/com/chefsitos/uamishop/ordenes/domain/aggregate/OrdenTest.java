@@ -3,6 +3,7 @@ package com.chefsitos.uamishop.ordenes.domain.aggregate;
 import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoOrden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import org.junit.jupiter.api.BeforeEach;
