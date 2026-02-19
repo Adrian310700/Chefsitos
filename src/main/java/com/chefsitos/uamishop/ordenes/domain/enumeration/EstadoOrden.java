@@ -6,6 +6,7 @@ public enum EstadoOrden {
   PAGO_PROCESADO,
   EN_PREPARACION,
   ENVIADA,
+  EN_TRANSITO,
   ENTREGADA,
   CANCELADA
 }

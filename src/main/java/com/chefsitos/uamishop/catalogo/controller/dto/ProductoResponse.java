@@ -21,7 +21,7 @@ public record ProductoResponse(
         producto.getProductoId().valor(),
         producto.getNombre(),
         producto.getDescripcion(),
-        producto.getPrecio().valor(),
+        producto.getPrecio().cantidad(),
         producto.getPrecio().moneda(),
         producto.isDisponible(),
         producto.getFechaCreacion(),

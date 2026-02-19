@@ -17,6 +17,7 @@ import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.OrdenId;
 import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
@@ -135,6 +136,13 @@ public class OrdenService {
 
     orden.marcarEnviada(infoEnvio.numeroGuia(), infoEnvio.proveedorLogistico());
 
+    return ordenRepository.save(orden);
+  }
+
+  @Transactional
+  public Orden marcarEnTransito(UUID id) {
+    Orden orden = buscarPorId(id);
+    orden.marcarEnTransito();
     return ordenRepository.save(orden);
   }
 

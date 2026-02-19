@@ -4,10 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.ventas.domain.EstadoCarrito;
+import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
@@ -18,7 +19,9 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -43,15 +46,10 @@ public class Carrito {
   @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
 
-  // Se cambio la lista de descuentos por un solo descuento aplicado, para validar
-  // RN-VEN-15
-  @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "codigo", column = @Column(name = "descuento_codigo")),
-      @AttributeOverride(name = "tipo", column = @Column(name = "descuento_tipo")),
-      @AttributeOverride(name = "valor", column = @Column(name = "porcentaje_descuento"))
-  })
-  private DescuentoAplicado descuento;
+  // Lista de descuentos aplicados al carrito (según diagrama de clases)
+  @ElementCollection(fetch = FetchType.LAZY)
+  @CollectionTable(name = "carrito_descuentos", joinColumns = @JoinColumn(name = "carrito_id"))
+  private List<DescuentoAplicado> descuentos = new ArrayList<>();
 
   @OneToMany(cascade = CascadeType.ALL, // Si se guarda Carrito, se guardan sus ítems
       orphanRemoval = true, // Si se quita un ítem de la lista, se borra de la BD
@@ -84,15 +82,17 @@ public class Carrito {
 
   public void agregarProducto(ProductoRef producto, int cantidad, Money precio) {
     validarEditable(); // Solo se pueden modificar carritos activos
-    ItemCarrito item = buscarItem(producto.getProductoId()); // Verificar si el producto ya existe en el carrito
+    // Verificar si el producto ya existe en el carrito usando ProductoId
+    ItemCarrito item = buscarItem(producto.getProductoId());
     if (item != null) {
-      // Si el producto ya existe, solo incrementamos la cantidad RN-VEN-04
+      // RN-VEN-04: Si el producto ya existe, solo incrementamos la cantidad
       item.incrementarCantidad(cantidad);
     } else {
       if (items.size() >= MAX_ITEMS) {
-        // RN-VEN-03:
+        // RN-VEN-03: Un carrito puede tener máximo 20 productos diferentes
         throw new IllegalStateException("Un carrito no puede tener más de " + MAX_ITEMS + " productos");
-      } // Si el producto no existe, lo agregamos como nuevo ítem
+      }
+      // Si el producto no existe, lo agregamos como nuevo ítem
       items.add(new ItemCarrito(
           ItemCarritoId.generar(),
           producto,
@@ -102,7 +102,7 @@ public class Carrito {
     actualizarFecha();
   }
 
-  public void modificarCantidad(UUID productoId, Integer nuevaCantidad) {
+  public void modificarCantidad(ProductoId productoId, Integer nuevaCantidad) {
     // RN-VEN-06: Solo se pueden modificar carritos activos
     validarEditable();
     ItemCarrito item = obtenerItemObligatorio(productoId);
@@ -110,12 +110,13 @@ public class Carrito {
     // carrito
     if (nuevaCantidad == 0) {
       eliminarProducto(productoId);
+      return; // Fix: evitar ejecutar actualizarCantidad después de eliminar
     }
     item.actualizarCantidad(nuevaCantidad);
     actualizarFecha();
   }
 
-  public void eliminarProducto(UUID productoId) {
+  public void eliminarProducto(ProductoId productoId) {
     // RN-VEN-07: No se pueden eliminar productos de carritos que no estén activos
     validarEditable();
     ItemCarrito item = obtenerItemObligatorio(productoId);
@@ -140,20 +141,31 @@ public class Carrito {
 
   public Money calcularTotal() {
     Money subtotal = calcularSubtotal();
-    if (descuento == null)
+    if (descuentos.isEmpty())
       return subtotal;
-    return subtotal.restar(descuento.calcularDescuento(subtotal));
+    // Aplicar todos los descuentos de la lista
+    Money totalDescuento = Money.zero("MXN");
+    for (DescuentoAplicado descuento : descuentos) {
+      totalDescuento = totalDescuento.sumar(descuento.calcularDescuento(subtotal));
+    }
+    return subtotal.restar(totalDescuento);
   }
 
   public void aplicarDescuento(DescuentoAplicado descuento) {
     // Solo se pueden aplicar descuentos a carritos activos
     validarEditable();
-    // RN-VEN-15: Solo se permite un descuento por carrito, si ya hay uno aplicado,
-    // se lanza una excepción
-    if (this.descuento != null) {
-      throw new IllegalStateException("Solo se permite un descuento por carrito");
+    // RN-VEN-15: Solo se puede aplicar un cupón de descuento por carrito
+    if (descuento.tipo() == TipoDescuento.CUPON) {
+      boolean yaTieneCupon = descuentos.stream()
+          .anyMatch(d -> d.tipo() == TipoDescuento.CUPON);
+      if (yaTieneCupon) {
+        throw new IllegalStateException("Solo se permite un cupón de descuento por carrito");
+      }
     }
-    this.descuento = descuento;
+    // Calcular el monto descontado y almacenar con el monto calculado
+    Money subtotal = calcularSubtotal();
+    DescuentoAplicado descuentoConMonto = descuento.conMontoCalculado(subtotal);
+    this.descuentos.add(descuentoConMonto);
     actualizarFecha();
   }
 
@@ -168,8 +180,7 @@ public class Carrito {
       throw new IllegalStateException("El carrito debe tener al menos un producto");
     }
     // RN-VEN-12: El monto mínimo de compra para iniciar el checkout es de $50 MXN
-    // (calculado sobre el subtotal sin descuentos)
-    if (calcularSubtotal().valor().compareTo(MONTO_MINIMO.valor()) < 0) {
+    if (calcularSubtotal().cantidad().compareTo(MONTO_MINIMO.cantidad()) < 0) {
       throw new IllegalStateException("Monto mínimo de compra no alcanzado");
     }
     estado = EstadoCarrito.EN_CHECKOUT;
@@ -205,14 +216,14 @@ public class Carrito {
     }
   }
 
-  private ItemCarrito buscarItem(UUID productoId) {
+  private ItemCarrito buscarItem(ProductoId productoId) {
     return items.stream()
         .filter(i -> i.getProducto().getProductoId().equals(productoId))
         .findFirst()
         .orElse(null);
   }
 
-  private ItemCarrito obtenerItemObligatorio(UUID productoId) {
+  private ItemCarrito obtenerItemObligatorio(ProductoId productoId) {
     ItemCarrito item = buscarItem(productoId);
     if (item == null) {
       throw new IllegalStateException("El producto no existe en el carrito");
@@ -236,7 +247,7 @@ public class Carrito {
     return items;
   }
 
-  public DescuentoAplicado getDescuento() {
-    return descuento;
+  public List<DescuentoAplicado> getDescuentos() {
+    return descuentos;
   }
 }

@@ -14,32 +14,56 @@ public class ItemOrden {
   @EmbeddedId
   @AttributeOverride(name = "valor", column = @Column(name = "id"))
   private ItemOrdenId id;
+
+  @Embedded
+  @AttributeOverride(name = "valor", column = @Column(name = "producto_id"))
   private ProductoId productoId;
+
   private String nombreProducto;
   private String sku;
   private Integer cantidad;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "precio_unitario_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_unitario_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "precio_unitario_moneda"))
   })
   private Money precioUnitario;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "subtotal_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
   })
   private Money subtotal;
 
-  // Constructor de dominio
+  // Constructor vacío protegido para JPA
+  protected ItemOrden() {
+  }
+
+  // Constructor de dominio (usado internamente al crear desde el aggregate)
   public ItemOrden(ProductoId productoId, String nombreProducto, String sku, int cantidad, Money precioUnitario) {
     if (cantidad <= 0) {
       throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero");
     }
     this.id = ItemOrdenId.generar();
     this.productoId = productoId;
+    this.nombreProducto = nombreProducto;
+    this.sku = sku;
+    this.cantidad = cantidad;
+    this.precioUnitario = precioUnitario;
+    this.subtotal = precioUnitario.multiplicar(new BigDecimal(cantidad));
+  }
+
+  // Constructor alternativo con id explícito (usado en tests y desde
+  // controller/service)
+  public ItemOrden(ItemOrdenId id, String productoIdStr, String nombreProducto, String sku, int cantidad,
+      Money precioUnitario) {
+    if (cantidad <= 0) {
+      throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero");
+    }
+    this.id = id;
+    this.productoId = ProductoId.of(productoIdStr);
     this.nombreProducto = nombreProducto;
     this.sku = sku;
     this.cantidad = cantidad;

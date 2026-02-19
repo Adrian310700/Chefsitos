@@ -52,7 +52,7 @@ public class Orden {
   @AttributeOverrides({
       @AttributeOverride(name = "metodoPago", column = @Column(name = "pago_metodo")),
       @AttributeOverride(name = "referenciaExterna", column = @Column(name = "pago_referencia")),
-      @AttributeOverride(name = "estadoPago", column = @Column(name = "pago_estado")),
+      @AttributeOverride(name = "estado", column = @Column(name = "pago_estado")),
       @AttributeOverride(name = "fechaProcesamiento", column = @Column(name = "pago_fecha"))
   })
   private ResumenPago resumenPago;
@@ -68,27 +68,27 @@ public class Orden {
   // Manejo de Dinero (Subtotal, Descuento, Total)
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "subtotal_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
   })
   private Money subtotal;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "descuento_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "descuento_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "descuento_moneda"))
   })
   private Money descuento;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "total_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "total_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "total_moneda"))
   })
   private Money total;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "estado", nullable = false)
+  @Column(name = "estado_orden", nullable = false)
   private EstadoOrden estado;
 
   @Column(name = "fecha_creacion", nullable = false)
@@ -102,43 +102,41 @@ public class Orden {
   private Orden() {
   }
 
-  // Constructor privado para Factory Method
-  private Orden(OrdenId id, String numeroOrden, ClienteId clienteId, List<ItemOrden> items,
-      DireccionEnvio direccionEnvio) {
-    this.id = id;
-    this.numeroOrden = numeroOrden;
-    this.clienteId = clienteId;
-    this.items = items != null ? items : new ArrayList<>();
-    this.direccionEnvio = direccionEnvio;
-    this.fechaCreacion = LocalDateTime.now();
-    this.historialEstados = new ArrayList<>();
-
-    // Estado inicial
-    this.estado = EstadoOrden.PENDIENTE;
-    this.resumenPago = null;
-    this.infoEnvio = null;
-
-    calcularTotales();
-
-    // Registrar el primer estado en el historial
-    registrarCambioEstado(EstadoOrden.PENDIENTE, "Orden creada", "SISTEMA");
-  }
-
-  public static Orden crear(ClienteId clienteId, List<ItemOrden> items, DireccionEnvio direccionEnvio) {
+  public static Orden crear(ClienteId clienteId, List<ItemOrden> items, DireccionEnvio direccionEnvio,
+      ResumenPago resumenPago) {
     // RN-ORD-01: Una orden debe tener al menos un item
     if (items == null || items.isEmpty()) {
       throw new IllegalArgumentException("La orden debe tener al menos un item.");
     }
 
-    OrdenId id = OrdenId.generar();
+    Orden orden = new Orden();
+    orden.id = OrdenId.generar();
     // Generación de numero de orden
-    String numeroOrden = "ORD-" + LocalDateTime.now().getYear() + "-"
-        + id.valor().toString().substring(0, 6).toUpperCase();
+    orden.numeroOrden = "ORD-" + LocalDateTime.now().getYear() + "-"
+        + orden.id.valor().toString().substring(0, 6).toUpperCase();
+    orden.clienteId = clienteId;
+    orden.items = new ArrayList<>(items);
+    orden.direccionEnvio = direccionEnvio;
+    orden.resumenPago = resumenPago;
+    orden.fechaCreacion = LocalDateTime.now();
+    orden.historialEstados = new ArrayList<>();
 
-    Orden nuevaOrden = new Orden(id, numeroOrden, clienteId, items, direccionEnvio);
+    // Estado inicial
+    orden.estado = EstadoOrden.PENDIENTE;
+    orden.infoEnvio = null;
+
+    orden.calcularTotales();
+
+    // Registrar el primer estado en el historial
+    orden.registrarCambioEstado(EstadoOrden.PENDIENTE, "Orden creada", "SISTEMA");
 
     // RN-ORD-02: El total de la orden debe ser mayor a cero
-    return nuevaOrden;
+    return orden;
+  }
+
+  // Sobrecarga sin ResumenPago (se asigna después al procesar pago)
+  public static Orden crear(ClienteId clienteId, List<ItemOrden> items, DireccionEnvio direccionEnvio) {
+    return crear(clienteId, items, direccionEnvio, null);
   }
 
   private void calcularTotales() {
@@ -164,7 +162,7 @@ public class Orden {
 
     // Validar RN-ORD-02
     if (!this.total.esMayorQueCero()) {
-      throw new IllegalStateException("RN-ORD-02: El total de la orden debe ser mayor a cero.");
+      throw new IllegalArgumentException("RN-ORD-02: El total de la orden debe ser mayor a cero.");
     }
   }
 
@@ -213,18 +211,43 @@ public class Orden {
     registrarCambioEstado(EstadoOrden.ENVIADA, "Orden despachada con guía: " + guiaEnvio, "LOGISTICA");
   }
 
-  public void marcarEntregada() {
-    // RN-ORD-13
+  // Sobrecarga para compatibilidad con OrdenService que pasa InfoEnvio
+  // directamente
+  public void marcarEnviada(InfoEnvio infoEnvio) {
+    // RN-ORD-10
+    if (obtenerEstadoActual() != EstadoOrden.EN_PREPARACION) {
+      throw new IllegalStateException("Solo se puede marcar enviada si está EN_PREPARACION.");
+    }
+    this.infoEnvio = infoEnvio;
+    registrarCambioEstado(EstadoOrden.ENVIADA,
+        "Orden despachada con guía: " + infoEnvio.numeroGuia(), "LOGISTICA");
+  }
+
+  // RN-ORD-13: Transición ENVIADA → EN_TRANSITO
+  public void marcarEnTransito() {
     if (obtenerEstadoActual() != EstadoOrden.ENVIADA) {
-      throw new IllegalStateException("Solo se puede marcar entregada si está ENVIADA.");
+      throw new IllegalStateException("Solo se puede marcar en tránsito si está ENVIADA.");
+    }
+    registrarCambioEstado(EstadoOrden.EN_TRANSITO, "Paquete en tránsito", "LOGISTICA");
+  }
+
+  public void marcarEntregada() {
+    // RN-ORD-13: Solo se puede marcar entregada si está ENVIADA o EN_TRANSITO
+    EstadoOrden estadoActual = obtenerEstadoActual();
+    if (estadoActual != EstadoOrden.ENVIADA && estadoActual != EstadoOrden.EN_TRANSITO) {
+      throw new IllegalStateException("Solo se puede marcar entregada si está ENVIADA o EN_TRANSITO.");
     }
     registrarCambioEstado(EstadoOrden.ENTREGADA, "Paquete entregado al cliente", "LOGISTICA");
   }
 
+  // Cancelar con motivo y usuario
   public void cancelar(String motivo, String usuario) {
     // RN-ORD-14
-    if (obtenerEstadoActual() == EstadoOrden.ENVIADA || obtenerEstadoActual() == EstadoOrden.ENTREGADA) {
-      throw new IllegalStateException("No se puede cancelar una orden que ya ha sido enviada o entregada.");
+    EstadoOrden estadoActual = obtenerEstadoActual();
+    if (estadoActual == EstadoOrden.ENVIADA || estadoActual == EstadoOrden.EN_TRANSITO
+        || estadoActual == EstadoOrden.ENTREGADA) {
+      throw new IllegalStateException(
+          "No se puede cancelar una orden que ya ha sido enviada, en tránsito o entregada.");
     }
     // RN-ORD-15 y RN-ORD-16
     if (motivo == null || motivo.trim().length() < 10) {
@@ -234,14 +257,20 @@ public class Orden {
     registrarCambioEstado(EstadoOrden.CANCELADA, motivo, usuario);
   }
 
+  // Cancelar con solo motivo (usuario default = CLIENTE) — para compatibilidad
+  // con tests
+  public void cancelar(String motivo) {
+    cancelar(motivo, "CLIENTE");
+  }
+
   // Método auxiliar para gestionar el historial y cambio de estado
-  private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo, String usuarioResponsable) {
+  private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo, String usuario) {
     CambioEstado cambio = new CambioEstado(
         obtenerEstadoActual(), // estado anterior
         nuevoEstado, // estado nuevo
         LocalDateTime.now(),
         motivo,
-        usuarioResponsable);
+        usuario);
 
     this.historialEstados.add(cambio);
     this.estado = nuevoEstado;
@@ -269,5 +298,17 @@ public class Orden {
 
   public EstadoOrden obtenerEstadoActual() {
     return this.estado;
+  }
+
+  public List<ItemOrden> getItems() {
+    return items;
+  }
+
+  public DireccionEnvio getDireccionEnvio() {
+    return direccionEnvio;
+  }
+
+  public ClienteId getClienteId() {
+    return clienteId;
   }
 }

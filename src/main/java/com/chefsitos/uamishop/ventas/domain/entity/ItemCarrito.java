@@ -28,7 +28,7 @@ public class ItemCarrito {
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "productoId", column = @Column(name = "producto_id")),
+      @AttributeOverride(name = "productoId.valor", column = @Column(name = "producto_id")),
       @AttributeOverride(name = "nombreProducto", column = @Column(name = "nombre_producto")),
       @AttributeOverride(name = "sku", column = @Column(name = "sku"))
   })
@@ -36,7 +36,7 @@ public class ItemCarrito {
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "precio_unitario")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_unitario")),
       @AttributeOverride(name = "moneda", column = @Column(name = "precio_unitario_moneda"))
   })
   private Money precioUnitario;
@@ -66,8 +66,9 @@ public class ItemCarrito {
   public void actualizarCantidad(Integer nuevaCantidad) {
     // Valida que la nueva cantidad de un producto en el carrito sea positiva y no
     // exceda las 10 unidades para cumplir con las RN-VEN-01 y RN-VEN-02
-    if (nuevaCantidad < 0) { // Permite modificar a cero para eliminar el producto del carrito, RN-VEN-05
-      throw new IllegalArgumentException("La cantidad debe ser igual o mayor a cero");
+    // RN-VEN-05: Cantidad debe ser mayor a 0
+    if (nuevaCantidad <= 0) {
+      throw new IllegalArgumentException("La cantidad debe ser mayor a cero");
     }
     if (nuevaCantidad > MAX_UNIDADES) {
       throw new IllegalArgumentException("La cantidad máxima por producto son 10 unidades");

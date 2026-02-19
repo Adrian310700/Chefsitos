@@ -32,7 +32,7 @@ public class Producto {
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "precio_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "precio_moneda"))
   })
   private Money precio;
@@ -99,7 +99,7 @@ public class Producto {
     }
     // RN-CAT-05
     Money limite = precio.sumar(precio.multiplicar(new BigDecimal("0.5")));
-    if (nuevoPrecio.valor().compareTo(limite.valor()) > 0) {
+    if (nuevoPrecio.cantidad().compareTo(limite.cantidad()) > 0) {
       throw new IllegalArgumentException("El precio no puede incrementarse más del 50% en un solo cambio");
     }
     this.precio = nuevoPrecio;
@@ -141,22 +141,16 @@ public class Producto {
   }
 
   public void removerImagen(ImagenId imagenId) {
-
-    if (this.disponible && imagenes.size() <= 1) {
+    // RN-CAT-13: El producto debe tener al menos una imagen
+    if (imagenes.size() <= 1) {
       throw new IllegalStateException(
-          "Un producto activo debe tener al menos una imagen. Desactiva el producto primero.");
+          "El producto debe tener al menos una imagen. No se puede remover la última.");
     }
 
     boolean removido = imagenes.removeIf(img -> img.id().equals(imagenId));
 
     if (!removido) {
       throw new IllegalArgumentException("La imagen no existe en el producto");
-    }
-
-    if (imagenes.isEmpty()) {
-      System.out.println(
-          "Advertencia: El producto se ha quedado sin imagenes. El producto será desactivado. Se recomienda agregar una nueva imagen para volver a activarlo.");
-      this.disponible = false;
     }
   }
 

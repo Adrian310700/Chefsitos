@@ -1,13 +1,18 @@
 package com.chefsitos.uamishop.ventas.domain.valueObject;
 
-import java.util.UUID;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 
 @Embeddable
-public record ProductoRef(UUID productoId, String nombreProducto, String sku) {
+public record ProductoRef(
+        @Embedded @AttributeOverride(name = "valor", column = @Column(name = "producto_id")) ProductoId productoId,
+        String nombreProducto,
+        String sku) {
 
-    // Constructor compacto (caracteristico de los records) solo incluye
-    // validaciones para asegurar que los campos no sean nulos o vacíos
+    // Constructor compacto con validaciones
     public ProductoRef {
         if (productoId == null) {
             throw new IllegalArgumentException("productoId no puede ser nulo");
@@ -18,9 +23,14 @@ public record ProductoRef(UUID productoId, String nombreProducto, String sku) {
         if (sku == null || sku.isBlank()) {
             throw new IllegalArgumentException("sku inválido");
         }
+        // RN-VO-05: El SKU debe tener formato AAA-000 (3 letras, guión, 3 números)
+        if (!sku.matches("[A-Z]{3}-\\d{3}")) {
+            throw new IllegalArgumentException(
+                    "El SKU debe tener formato AAA-000 (3 letras mayúsculas, guión, 3 números)");
+        }
     }
 
-    public UUID getProductoId() {
+    public ProductoId getProductoId() {
         return productoId;
     }
 }

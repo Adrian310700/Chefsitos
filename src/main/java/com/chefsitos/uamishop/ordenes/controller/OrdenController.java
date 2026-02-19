@@ -94,6 +94,14 @@ public class OrdenController {
   }
 
   /**
+   * Marcar como en tránsito.
+   */
+  @PutMapping("/{id}/en-transito")
+  public ResponseEntity<Orden> marcarEnTransito(@PathVariable UUID id) {
+    return ResponseEntity.ok(ordenService.marcarEnTransito(id));
+  }
+
+  /**
    * Marcar como entregada.
    */
   @PutMapping("/{id}/entregada")
