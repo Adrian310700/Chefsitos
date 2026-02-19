@@ -1,11 +1,8 @@
 package com.chefsitos.uamishop.catalogo.domain.aggregate;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.math.BigDecimal;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -17,6 +14,11 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -30,7 +32,7 @@ public class Producto {
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "valor", column = @Column(name = "precio_monto")),
+      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_monto")),
       @AttributeOverride(name = "moneda", column = @Column(name = "precio_moneda"))
   })
   private Money precio;
@@ -97,13 +99,17 @@ public class Producto {
     }
     // RN-CAT-05
     Money limite = precio.sumar(precio.multiplicar(new BigDecimal("0.5")));
-    if (nuevoPrecio.valor().compareTo(limite.valor()) > 0) {
+    if (nuevoPrecio.cantidad().compareTo(limite.cantidad()) > 0) {
       throw new IllegalArgumentException("El precio no puede incrementarse más del 50% en un solo cambio");
     }
     this.precio = nuevoPrecio;
   }
 
   public void activar() {
+
+    if (this.disponible) {
+      throw new IllegalStateException("El producto ya esta activo");
+    }
     // RN-CAT-09
     if (this.imagenes.isEmpty()) {
       throw new IllegalStateException(
@@ -135,20 +141,16 @@ public class Producto {
   }
 
   public void removerImagen(ImagenId imagenId) {
-
-    if (this.disponible && imagenes.size() <= 1) {
+    // RN-CAT-13: El producto debe tener al menos una imagen
+    if (imagenes.size() <= 1) {
       throw new IllegalStateException(
-          "Un producto activo debe tener al menos una imagen. Desactiva el producto primero.");
+          "El producto debe tener al menos una imagen. No se puede remover la última.");
     }
 
     boolean removido = imagenes.removeIf(img -> img.id().equals(imagenId));
 
     if (!removido) {
       throw new IllegalArgumentException("La imagen no existe en el producto");
-    }
-
-    if (imagenes.isEmpty()) {
-      this.disponible = false;
     }
   }
 

@@ -55,7 +55,8 @@ public class ProductoController {
     return ResponseEntity.ok(response);
   }
 
-  //TODO: considerar las imagenes para poder activar el producto y diseño de endpoint
+  // TODO: considerar las imagenes para poder activar el producto y diseño de
+  // endpoint
   // Sub-recurso: estado activo del producto
   @PatchMapping("/{id}/activo")
   public ResponseEntity<ProductoResponse> cambiarEstado(

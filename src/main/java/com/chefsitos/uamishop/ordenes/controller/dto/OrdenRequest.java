@@ -1,13 +1,12 @@
 package com.chefsitos.uamishop.ordenes.controller.dto;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-
 import java.util.List;
 import java.util.UUID;
 
 public record OrdenRequest(
-    String numeroOrden,
     UUID clienteId,
+    // Datos de Dirección desglosados
     String nombreDestinatario,
     String calle,
     String ciudad,
@@ -16,8 +15,8 @@ public record OrdenRequest(
     String pais,
     String telefono,
     String instrucciones,
+    // Items
     List<ItemOrdenRequest> items) {
-
   public record ItemOrdenRequest(
       String productoId,
       String nombreProducto,

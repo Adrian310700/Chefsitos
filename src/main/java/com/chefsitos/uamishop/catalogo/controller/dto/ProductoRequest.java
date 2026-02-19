@@ -8,10 +8,10 @@ import java.math.BigDecimal;
 public record ProductoRequest(
 
     @NotBlank String nombreProducto,
-    String descripcion,
+    @NotBlank String descripcion,
     @NotNull @Positive BigDecimal precio,
     @NotBlank String moneda,
-    String idCategoria)
+    @NotNull String idCategoria)
 
 {
 }

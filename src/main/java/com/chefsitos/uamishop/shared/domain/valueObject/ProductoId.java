@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.catalogo.domain.valueObject;
+package com.chefsitos.uamishop.shared.domain.valueObject;
 
 import java.io.Serializable;
 import java.util.UUID;

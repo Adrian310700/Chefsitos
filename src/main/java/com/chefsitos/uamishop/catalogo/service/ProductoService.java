@@ -13,7 +13,7 @@ import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
-import com.chefsitos.uamishop.catalogo.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;

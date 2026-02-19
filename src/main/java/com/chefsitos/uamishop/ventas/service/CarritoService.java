@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-import com.chefsitos.uamishop.ventas.domain.EstadoCarrito;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
+import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
@@ -57,7 +58,7 @@ public class CarritoService {
   }
 
   @Transactional
-  public Carrito modificarCantidad(CarritoId carritoId, UUID productoId, int nuevaCantidad) {
+  public Carrito modificarCantidad(CarritoId carritoId, ProductoId productoId, int nuevaCantidad) {
     Carrito carrito = obtenerCarrito(carritoId);
     carrito.modificarCantidad(productoId, nuevaCantidad);
 
@@ -65,7 +66,7 @@ public class CarritoService {
   }
 
   @Transactional
-  public Carrito eliminarProducto(CarritoId carritoId, UUID productoId) {
+  public Carrito eliminarProducto(CarritoId carritoId, ProductoId productoId) {
     Carrito carrito = obtenerCarrito(carritoId);
     carrito.eliminarProducto(productoId);
 
@@ -74,53 +75,29 @@ public class CarritoService {
 
   @Transactional
   public Carrito vaciar(CarritoId carritoId) {
-
-    // Validamos que el carrito exista
     Carrito carrito = obtenerCarrito(carritoId);
-
-    // Vaciamos el carrito
     carrito.vaciar();
-
-    // Guardamos
     return carritoRepository.save(carrito);
   }
 
   @Transactional
   public Carrito iniciarCheckout(CarritoId carritoId) {
-
-    // Validamos que el carrito exista
     Carrito carrito = obtenerCarrito(carritoId);
-
-    // Iniciamos checkout
     carrito.iniciarCheckout();
-
-    // Guardamos
     return carritoRepository.save(carrito);
   }
 
   @Transactional
   public Carrito completarCheckout(CarritoId carritoId) {
-
-    // Validamos que el carrito exista
     Carrito carrito = obtenerCarrito(carritoId);
-
-    // Completamos Checkout
     carrito.completarCheckout();
-
-    // Guardamos
     return carritoRepository.save(carrito);
   }
 
   @Transactional
   public Carrito abandonar(CarritoId carritoId) {
-
-    // Validamos que el carrito exista
     Carrito carrito = obtenerCarrito(carritoId);
-
-    // Abandonamos
     carrito.abandonar();
-
-    // Guardamos
     return carritoRepository.save(carrito);
   }
 }
