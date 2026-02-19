@@ -1,18 +1,12 @@
 package com.chefsitos.uamishop.ventas.domain.valueObject;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
+import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.math.BigDecimal;
-
-// Este record representa un descuento aplicado a un carrito de compras.
-// Contiene el código del descuento (ej "CUPON10"),
-// el tipo (CUPON, PROMOCION),
-// el valor del descuento en porcentaje (ej 10 para un 10% de descuento),
-// y el monto descontado calculado al aplicar el descuento.
 
 @Embeddable
 public record DescuentoAplicado(
@@ -23,7 +17,6 @@ public record DescuentoAplicado(
 
   private static final BigDecimal MAX_DESCUENTO = BigDecimal.valueOf(30);
 
-  // Constructor compacto con validaciones
   // RN-VEN-16: El descuento no puede ser mayor al 30% del subtotal
   public DescuentoAplicado {
     if (codigo == null || codigo.isBlank()) {

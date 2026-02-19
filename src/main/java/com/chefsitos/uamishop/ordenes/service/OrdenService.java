@@ -39,8 +39,7 @@ public class OrdenService {
   ProductoService productoService;
 
   /**
-   * Crea una orden directamente desde un Request (ej. "Comprar ahora" sin carrito
-   * persistente o administrativo).
+   * Crea una orden directamente desde un Request
    */
   @Transactional
   public Orden crear(OrdenRequest request) {

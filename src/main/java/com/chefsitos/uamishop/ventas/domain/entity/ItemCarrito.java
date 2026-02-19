@@ -41,11 +41,9 @@ public class ItemCarrito {
   })
   private Money precioUnitario;
 
-  // Constructor vacío para JPA
   protected ItemCarrito() {
   }
 
-  // validaciones de negocio
   public ItemCarrito(ItemCarritoId id, ProductoRef producto, Integer cantidad, Money precioUnitario) {
     // Valida que la cantidad de un producto en el carrito sea positiva
     // RN-VEN-01

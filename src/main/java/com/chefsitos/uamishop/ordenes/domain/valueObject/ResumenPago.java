@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 // Value Object que resume la información del pago de una orden
 @Embeddable
 public record ResumenPago(
-        String metodoPago,
-        String referenciaExterna,
-        @Enumerated(EnumType.STRING) EstadoPago estado,
-        LocalDateTime fechaProcesamiento) {
+    String metodoPago,
+    String referenciaExterna,
+    @Enumerated(EnumType.STRING) EstadoPago estado,
+    LocalDateTime fechaProcesamiento) {
 }

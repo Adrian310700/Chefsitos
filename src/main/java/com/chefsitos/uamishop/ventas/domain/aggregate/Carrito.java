@@ -7,9 +7,9 @@ import java.util.List;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
-import com.chefsitos.uamishop.ventas.domain.EstadoCarrito;
-import com.chefsitos.uamishop.ventas.domain.TipoDescuento;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
+import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
+import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
 import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
@@ -17,7 +17,6 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.ItemCarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -46,7 +45,6 @@ public class Carrito {
   @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
 
-  // Lista de descuentos aplicados al carrito (según diagrama de clases)
   @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "carrito_descuentos", joinColumns = @JoinColumn(name = "carrito_id"))
   private List<DescuentoAplicado> descuentos = new ArrayList<>();
@@ -64,7 +62,6 @@ public class Carrito {
   private LocalDateTime fechaCreacion;
   private LocalDateTime fechaActualizacion;
 
-  // Constructor protegido para JPA
   protected Carrito() {
   }
 
@@ -77,6 +74,10 @@ public class Carrito {
   }
 
   public static Carrito crear(ClienteId clienteId) {
+    if (clienteId == null) {
+      throw new IllegalArgumentException("El clienteId no puede ser nulo");
+    }
+
     return new Carrito(CarritoId.generar(), clienteId);
   }
 
@@ -110,7 +111,7 @@ public class Carrito {
     // carrito
     if (nuevaCantidad == 0) {
       eliminarProducto(productoId);
-      return; // Fix: evitar ejecutar actualizarCantidad después de eliminar
+      return; // evitar ejecutar actualizarCantidad después de eliminar
     }
     item.actualizarCantidad(nuevaCantidad);
     actualizarFecha();
@@ -120,8 +121,7 @@ public class Carrito {
     // RN-VEN-07: No se pueden eliminar productos de carritos que no estén activos
     validarEditable();
     ItemCarrito item = obtenerItemObligatorio(productoId);
-    // RN-VEN-08: Debe existir el producto en el carrito para eliminarlo (validado
-    // en obtenerItemObligatorio)
+    // RN-VEN-08: Debe existir el producto en el carrito para eliminarlo
     items.remove(item);
     actualizarFecha();
   }

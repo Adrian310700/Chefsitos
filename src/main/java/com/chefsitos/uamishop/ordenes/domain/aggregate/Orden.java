@@ -29,8 +29,8 @@ public class Orden {
   private ClienteId clienteId;
 
   // Relación OneToMany con la entidad hija ItemOrden.
-  // CascadeType.ALL: Si guardo Orden, se guardan los Items.
-  // orphanRemoval: Si quito un item de la lista, se borra de la BD.
+  // CascadeType.ALL: Si se guarda la Orden, se guardan los Items.
+  // orphanRemoval: Si se quita un item de la lista, se borra de la BD.
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "orden_id", nullable = false)
   private List<ItemOrden> items;
@@ -154,7 +154,6 @@ public class Orden {
     this.subtotal = subtotalTemp;
 
     // Calcular Descuento
-    // TODO: falta decidir si es porcentaje o monto
     this.descuento = Money.zero(moneda);
 
     // 3. Calcular Total
@@ -257,8 +256,7 @@ public class Orden {
     registrarCambioEstado(EstadoOrden.CANCELADA, motivo, usuario);
   }
 
-  // Cancelar con solo motivo (usuario default = CLIENTE) — para compatibilidad
-  // con tests
+  // Cancelar con solo motivo (usuario default = CLIENTE)
   public void cancelar(String motivo) {
     cancelar(motivo, "CLIENTE");
   }

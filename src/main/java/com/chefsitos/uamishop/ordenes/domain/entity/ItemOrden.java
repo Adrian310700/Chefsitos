@@ -55,22 +55,6 @@ public class ItemOrden {
     this.subtotal = precioUnitario.multiplicar(new BigDecimal(cantidad));
   }
 
-  // Constructor alternativo con id explícito (usado en tests y desde
-  // controller/service)
-  public ItemOrden(ItemOrdenId id, String productoIdStr, String nombreProducto, String sku, int cantidad,
-      Money precioUnitario) {
-    if (cantidad <= 0) {
-      throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero");
-    }
-    this.id = id;
-    this.productoId = ProductoId.of(productoIdStr);
-    this.nombreProducto = nombreProducto;
-    this.sku = sku;
-    this.cantidad = cantidad;
-    this.precioUnitario = precioUnitario;
-    this.subtotal = precioUnitario.multiplicar(new BigDecimal(cantidad));
-  }
-
   public Money calcularSubtotal() {
     return precioUnitario.multiplicar(new BigDecimal(cantidad));
   }

@@ -5,6 +5,7 @@ import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoOrden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,10 +55,10 @@ public class OrdenTest {
         "Casa azul");
 
     Money precio = new Money(BigDecimal.valueOf(100), "MXN");
+    ProductoId productoId = ProductoId.generar();
 
     itemValido = new ItemOrden(
-        ItemOrdenId.generar(),
-        UUID.randomUUID().toString(),
+        productoId,
         "Producto Test",
         "SKU-001",
         1,
@@ -88,8 +89,7 @@ public class OrdenTest {
   @Test
   void noDebeCrearOrdenConTotalCero() {
     ItemOrden itemConPrecioCero = new ItemOrden(
-        ItemOrdenId.generar(),
-        UUID.randomUUID().toString(),
+        ProductoId.generar(),
         "Producto Cero",
         "SKU-002",
         1,

@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 // Value Object que registra un cambio de estado en la orden
 @Embeddable
 public record CambioEstado(
-        @Enumerated(EnumType.STRING) EstadoOrden estadoAnterior,
-        @Enumerated(EnumType.STRING) EstadoOrden estadoNuevo,
-        LocalDateTime fecha,
-        String motivo,
-        String usuario) {
+    @Enumerated(EnumType.STRING) EstadoOrden estadoAnterior,
+    @Enumerated(EnumType.STRING) EstadoOrden estadoNuevo,
+    LocalDateTime fecha,
+    String motivo,
+    String usuario) {
 }

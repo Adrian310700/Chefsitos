@@ -14,7 +14,6 @@ public record DireccionEnvio(
     String telefono,
     String instrucciones) {
 
-  // Constructor compacto con validaciones de reglas de negocio
   public DireccionEnvio {
     // RN-VO-03: Todos los campos obligatorios deben estar presentes
     if (nombreDestinatario == null || nombreDestinatario.isBlank()) {

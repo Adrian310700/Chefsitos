@@ -16,13 +16,12 @@ public record OrdenRequest(
     String telefono,
     String instrucciones,
     // Items
-    List<ItemOrdenRequest> items
-) {
-    public record ItemOrdenRequest(
-        String productoId,
-        String nombreProducto,
-        String sku,
-        int cantidad,
-        Money precioUnitario
-    ) {}
+    List<ItemOrdenRequest> items) {
+  public record ItemOrdenRequest(
+      String productoId,
+      String nombreProducto,
+      String sku,
+      int cantidad,
+      Money precioUnitario) {
+  }
 }

@@ -8,10 +8,11 @@ import java.util.UUID;
  */
 public record ItemOrdenRequest(
 
-  String productoId,
-  String nombreProducto,
-  String sku,
-  int cantidad,
-  BigDecimal precioUnitario
+    String productoId,
+    String nombreProducto,
+    String sku,
+    int cantidad,
+    BigDecimal precioUnitario
 
-) {}
+) {
+}

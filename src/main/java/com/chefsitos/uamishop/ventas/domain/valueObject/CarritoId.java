@@ -7,8 +7,6 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public record CarritoId(UUID valor) {
 
-  // Constructor compacto (caracteristico de los records) solo incluye
-  // validaciones para asegurar que los campos no sean nulos o vacíos
   public CarritoId {
     if (valor == null) {
       throw new IllegalArgumentException("El ID del carrito no puede ser nulo");
