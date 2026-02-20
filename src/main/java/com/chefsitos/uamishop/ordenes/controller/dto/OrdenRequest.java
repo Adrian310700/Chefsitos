@@ -1,27 +1,28 @@
 package com.chefsitos.uamishop.ordenes.controller.dto;
 
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 public record OrdenRequest(
-    UUID clienteId,
-    // Datos de Dirección desglosados
-    String nombreDestinatario,
-    String calle,
-    String ciudad,
-    String estado,
-    String codigoPostal,
-    String pais,
-    String telefono,
-    String instrucciones,
-    // Items
-    List<ItemOrdenRequest> items) {
-  public record ItemOrdenRequest(
-      String productoId,
-      String nombreProducto,
-      String sku,
-      int cantidad,
-      Money precioUnitario) {
+
+  @NotBlank String clienteId,
+
+  @Valid DireccionEnvioRequest direccion,
+
+  @NotEmpty @Valid List<ItemRequest> items
+
+) {
+
+  public record ItemRequest(
+    @NotBlank String productoId,
+    @NotBlank String nombreProducto,
+    @NotBlank String sku,
+    int cantidad,
+    BigDecimal precioUnitario
+  ) {
   }
 }
