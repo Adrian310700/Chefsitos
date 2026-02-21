@@ -235,12 +235,24 @@ public class Carrito {
     this.fechaActualizacion = LocalDateTime.now();
   }
 
+  public CarritoId getCarritoId() {
+    return id;
+  }
+
   public LocalDateTime getFechaActualizacion() {
     return fechaActualizacion;
   }
 
+  public LocalDateTime getFechaCreacion() {
+    return fechaCreacion;
+  }
+
   public ClienteId getClienteId() {
     return clienteId;
+  }
+
+  public EstadoCarrito getEstado() {
+    return estado;
   }
 
   public List<ItemCarrito> getItems() {
