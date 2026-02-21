@@ -39,7 +39,7 @@ import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
 import com.chefsitos.uamishop.shared.ApiError;
 
 /**
- * Pruebas de integración para el controlador de Órdenes.
+ * Pruebas de integración para el controlador de Ordenes.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
