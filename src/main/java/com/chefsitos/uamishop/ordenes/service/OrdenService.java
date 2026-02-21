@@ -1,33 +1,35 @@
 package com.chefsitos.uamishop.ordenes.service;
 
-import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
+import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
 import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class OrdenService {
 
   private static final String MONEDA_DEFAULT = "MXN";
-
   private final OrdenJpaRepository ordenRepository;
 
   public OrdenService(OrdenJpaRepository ordenRepository) {
     this.ordenRepository = ordenRepository;
   }
 
-  public Orden crear(OrdenRequest request) {
-
+  public OrdenResponseDTO crear(OrdenRequest request) {
+    // 1. Mapear Dirección de Envío (Value Object)
     DireccionEnvio direccion = new DireccionEnvio(
       request.direccion().nombreDestinatario(),
       request.direccion().calle(),
@@ -39,68 +41,86 @@ public class OrdenService {
       request.direccion().instrucciones()
     );
 
+    // 2. Mapear Items (Entidades)
     List<ItemOrden> items = request.items().stream()
       .map(i -> new ItemOrden(
-        i.productoId(),
+        ProductoId.of(i.productoId()),
         i.nombreProducto(),
         i.sku(),
         i.cantidad(),
-        new Money(i.precioUnitario(), "MXN")
+        new Money(i.precioUnitario(), MONEDA_DEFAULT)
       ))
-      .toList();
+      .collect(Collectors.toList());
 
-    Orden orden = new Orden(
-      generarNumeroOrden(),
-      new ClienteId(UUID.fromString(request.clienteId())),
+    // 3. Crear el Agregado (Lógica de dominio)
+    Orden orden = Orden.crear(
+      new ClienteId(request.clienteId()),
       items,
       direccion
     );
 
-    return ordenRepository.save(orden);
+    // 4. Persistir y retornar DTO
+    Orden guardada = ordenRepository.save(orden);
+    return mapToResponseDTO(guardada);
   }
 
-  public Orden buscarPorId(UUID id) {
-    return ordenRepository.findById(id)
-      .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada: " + id));
+  @Transactional(readOnly = true)
+  public OrdenResponseDTO buscarYConvertirDTO(UUID id) {
+    return mapToResponseDTO(buscarPorIdInterno(id));
   }
 
-  public Orden confirmar(UUID id) {
-    Orden orden = buscarPorId(id);
+  public OrdenResponseDTO confirmar(UUID id) {
+    Orden orden = buscarPorIdInterno(id);
     orden.confirmar();
-    return ordenRepository.save(orden);
+    return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  public Orden procesarPago(UUID id, String referenciaPago) {
-    Orden orden = buscarPorId(id);
+  public OrdenResponseDTO marcarEnviada(UUID id, String numeroGuia, String proveedor) {
+    Orden orden = buscarPorIdInterno(id);
+    orden.marcarEnviada(numeroGuia, proveedor);
+    return mapToResponseDTO(ordenRepository.save(orden));
+  }
+
+  public OrdenResponseDTO procesarPago(UUID id, String referenciaPago) {
+    Orden orden = buscarPorIdInterno(id);
     orden.procesarPago(referenciaPago);
-    return ordenRepository.save(orden);
+    return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  public Orden marcarEnProceso(UUID id) {
-    Orden orden = buscarPorId(id);
+  public OrdenResponseDTO marcarEnProceso(UUID id) {
+    Orden orden = buscarPorIdInterno(id);
     orden.marcarEnProceso();
-    return ordenRepository.save(orden);
+    return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  public Orden marcarEnviada(UUID id, InfoEnvioRequest request) {
-    Orden orden = buscarPorId(id);
-    orden.marcarEnviada(request.numeroGuia());
-    return ordenRepository.save(orden);
-  }
-
-  public Orden marcarEntregada(UUID id) {
-    Orden orden = buscarPorId(id);
+  public OrdenResponseDTO marcarEntregada(UUID id) {
+    Orden orden = buscarPorIdInterno(id);
     orden.marcarEntregada();
-    return ordenRepository.save(orden);
+    return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  public Orden cancelar(UUID id, String motivo) {
-    Orden orden = buscarPorId(id);
+  public OrdenResponseDTO cancelar(UUID id, String motivo) {
+    Orden orden = buscarPorIdInterno(id);
     orden.cancelar(motivo);
-    return ordenRepository.save(orden);
+    return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  private String generarNumeroOrden() {
-    return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+  private Orden buscarPorIdInterno(UUID id) {
+    return ordenRepository.findById(new OrdenId(id))
+      .orElseThrow(() -> new IllegalArgumentException("La orden con ID " + id + " no existe."));
+  }
+
+  // Mapper interno para no exponer el Agregado al Controller
+  private OrdenResponseDTO mapToResponseDTO(Orden orden) {
+    return new OrdenResponseDTO(
+      orden.getId().valor(),
+      orden.getNumeroOrden(),
+      orden.getClienteId().valor(),
+      orden.getEstado(),
+      orden.getTotal() != null ? orden.getTotal().cantidad() : null,
+      orden.getTotal() != null ? orden.getTotal().moneda() : MONEDA_DEFAULT,
+      // Nota: Si DireccionEnvio es un record, usa .calle() y .ciudad()
+      orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad()
+    );
   }
 }
