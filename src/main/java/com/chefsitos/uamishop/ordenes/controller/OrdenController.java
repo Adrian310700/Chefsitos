@@ -65,7 +65,7 @@ public class OrdenController {
   })
   @GetMapping("/{id}")
   public ResponseEntity<OrdenResponseDTO> buscarPorId(@PathVariable UUID id) {
-    return ResponseEntity.ok(ordenService.buscarYConvertirDTO(id));
+    return ResponseEntity.ok(ordenService.buscarPorId(id));
   }
 
   // ===============================
