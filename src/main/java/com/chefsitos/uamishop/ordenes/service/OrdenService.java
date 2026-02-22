@@ -21,6 +21,7 @@ import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -57,10 +58,10 @@ public class OrdenService {
               ProductoId.of(i.productoId()),
               producto.nombreProducto(),
               producto.nombreProducto(), // sku: alias hasta tener campo propio
-              i.cantidad(),
+              i.cantidad().intValue(),
               new Money(producto.precio(), producto.moneda()));
         })
-        .collect(Collectors.toList());
+        .toList();
 
     ResumenPago resumenPendiente = new ResumenPago(
         "PENDIENTE", null, EstadoPago.PENDIENTE, null);

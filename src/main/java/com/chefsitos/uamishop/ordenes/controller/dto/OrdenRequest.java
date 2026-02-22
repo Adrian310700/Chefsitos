@@ -21,7 +21,7 @@ public record OrdenRequest(
 
       @NotBlank(message = "El ID del producto es obligatorio") @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "El ID del producto debe ser un UUID válido") String productoId,
 
-      @Positive(message = "La cantidad debe ser mayor a 0") int cantidad
+      @Positive(message = "La cantidad debe ser mayor a 0") BigDecimal cantidad
 
   ) {
   }

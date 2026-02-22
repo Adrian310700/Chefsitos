@@ -18,7 +18,9 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("categoriaId", res.getBody().id);
+  let data = res.getBody();
+  let categoriaId = data.idCategoria;
+  bru.setVar("categoriaId", categoriaId);
 }
 
 settings {
