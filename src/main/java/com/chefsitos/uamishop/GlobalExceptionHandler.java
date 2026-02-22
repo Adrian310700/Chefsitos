@@ -92,6 +92,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   /**
+   * 422 - Argumentos inválidos lanzados por el dominio (reglas de Value Objects).
+   * Ejemplo: país distinto a "México", código postal inválido, teléfono inválido.
+   */
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiError> handleIllegalArgumentException(
+      IllegalArgumentException ex, WebRequest request) {
+
+    log.warn("Argumento inválido (regla de dominio): {}", ex.getMessage());
+
+    ApiError apiError = new ApiError(
+        HttpStatus.UNPROCESSABLE_CONTENT.value(),
+        "Unprocessable Entity",
+        ex.getMessage(),
+        getPath(request));
+
+    return new ResponseEntity<>(apiError, HttpStatus.UNPROCESSABLE_CONTENT);
+  }
+
+  /**
    * 400 - Petición inválida
    */
   @ExceptionHandler(BadRequestException.class)

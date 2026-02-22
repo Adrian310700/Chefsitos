@@ -6,10 +6,11 @@ import com.chefsitos.uamishop.catalogo.service.ProductoService;
 import com.chefsitos.uamishop.shared.ApiErrors;
 
 import jakarta.validation.Valid;
+
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,7 +49,13 @@ public class CategoriaController {
   public ResponseEntity<CategoriaResponse> crearCategoria(@RequestBody @Valid CategoriaRequest request) {
     CategoriaResponse response = productoService.crearCategoria(request);
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    URI location = ServletUriComponentsBuilder
+        .fromCurrentRequest()
+        .path("/{id}")
+        .buildAndExpand(response.idCategoria())
+        .toUri();
+    return ResponseEntity.created(location).body(response);
+
   }
 
   @Operation(summary = "Obtener categoría por ID", description = "Devuelve la información de una categoría específica buscando por su identificador único.")

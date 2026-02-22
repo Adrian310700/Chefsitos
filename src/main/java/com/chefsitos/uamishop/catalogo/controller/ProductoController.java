@@ -1,10 +1,12 @@
 package com.chefsitos.uamishop.catalogo.controller;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +49,12 @@ public class ProductoController {
   @PostMapping
   public ResponseEntity<ProductoResponse> crear(@RequestBody @Valid ProductoRequest request) {
     ProductoResponse response = productoService.crear(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    URI location = ServletUriComponentsBuilder
+        .fromCurrentRequest()
+        .path("/{id}")
+        .buildAndExpand(response.idProducto())
+        .toUri();
+    return ResponseEntity.created(location).body(response);
   }
 
   @Operation(summary = "Obtener producto por ID", description = "Devuelve los detalles de un producto específico dado su ID")
@@ -67,6 +74,8 @@ public class ProductoController {
       @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente")
   })
   @GetMapping
+  @ApiErrors.Unauthorized
+  @ApiErrors.Forbidden
   public ResponseEntity<List<ProductoResponse>> buscarTodos() {
     List<ProductoResponse> productos = productoService.buscarTodos();
     return ResponseEntity.ok(productos);

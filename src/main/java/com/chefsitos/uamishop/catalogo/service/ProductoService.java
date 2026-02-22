@@ -89,6 +89,9 @@ public class ProductoService {
         request.descripcion());
 
     if (request.categoriaPadreId() != null) {
+      categoriaRepository.findById(CategoriaId.of(request.categoriaPadreId().toString()))
+          .orElseThrow(() -> new ResourceNotFoundException(
+              "Categoría padre no encontrada con ID: " + request.categoriaPadreId()));
       nuevaCategoria.asignarPadre(CategoriaId.of(request.categoriaPadreId().toString()));
     }
 
