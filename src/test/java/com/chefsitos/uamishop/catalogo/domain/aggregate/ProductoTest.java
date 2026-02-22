@@ -4,6 +4,7 @@ import com.chefsitos.uamishop.catalogo.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.*;
 import org.junit.jupiter.api.*;
 import java.math.BigDecimal;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,14 +28,14 @@ class ProductoTest {
     @Test
     @DisplayName("Fallar si nombre < 3 caracteres")
     void falloNombreCorto() {
-      assertThrows(IllegalArgumentException.class, () -> Producto.crear("TV", "Desc", precioDefault, categoriaDefault));
+      assertThrows(BusinessRuleException.class, () -> Producto.crear("TV", "Desc", precioDefault, categoriaDefault));
     }
 
     @Test
     @DisplayName("Fallar si nombre > 100 caracteres")
     void falloNombreLargo() {
       String nombreLargo = "A".repeat(101);
-      assertThrows(IllegalArgumentException.class,
+      assertThrows(BusinessRuleException.class,
           () -> Producto.crear(nombreLargo, "Desc", precioDefault, categoriaDefault));
     }
 
@@ -42,7 +43,7 @@ class ProductoTest {
     @DisplayName("Fallar si precio <= 0")
     void falloPrecioCero() {
       Money precioCero = new Money(BigDecimal.ZERO, "MXN");
-      assertThrows(IllegalArgumentException.class,
+      assertThrows(BusinessRuleException.class,
           () -> Producto.crear("Producto Valido", "Desc", precioCero, categoriaDefault));
     }
 
@@ -51,7 +52,7 @@ class ProductoTest {
     void falloPrecioExcesivo() {
       Producto p = Producto.crear("Producto", "Desc", precioDefault, categoriaDefault);
       Money nuevoPrecio = new Money(BigDecimal.valueOf(151.00), "MXN");
-      assertThrows(IllegalArgumentException.class, () -> p.cambiarPrecio(nuevoPrecio),
+      assertThrows(BusinessRuleException.class, () -> p.cambiarPrecio(nuevoPrecio),
           "Debe bloquear inflación > 50%");
     }
 
@@ -59,7 +60,7 @@ class ProductoTest {
     @DisplayName("Fallar si descripción > 500 caracteres")
     void falloDescripcionLarga() {
       String descLarga = "A".repeat(501);
-      assertThrows(IllegalArgumentException.class,
+      assertThrows(BusinessRuleException.class,
           () -> Producto.crear("Producto", descLarga, precioDefault, categoriaDefault));
     }
 
@@ -90,7 +91,7 @@ class ProductoTest {
     @DisplayName("El nuevo precio no puede ser negativo")
     void falloPrecioNegativo() {
       Money negativo = new Money(BigDecimal.valueOf(-10), "MXN");
-      assertThrows(IllegalArgumentException.class, () -> producto.cambiarPrecio(negativo));
+      assertThrows(BusinessRuleException.class, () -> producto.cambiarPrecio(negativo));
     }
 
     @Test
@@ -99,7 +100,7 @@ class ProductoTest {
       // Precio actual 100. Límite aumento 50. Nuevo máx 150.
       // Intentamos 151.
       Money muyCaro = new Money(BigDecimal.valueOf(151.00), "MXN");
-      assertThrows(IllegalArgumentException.class, () -> producto.cambiarPrecio(muyCaro),
+      assertThrows(BusinessRuleException.class, () -> producto.cambiarPrecio(muyCaro),
           "Debe bloquear inflación > 50%");
     }
 
@@ -131,7 +132,7 @@ class ProductoTest {
 
       // Intentar agregar la 6ta
       Imagen extra = new Imagen(ImagenId.generar(), "http://sitio.com/extra", "Alt", 6);
-      assertThrows(IllegalStateException.class, () -> producto.agregarImagen(extra),
+      assertThrows(BusinessRuleException.class, () -> producto.agregarImagen(extra),
           "Debe lanzar excepción al exceder límite");
     }
 
@@ -176,7 +177,7 @@ class ProductoTest {
     @Test
     @DisplayName("No activar si no tiene imágenes")
     void falloActivacionSinImagen() {
-      assertThrows(IllegalStateException.class, () -> producto.activar(),
+      assertThrows(BusinessRuleException.class, () -> producto.activar(),
           "Producto sin imágenes no debe poder activarse");
     }
 
@@ -204,7 +205,7 @@ class ProductoTest {
     @DisplayName("Error al desactivar si ya está inactivo")
     void falloDobleDesactivacion() {
       assertFalse(producto.isDisponible());
-      assertThrows(IllegalStateException.class, () -> producto.desactivar());
+      assertThrows(BusinessRuleException.class, () -> producto.desactivar());
     }
   }
 }

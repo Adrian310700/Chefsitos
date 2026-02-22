@@ -4,6 +4,7 @@ import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.service.OrdenService;
+import com.chefsitos.uamishop.shared.ApiErrors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Controller REST del Bounded Context Órdenes.
  * Solo expone endpoints HTTP.
@@ -19,6 +22,8 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/ordenes")
+@Tag(name = "Órdenes", description = "Endpoints para la gestión de órdenes de compra")
+@ApiErrors.GlobalErrorResponses
 public class OrdenController {
 
   private final OrdenService ordenService;
@@ -30,6 +35,8 @@ public class OrdenController {
   /**
    * Crear una nueva orden.
    */
+  @ApiErrors.BadRequest
+  @ApiErrors.UnprocessableEntity
   @PostMapping
   public ResponseEntity<Orden> crear(@RequestBody OrdenRequest request) {
 
@@ -40,6 +47,7 @@ public class OrdenController {
   /**
    * Buscar orden por ID.
    */
+  @ApiErrors.NotFound
   @GetMapping("/{id}")
   public ResponseEntity<Orden> buscarPorId(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.buscarPorId(id));// devuelve status 200
@@ -56,6 +64,9 @@ public class OrdenController {
   /**
    * Confirmar orden.
    */
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/confirmar")
   public ResponseEntity<Orden> confirmar(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.confirmar(id));
@@ -64,6 +75,9 @@ public class OrdenController {
   /**
    * Procesar pago.
    */
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/pago")
   public ResponseEntity<Orden> procesarPago(
       @PathVariable UUID id,
@@ -76,6 +90,9 @@ public class OrdenController {
   /**
    * Marcar en proceso.
    */
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/en-proceso")
   public ResponseEntity<Orden> marcarEnProceso(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.marcarEnProceso(id));
@@ -84,6 +101,10 @@ public class OrdenController {
   /**
    * Marcar como enviada.
    */
+  @ApiErrors.BadRequest
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/enviada")
   public ResponseEntity<Orden> marcarEnviada(
       @PathVariable UUID id,
@@ -96,6 +117,9 @@ public class OrdenController {
   /**
    * Marcar como en tránsito.
    */
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/en-transito")
   public ResponseEntity<Orden> marcarEnTransito(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.marcarEnTransito(id));
@@ -104,6 +128,9 @@ public class OrdenController {
   /**
    * Marcar como entregada.
    */
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
+  @ApiErrors.UnprocessableEntity
   @PutMapping("/{id}/entregada")
   public ResponseEntity<Orden> marcarEntregada(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.marcarEntregada(id));
@@ -112,6 +139,9 @@ public class OrdenController {
   /**
    * Cancelar orden.
    */
+  @ApiErrors.BadRequest
+  @ApiErrors.NotFound
+  @ApiErrors.Conflict
   @PutMapping("/{id}/cancelar")
   public ResponseEntity<Orden> cancelar(
       @PathVariable UUID id,

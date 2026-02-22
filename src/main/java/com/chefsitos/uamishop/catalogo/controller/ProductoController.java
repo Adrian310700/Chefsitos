@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.service.ProductoService;
+import com.chefsitos.uamishop.shared.ApiErrors;
 
 import jakarta.validation.Valid;
 
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/${api.V1}/productos")
 @Tag(name = "Productos", description = "Endpoints para la gestión de productos del catálogo")
+@ApiErrors.GlobalErrorResponses
 public class ProductoController {
 
   @Autowired
@@ -38,9 +40,10 @@ public class ProductoController {
 
   @Operation(summary = "Crear producto", description = "Permite registrar un nuevo producto en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class))),
-      @ApiResponse(responseCode = "400", description = "Error de validación en los datos del producto")
+      @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
+  @ApiErrors.BadRequest
+  @ApiErrors.UnprocessableEntity
   @PostMapping
   public ResponseEntity<ProductoResponse> crear(@RequestBody @Valid ProductoRequest request) {
     ProductoResponse response = productoService.crear(request);
@@ -49,9 +52,9 @@ public class ProductoController {
 
   @Operation(summary = "Obtener producto por ID", description = "Devuelve los detalles de un producto específico dado su ID")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class))),
-      @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+      @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
+  @ApiErrors.NotFound
   @GetMapping("/{id}")
   public ResponseEntity<ProductoResponse> obtener(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
@@ -71,9 +74,10 @@ public class ProductoController {
 
   @Operation(summary = "Actualizar producto", description = "Cambia el estado del producto a disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class))),
-      @ApiResponse(responseCode = "404", description = "Producto a activar no encontrado")
+      @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
+  @ApiErrors.NotFound
+  @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/activar")
   public ResponseEntity<ProductoResponse> actualizar(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
@@ -86,9 +90,10 @@ public class ProductoController {
 
   @Operation(summary = "Desactivar producto", description = "Cambia el estado del producto a no disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class))),
-      @ApiResponse(responseCode = "404", description = "Producto a desactivar no encontrado")
+      @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
+  @ApiErrors.NotFound
+  @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/desactivar")
   public ResponseEntity<ProductoResponse> desactivar(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {

@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 
 @Entity
 @Table(name = "productos")
@@ -56,15 +57,15 @@ public class Producto {
 
     // RN-CAT-01
     if (nombre == null || nombre.trim().length() < 3 || nombre.trim().length() > 100) {
-      throw new IllegalArgumentException("El nombre debe tener entre 3 y 100 caracteres");
+      throw new BusinessRuleException("El nombre debe tener entre 3 y 100 caracteres");
     }
     // RN-CAT-02
     if (!(precio.esMayorQueCero())) {
-      throw new IllegalArgumentException("El precio debe ser mayor a 0");
+      throw new BusinessRuleException("El precio debe ser mayor a 0");
     }
     // RN-CAT-03
     if (descripcion == null || descripcion.trim().length() > 500) {
-      throw new IllegalArgumentException("La descripción no debe exceder los 500 caracteres");
+      throw new BusinessRuleException("La descripción no debe exceder los 500 caracteres");
     }
     Producto producto = new Producto();
     producto.id = ProductoId.generar();
@@ -82,11 +83,11 @@ public class Producto {
   public void actualizarInformacion(String nombre, String descripcion) {
     // RN-CAT-11
     if (nombre == null || nombre.length() < 3 || nombre.length() > 100) {
-      throw new IllegalArgumentException("El nuevo nombre debe tener entre 3 y 100 caracteres");
+      throw new BusinessRuleException("El nuevo nombre debe tener entre 3 y 100 caracteres");
     }
     // RN-CAT-12
     if (descripcion == null || descripcion.length() > 500) {
-      throw new IllegalArgumentException("La nueva descripción no debe exceder los 500 caracteres");
+      throw new BusinessRuleException("La nueva descripción no debe exceder los 500 caracteres");
     }
     this.nombre = nombre.trim();
     this.descripcion = descripcion.trim();
@@ -95,12 +96,12 @@ public class Producto {
   public void cambiarPrecio(Money nuevoPrecio) {
     // RN-CAT-04
     if (!nuevoPrecio.esMayorQueCero()) {
-      throw new IllegalArgumentException("El nuevo precio no puede ser negativo");
+      throw new BusinessRuleException("El nuevo precio no puede ser negativo");
     }
     // RN-CAT-05
     Money limite = precio.sumar(precio.multiplicar(new BigDecimal("0.5")));
     if (nuevoPrecio.cantidad().compareTo(limite.cantidad()) > 0) {
-      throw new IllegalArgumentException("El precio no puede incrementarse más del 50% en un solo cambio");
+      throw new BusinessRuleException("El precio no puede incrementarse más del 50% en un solo cambio");
     }
     this.precio = nuevoPrecio;
   }
@@ -108,17 +109,17 @@ public class Producto {
   public void activar() {
 
     if (this.disponible) {
-      // throw new IllegalStateException("El producto ya esta activo");
+      // throw new BusinessRuleException("El producto ya esta activo");
       return;
     }
     // RN-CAT-09:
     if (this.imagenes.isEmpty()) {
-      throw new IllegalStateException(
+      throw new BusinessRuleException(
           "El producto solo puede volver a activarse si tiene al menos una imagen");
     }
     // RN-CAT-10
     if (!(this.precio.esMayorQueCero())) {
-      throw new IllegalStateException(
+      throw new BusinessRuleException(
           "El producto solo puede volver a activarse si tiene un precio mayor a cero");
     }
     this.disponible = true;
@@ -127,9 +128,7 @@ public class Producto {
   public void desactivar() {
     // RN-CAT-08: Un producto ya desactivado no puede desactivarse nuevamente
     if (!(this.disponible)) {
-      // throw new IllegalStateException("No se puede volver a desactivar un producto
-      // ya desactivado");
-      return;
+      throw new BusinessRuleException("No se puede volver a desactivar un producto ya desactivado");
     }
     this.disponible = false;
   }
@@ -137,7 +136,7 @@ public class Producto {
   public void agregarImagen(Imagen imagen) {
     // RN-CAT-06
     if (this.imagenes.size() >= 5) {
-      throw new IllegalStateException("Un producto no puede tener mas de 5 imagenes");
+      throw new BusinessRuleException("Un producto no puede tener mas de 5 imagenes");
     }
     // RN-CAT-07
     this.imagenes.add(imagen);
@@ -146,14 +145,14 @@ public class Producto {
   public void removerImagen(ImagenId imagenId) {
     // RN-CAT-13: El producto debe tener al menos una imagen
     if (imagenes.size() <= 1) {
-      throw new IllegalStateException(
+      throw new BusinessRuleException(
           "El producto debe tener al menos una imagen. No se puede remover la última.");
     }
 
     boolean removido = imagenes.removeIf(img -> img.id().equals(imagenId));
 
     if (!removido) {
-      throw new IllegalArgumentException("La imagen no existe en el producto");
+      throw new BusinessRuleException("La imagen no existe en el producto");
     }
   }
 

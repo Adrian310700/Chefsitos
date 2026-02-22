@@ -18,7 +18,7 @@ import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 
 @Service
 public class ProductoService {
@@ -31,7 +31,7 @@ public class ProductoService {
 
   public ProductoResponse crear(ProductoRequest request) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(request.idCategoria()))
-        .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
+        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
 
     Producto nuevoProducto = Producto.crear(
         request.nombreProducto(),
@@ -46,7 +46,7 @@ public class ProductoService {
 
   public ProductoResponse buscarPorId(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
-        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
     return ProductoResponse.from(producto);
   }
@@ -58,7 +58,7 @@ public class ProductoService {
 
   public ProductoResponse actualizar(UUID id, ProductoRequest request) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
-        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
     producto.actualizarInformacion(request.nombreProducto(), request.descripcion());
     producto = productoRepository.save(producto);
@@ -68,7 +68,7 @@ public class ProductoService {
 
   public ProductoResponse activar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
-        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
     producto.activar();
     producto = productoRepository.save(producto);
     return ProductoResponse.from(producto);
@@ -76,7 +76,7 @@ public class ProductoService {
 
   public ProductoResponse desactivar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
-        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
     producto.desactivar();
     producto = productoRepository.save(producto);
     return ProductoResponse.from(producto);
@@ -103,7 +103,7 @@ public class ProductoService {
 
   public CategoriaResponse buscarCategoriaPorId(UUID id) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
-        .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
 
     return new CategoriaResponse(
         categoria.getCategoriaId().valor(),
@@ -123,7 +123,7 @@ public class ProductoService {
 
   public CategoriaResponse actualizarCategoria(UUID id, CategoriaRequest request) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
-        .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
 
     categoria.actualizar(request.nombreCategoria(), request.descripcion());
 
