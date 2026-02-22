@@ -10,6 +10,7 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class OrdenTest {
 
   @Test
   void noDebeCrearOrdenSinItems() {
-    assertThrows(IllegalArgumentException.class, () -> Orden.crear(
+    assertThrows(BusinessRuleException.class, () -> Orden.crear(
         new ClienteId(UUID.randomUUID()),
         List.of(),
         direccionValida));
@@ -95,7 +96,7 @@ public class OrdenTest {
         1,
         new Money(BigDecimal.ZERO, "MXN"));
 
-    assertThrows(IllegalArgumentException.class, () -> Orden.crear(
+    assertThrows(BusinessRuleException.class, () -> Orden.crear(
         new ClienteId(UUID.randomUUID()),
         List.of(itemConPrecioCero),
         direccionValida));
@@ -183,7 +184,7 @@ public class OrdenTest {
   @Test
   void noDebeConfirmarOrdenSiNoEstaPendiente() {
     orden.confirmar();
-    assertThrows(IllegalStateException.class, orden::confirmar);
+    assertThrows(BusinessRuleException.class, orden::confirmar);
   }
 
   // === RN-ORD-07 y RN-ORD-08 ===
@@ -197,13 +198,13 @@ public class OrdenTest {
 
   @Test
   void noDebeProcesarPagoSinConfirmar() {
-    assertThrows(IllegalStateException.class, () -> orden.procesarPago("REF123"));
+    assertThrows(BusinessRuleException.class, () -> orden.procesarPago("REF123"));
   }
 
   @Test
   void noDebeProcesarPagoConReferenciaVacia() {
     orden.confirmar();
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(BusinessRuleException.class,
         () -> orden.procesarPago("   "));
   }
 
@@ -220,7 +221,7 @@ public class OrdenTest {
   @Test
   void noDebeMarcarEnProcesoSiPagoNoProcesado() {
     orden.confirmar();
-    assertThrows(IllegalStateException.class,
+    assertThrows(BusinessRuleException.class,
         orden::marcarEnProceso);
   }
 
@@ -241,7 +242,7 @@ public class OrdenTest {
     orden.confirmar();
     orden.procesarPago("REF123");
     orden.marcarEnProceso();
-    assertThrows(IllegalStateException.class, orden::marcarEnTransito);
+    assertThrows(BusinessRuleException.class, orden::marcarEnTransito);
   }
 
   // === RN-ORD-13: Entregada desde ENVIADA o EN_TRANSITO ===
@@ -281,7 +282,7 @@ public class OrdenTest {
     orden.procesarPago("REF123");
     orden.marcarEnProceso();
     orden.marcarEnviada("1234567890", "DHL");
-    assertThrows(IllegalStateException.class,
+    assertThrows(BusinessRuleException.class,
         () -> orden.cancelar("Quiero cancelar la orden"));
   }
 
@@ -292,7 +293,7 @@ public class OrdenTest {
     orden.marcarEnProceso();
     orden.marcarEnviada("1234567890", "DHL");
     orden.marcarEnTransito();
-    assertThrows(IllegalStateException.class,
+    assertThrows(BusinessRuleException.class,
         () -> orden.cancelar("Quiero cancelar la orden"));
   }
 }

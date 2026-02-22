@@ -1,0 +1,25 @@
+meta {
+  name: (b)actualizar_producto
+  type: http
+  seq: 7
+}
+
+patch {
+  url: http://localhost:8080/api/v1/productos/{{productoId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreProducto": "Producto actualizado",
+    "descripcion": "Resolución 4K, 165Hz, Panel IPS con HDR600",
+    "precio": 10,
+    "moneda": "MXN"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

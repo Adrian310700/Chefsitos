@@ -1,8 +1,5 @@
-package com.chefsitos.uamishop;
+package com.chefsitos.uamishop.shared.exception;
 
-/**
- * Excepción lanzada cuando se viola una regla de negocio.
- */
 public class BusinessRuleException extends RuntimeException {
   private static final long serialVersionUID = 1L;
   private final String rule;
@@ -12,12 +9,12 @@ public class BusinessRuleException extends RuntimeException {
     this.rule = null;
   }
 
-  public BusinessRuleException(String rule, String message) {
+  public BusinessRuleException(String message, String rule) {
     super(message);
     this.rule = rule;
   }
 
-  public String getRule() {
+  public String getRule(){
     return rule;
   }
 }

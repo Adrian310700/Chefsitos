@@ -1,0 +1,32 @@
+meta {
+  name: (m)crear_categoria
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/v1/categorias
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nombreCategoria": "",
+    "descripcion": "Esto debería fallar por el @NotBlank"
+  }
+}
+
+script:post-response {
+  let data = res.getBody();
+  let categoriaId = data.id;
+  
+  if (categoriaId) {
+    bru.setEnvVar("categoriaId", categoriaId);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
