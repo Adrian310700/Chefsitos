@@ -17,13 +17,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
-@RequestMapping("/api/categorias")
+@RequestMapping("/api/${api.V1}/categorias")
+@Tag(name = "Categorías", description = "Endpoints para la gestión de categorías del catálogo")
 public class CategoriaController {
 
   @Autowired
   ProductoService productoService;
 
+  @Operation(summary = "Crear categoría", description = "Permite registrar una nueva categoría en el sistema")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "201", description = "Categoría creada exitosamente", headers = @Header(name = "Location", description = "URI del recurso creado (ej: /api/categorias/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = CategoriaResponse.class))),
+      @ApiResponse(responseCode = "400", description = "Error de validación en los datos")
+  })
   @PostMapping
   public ResponseEntity<CategoriaResponse> crearCategoria(@RequestBody @Valid CategoriaRequest request) {
     CategoriaResponse response = productoService.crearCategoria(request);
@@ -31,13 +46,23 @@ public class CategoriaController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @Operation(summary = "Obtener categoría por ID", description = "Devuelve la información de una categoría específica buscando por su identificador único.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Categoría encontrada", content = @Content(schema = @Schema(implementation = CategoriaResponse.class))),
+      @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
+  })
   @GetMapping("/{id}")
-  public ResponseEntity<CategoriaResponse> buscarCategoriaPorId(@PathVariable UUID id) {
+  public ResponseEntity<CategoriaResponse> buscarCategoriaPorId(
+      @Parameter(description = "ID único de la categoría a buscar") @PathVariable UUID id) {
 
     CategoriaResponse response = productoService.buscarCategoriaPorId(id);
     return ResponseEntity.ok(response);
   }
 
+  @Operation(summary = "Listar categorías", description = "Obtiene la lista de todas las categorías registradas en el catálogo.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Lista de categorías obtenida exitosamente")
+  })
   @GetMapping
   public ResponseEntity<List<CategoriaResponse>> buscarTodasCategorias() {
 
@@ -45,9 +70,15 @@ public class CategoriaController {
     return ResponseEntity.ok(categorias);
   }
 
+  @Operation(summary = "Actualizar categoría", description = "Modifica los datos (nombre, descripción, categoría padre) de una categoría existente.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Categoría actualizada exitosamente", content = @Content(schema = @Schema(implementation = CategoriaResponse.class))),
+      @ApiResponse(responseCode = "400", description = "Error de validación en los datos provistos"),
+      @ApiResponse(responseCode = "404", description = "Categoría a actualizar no encontrada")
+  })
   @PutMapping("/{id}")
   public ResponseEntity<CategoriaResponse> actualizarCategoria(
-      @PathVariable UUID id,
+      @Parameter(description = "ID único de la categoría a actualizar") @PathVariable UUID id,
       @RequestBody @Valid CategoriaRequest request) {
 
     CategoriaResponse response = productoService.actualizarCategoria(id, request);

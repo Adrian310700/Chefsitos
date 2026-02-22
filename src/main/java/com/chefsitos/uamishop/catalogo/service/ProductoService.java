@@ -67,7 +67,7 @@ public class ProductoService {
   }
 
   public ProductoResponse activar(UUID id) {
-    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+    Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
         .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
     producto.activar();
     producto = productoRepository.save(producto);
@@ -75,7 +75,7 @@ public class ProductoService {
   }
 
   public ProductoResponse desactivar(UUID id) {
-    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+    Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
         .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado con ID: " + id));
     producto.desactivar();
     producto = productoRepository.save(producto);
@@ -87,6 +87,10 @@ public class ProductoService {
         CategoriaId.generar(),
         request.nombreCategoria(),
         request.descripcion());
+
+    if (request.categoriaPadreId() != null) {
+      nuevaCategoria.asignarPadre(CategoriaId.of(request.categoriaPadreId().toString()));
+    }
 
     nuevaCategoria = categoriaRepository.save(nuevaCategoria);
 
@@ -122,6 +126,13 @@ public class ProductoService {
         .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada con ID: " + id));
 
     categoria.actualizar(request.nombreCategoria(), request.descripcion());
+
+    if (request.categoriaPadreId() != null) {
+      categoria.asignarPadre(CategoriaId.of(request.categoriaPadreId().toString()));
+    } else {
+      categoria.asignarPadre(null);
+    }
+
     categoria = categoriaRepository.save(categoria);
 
     return new CategoriaResponse(

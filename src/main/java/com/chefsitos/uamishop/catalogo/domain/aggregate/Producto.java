@@ -108,9 +108,10 @@ public class Producto {
   public void activar() {
 
     if (this.disponible) {
-      throw new IllegalStateException("El producto ya esta activo");
+      // throw new IllegalStateException("El producto ya esta activo");
+      return;
     }
-    // RN-CAT-09
+    // RN-CAT-09:
     if (this.imagenes.isEmpty()) {
       throw new IllegalStateException(
           "El producto solo puede volver a activarse si tiene al menos una imagen");
@@ -124,9 +125,11 @@ public class Producto {
   }
 
   public void desactivar() {
-    // RN-CAT-08
+    // RN-CAT-08: Un producto ya desactivado no puede desactivarse nuevamente
     if (!(this.disponible)) {
-      throw new IllegalStateException("No se puede volver a desactivar un producto ya desactivado");
+      // throw new IllegalStateException("No se puede volver a desactivar un producto
+      // ya desactivado");
+      return;
     }
     this.disponible = false;
   }
