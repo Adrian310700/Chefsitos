@@ -3,9 +3,12 @@ package com.chefsitos.uamishop.ventas.service;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
+import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
@@ -20,84 +23,102 @@ import jakarta.transaction.Transactional;
 @Service
 public class CarritoService {
 
-  @Autowired
-  private CarritoJpaRepository carritoRepository;
+  private final CarritoJpaRepository carritoRepository;
+
+  public CarritoService(CarritoJpaRepository carritoRepository) {
+    this.carritoRepository = carritoRepository;
+  }
+
+  // Método privado para buscar un carrito por ID solo en el servicio
+  private Carrito buscarCarrito(CarritoId carritoId) {
+    return carritoRepository.findById(carritoId)
+        .orElseThrow(() -> new IllegalArgumentException(
+            "Carrito no encontrado con ID: " + carritoId.valor()));
+  }
 
   @Transactional
-  public Carrito crear(ClienteId clienteId) {
+  public CarritoResponse crear(CarritoRequest request) {
     // Buscar si el cliente ya tiene un carrito activo
-    Optional<Carrito> carritoExistente = carritoRepository
-        .findByClienteIdAndEstado(clienteId, EstadoCarrito.ACTIVO);
+    Optional<Carrito> carritoOptExistente = carritoRepository
+        .findByClienteIdAndEstado(ClienteId.of(request.clienteId().toString()), EstadoCarrito.ACTIVO);
 
     // Si existe retornarlo
-    if (carritoExistente.isPresent()) {
-      return carritoExistente.get();
+    if (carritoOptExistente.isPresent()) {
+      Carrito carrito = carritoOptExistente.get();
+      return CarritoResponse.from(carrito);
+
       // si no, crear uno nuevo
     } else {
-      Carrito nuevoCarrito = Carrito.crear(clienteId);
-      return carritoRepository.save(nuevoCarrito);
+      Carrito nuevoCarrito = Carrito.crear(ClienteId.of(request.clienteId().toString()));
+      return CarritoResponse.from(carritoRepository.save(nuevoCarrito));
     }
-  }
-
-  @Transactional
-  public Carrito obtenerCarrito(CarritoId carritoId) {
-
-    Optional<Carrito> carrito = carritoRepository.findById(carritoId);
-
-    return carrito.orElseThrow(() -> new IllegalArgumentException("Carrito inexistente"));
 
   }
 
   @Transactional
-  public Carrito agregarProducto(CarritoId carritoId, ProductoRef productoRef, int cantidad,
-      Money precioUnitario) {
-    Carrito carrito = obtenerCarrito(carritoId);
-    carrito.agregarProducto(productoRef, cantidad, precioUnitario);
+  public CarritoResponse obtenerCarrito(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
+    CarritoResponse carritoResponse = CarritoResponse.from(carrito);
+    return carritoResponse;
 
-    return carritoRepository.save(carrito);
   }
 
   @Transactional
-  public Carrito modificarCantidad(CarritoId carritoId, ProductoId productoId, int nuevaCantidad) {
-    Carrito carrito = obtenerCarrito(carritoId);
-    carrito.modificarCantidad(productoId, nuevaCantidad);
+  public CarritoResponse agregarProducto(UUID carritoId, AgregarProductoRequest request) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
 
-    return carritoRepository.save(carrito);
+    ProductoRef productoRef = new ProductoRef(
+        ProductoId.of(request.productoId().toString()),
+        request.nombreProducto(),
+        request.sku());
+
+    Money precioUnitario = new Money(request.precioUnitario(), request.moneda());
+    carrito.agregarProducto(productoRef, request.cantidad(), precioUnitario);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 
   @Transactional
-  public Carrito eliminarProducto(CarritoId carritoId, ProductoId productoId) {
-    Carrito carrito = obtenerCarrito(carritoId);
-    carrito.eliminarProducto(productoId);
+  public CarritoResponse modificarCantidad(UUID carritoId, UUID productoId,
+      ModificarCantidadRequest request) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
+    carrito.modificarCantidad(ProductoId.of(productoId.toString()), request.nuevaCantidad());
 
-    return carritoRepository.save(carrito);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 
   @Transactional
-  public Carrito vaciar(CarritoId carritoId) {
-    Carrito carrito = obtenerCarrito(carritoId);
+  public CarritoResponse eliminarProducto(UUID carritoId, UUID productoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
+    carrito.eliminarProducto(ProductoId.of(productoId.toString()));
+
+    return CarritoResponse.from(carritoRepository.save(carrito));
+  }
+
+  @Transactional
+  public CarritoResponse vaciar(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.vaciar();
-    return carritoRepository.save(carrito);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 
   @Transactional
-  public Carrito iniciarCheckout(CarritoId carritoId) {
-    Carrito carrito = obtenerCarrito(carritoId);
+  public CarritoResponse iniciarCheckout(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.iniciarCheckout();
-    return carritoRepository.save(carrito);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 
   @Transactional
-  public Carrito completarCheckout(CarritoId carritoId) {
-    Carrito carrito = obtenerCarrito(carritoId);
+  public CarritoResponse completarCheckout(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.completarCheckout();
-    return carritoRepository.save(carrito);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 
   @Transactional
-  public Carrito abandonar(CarritoId carritoId) {
-    Carrito carrito = obtenerCarrito(carritoId);
+  public CarritoResponse abandonar(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.abandonar();
-    return carritoRepository.save(carrito);
+    return CarritoResponse.from(carritoRepository.save(carrito));
   }
 }
