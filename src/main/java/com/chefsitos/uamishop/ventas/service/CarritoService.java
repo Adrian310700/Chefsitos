@@ -29,7 +29,12 @@ public class CarritoService {
     this.carritoRepository = carritoRepository;
   }
 
-  // Método privado para buscar un carrito por ID solo en el servicio
+  // Metodo SOLO para obtener el carrito por ID en el servicio de ordenes
+  public Carrito obtenerCarrito(CarritoId carritoId) {
+    return buscarCarrito(carritoId);
+  }
+
+  // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
     return carritoRepository.findById(carritoId)
         .orElseThrow(() -> new IllegalArgumentException(
