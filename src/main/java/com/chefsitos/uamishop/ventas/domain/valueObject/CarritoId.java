@@ -18,6 +18,10 @@ public record CarritoId(UUID valor) {
     return new CarritoId(UUID.randomUUID());
   }
 
+  public static CarritoId of(String valor) {
+    return new CarritoId(UUID.fromString(valor));
+  }
+
   public UUID getValue() {
     return valor;
   }
