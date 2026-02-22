@@ -1,11 +1,11 @@
 meta {
   name: (m)actualizar_producto
   type: http
-  seq: 11
+  seq: 3
 }
 
 put {
-  url: http://localhost:8080/api/v1/productos/995774a5-4c0f-4649-8958-e67243093d97
+  url: http://localhost:8080/api/v1/productos/{{productoId}}
   body: json
   auth: inherit
 }

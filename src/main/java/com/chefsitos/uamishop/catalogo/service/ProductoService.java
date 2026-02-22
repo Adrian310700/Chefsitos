@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaResponse;
+import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
@@ -56,11 +57,29 @@ public class ProductoService {
     return productos.stream().map(ProductoResponse::from).toList();
   }
 
-  public ProductoResponse actualizar(UUID id, ProductoRequest request) {
+  public ProductoResponse actualizar(UUID id, ProductoPatchRequest request) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
         .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-    producto.actualizarInformacion(request.nombreProducto(), request.descripcion());
+    String nuevoNombre = request.nombreProducto() != null ? request.nombreProducto() : producto.getNombre();
+    String nuevaDescripcion = request.descripcion() != null ? request.descripcion() : producto.getDescripcion();
+
+    producto.actualizarInformacion(nuevoNombre, nuevaDescripcion);
+
+    if (request.precio() != null && request.moneda() != null) {
+      producto.cambiarPrecio(new Money(request.precio(), request.moneda()));
+    } else if (request.precio() != null) {
+      producto.cambiarPrecio(new Money(request.precio(), producto.getPrecio().moneda()));
+    } else if (request.moneda() != null) {
+      producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), request.moneda()));
+    }
+
+    if (request.idCategoria() != null) {
+      Categoria categoria = categoriaRepository.findById(CategoriaId.of(request.idCategoria()))
+          .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
+      producto.cambiarCategoria(categoria.getCategoriaId());
+    }
+
     producto = productoRepository.save(producto);
 
     return ProductoResponse.from(producto);

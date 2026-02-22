@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
 
 /**
  * Agrupa anotaciones individuales reutilizables para documentar errores
- * estándar
- * en la especificación OpenApi (Swagger) de forma granular.
+ * estándar en la especificación OpenApi (Swagger).
  */
 public interface ApiErrors {
 

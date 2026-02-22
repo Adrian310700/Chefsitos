@@ -1,7 +1,7 @@
 meta {
-  name: (m)crear_categoria copy
+  name: (m)crear_categoria
   type: http
-  seq: 4
+  seq: 2
 }
 
 post {
@@ -14,6 +14,15 @@ body:json {
   {
     "nombreCategoria": "",
     "descripcion": "Esto debería fallar por el @NotBlank"
+  }
+}
+
+script:post-response {
+  let data = res.getBody();
+  let categoriaId = data.id;
+  
+  if (categoriaId) {
+    bru.setEnvVar("categoriaId", categoriaId);
   }
 }
 

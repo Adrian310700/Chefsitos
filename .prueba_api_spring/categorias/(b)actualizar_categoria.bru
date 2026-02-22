@@ -1,11 +1,11 @@
 meta {
   name: (b)actualizar_categoria
   type: http
-  seq: 4
+  seq: 2
 }
 
 put {
-  url: http://localhost:8080/api/v1/categorias/a12ef5e3-96a4-4a65-97b7-267b19576b64
+  url: http://localhost:8080/api/v1/categorias/{{categoriaId}}
   body: json
   auth: inherit
 }

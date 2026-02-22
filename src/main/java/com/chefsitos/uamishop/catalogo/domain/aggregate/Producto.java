@@ -106,6 +106,13 @@ public class Producto {
     this.precio = nuevoPrecio;
   }
 
+  public void cambiarCategoria(CategoriaId nuevaCategoria) {
+    if (nuevaCategoria == null) {
+      throw new BusinessRuleException("La categoría no puede ser nula");
+    }
+    this.categoriaId = nuevaCategoria;
+  }
+
   public void activar() {
 
     if (this.disponible) {
