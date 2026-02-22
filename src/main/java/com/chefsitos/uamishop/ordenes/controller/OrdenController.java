@@ -1,29 +1,29 @@
 package com.chefsitos.uamishop.ordenes.controller;
 
-import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
-import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
+import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
+import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO; // El nuevo DTO
 import com.chefsitos.uamishop.ordenes.service.OrdenService;
-import com.chefsitos.uamishop.shared.ApiErrors;
+import com.chefsitos.uamishop.shared.ApiError;
 
-import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.media.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.headers.Header;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
+import java.net.URI;
 import java.util.UUID;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-/**
- * Controller REST del Bounded Context Órdenes.
- * Solo expone endpoints HTTP.
- * No contiene lógica de negocio.
- */
 @RestController
 @RequestMapping("/api/ordenes")
-@Tag(name = "Órdenes", description = "Endpoints para la gestión de órdenes de compra")
-@ApiErrors.GlobalErrorResponses
+@Tag(name = "Órdenes", description = "Operaciones relacionadas con órdenes")
 public class OrdenController {
 
   private final OrdenService ordenService;
@@ -32,122 +32,89 @@ public class OrdenController {
     this.ordenService = ordenService;
   }
 
-  /**
-   * Crear una nueva orden.
-   */
-  @ApiErrors.BadRequest
-  @ApiErrors.UnprocessableEntity
+  // ===============================
+  // CREAR ORDEN
+  // ===============================
+  @Operation(summary = "Crear orden", description = "Permite crear una nueva orden")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "201", description = "Orden creada exitosamente",
+      headers = @Header(name = "Location", description = "URI del recurso creado", schema = @Schema(type = "string")),
+      content = @Content(schema = @Schema(implementation = OrdenResponseDTO.class))), // Cambiado a DTO
+    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
+      content = @Content(schema = @Schema(implementation = ApiError.class))),
+    @ApiResponse(responseCode = "422", description = "Regla de negocio violada",
+      content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @PostMapping
-  public ResponseEntity<Orden> crear(@RequestBody OrdenRequest request) {
-
-    Orden orden = ordenService.crear(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(orden); // respuesta al cliente
+  public ResponseEntity<OrdenResponseDTO> crear(@Valid @RequestBody OrdenRequest request) {
+    OrdenResponseDTO response = ordenService.crear(request);
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+      .buildAndExpand(response.id()).toUri();
+    return ResponseEntity.created(location).body(response);
   }
 
-  /**
-   * Buscar orden por ID.
-   */
-  @ApiErrors.NotFound
+  // ===============================
+  // BUSCAR POR ID
+  // ===============================
+  @Operation(summary = "Buscar orden por ID")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Orden encontrada",
+      content = @Content(schema = @Schema(implementation = OrdenResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Orden no encontrada",
+      content = @Content(schema = @Schema(implementation = ApiError.class)))
+  })
   @GetMapping("/{id}")
-  public ResponseEntity<Orden> buscarPorId(@PathVariable UUID id) {
-    return ResponseEntity.ok(ordenService.buscarPorId(id));// devuelve status 200
+  public ResponseEntity<OrdenResponseDTO> buscarPorId(@PathVariable UUID id) {
+    return ResponseEntity.ok(ordenService.buscarPorId(id));
   }
 
-  /**
-   * Listar todas las órdenes.
-   */
-  @GetMapping
-  public ResponseEntity<List<Orden>> buscarTodas() {
-    return ResponseEntity.ok(ordenService.buscarTodas());
-  }
-
-  /**
-   * Confirmar orden.
-   */
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
+  // ===============================
+  // CONFIRMAR ORDEN
+  // ===============================
+  @Operation(summary = "Confirmar orden")
   @PutMapping("/{id}/confirmar")
-  public ResponseEntity<Orden> confirmar(@PathVariable UUID id) {
+  public ResponseEntity<OrdenResponseDTO> confirmar(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.confirmar(id));
   }
 
-  /**
-   * Procesar pago.
-   */
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
+  // ===============================
+  // PROCESAR PAGO
+  // ===============================
+  @Operation(summary = "Procesar pago")
   @PutMapping("/{id}/pago")
-  public ResponseEntity<Orden> procesarPago(
-      @PathVariable UUID id,
-      @RequestParam String referenciaPago) {
-
-    return ResponseEntity.ok(
-        ordenService.procesarPago(id, referenciaPago));
+  public ResponseEntity<OrdenResponseDTO> procesarPago(@PathVariable UUID id, @RequestParam String referenciaPago) {
+    return ResponseEntity.ok(ordenService.procesarPago(id, referenciaPago));
   }
 
-  /**
-   * Marcar en proceso.
-   */
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
+  // ===============================
+  // MARCAR ENVIADA
+  // ===============================
+  @Operation(summary = "Marcar orden como enviada")
+  @PutMapping("/{id}/enviada")
+  public ResponseEntity<OrdenResponseDTO> marcarEnviada(
+    @PathVariable UUID id, @Valid @RequestBody InfoEnvioRequest request) {
+    return ResponseEntity.ok(ordenService.marcarEnviada(id, request.numeroGuia(), request.proveedorLogistico()));
+  }
+
+  // ===============================
+  // CANCELAR ORDEN
+  // ===============================
+  @Operation(summary = "Cancelar orden")
+  @PutMapping("/{id}/cancelar")
+  public ResponseEntity<OrdenResponseDTO> cancelar(@PathVariable UUID id, @RequestParam String motivo) {
+    return ResponseEntity.ok(ordenService.cancelar(id, motivo));
+  }
+
+  // Métodos de estado adicionales
+  @Operation(summary = "Marcar en preparación")
   @PutMapping("/{id}/en-proceso")
-  public ResponseEntity<Orden> marcarEnProceso(@PathVariable UUID id) {
+  public ResponseEntity<OrdenResponseDTO> marcarEnProceso(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.marcarEnProceso(id));
   }
 
-  /**
-   * Marcar como enviada.
-   */
-  @ApiErrors.BadRequest
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
-  @PutMapping("/{id}/enviada")
-  public ResponseEntity<Orden> marcarEnviada(
-      @PathVariable UUID id,
-      @RequestBody InfoEnvio infoEnvio) {
-
-    return ResponseEntity.ok(
-        ordenService.marcarEnviada(id, infoEnvio));
-  }
-
-  /**
-   * Marcar como en tránsito.
-   */
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
-  @PutMapping("/{id}/en-transito")
-  public ResponseEntity<Orden> marcarEnTransito(@PathVariable UUID id) {
-    return ResponseEntity.ok(ordenService.marcarEnTransito(id));
-  }
-
-  /**
-   * Marcar como entregada.
-   */
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @ApiErrors.UnprocessableEntity
+  @Operation(summary = "Marcar como entregada")
   @PutMapping("/{id}/entregada")
-  public ResponseEntity<Orden> marcarEntregada(@PathVariable UUID id) {
+  public ResponseEntity<OrdenResponseDTO> marcarEntregada(@PathVariable UUID id) {
     return ResponseEntity.ok(ordenService.marcarEntregada(id));
-  }
-
-  /**
-   * Cancelar orden.
-   */
-  @ApiErrors.BadRequest
-  @ApiErrors.NotFound
-  @ApiErrors.Conflict
-  @PutMapping("/{id}/cancelar")
-  public ResponseEntity<Orden> cancelar(
-      @PathVariable UUID id,
-      @RequestParam String motivo) {
-
-    return ResponseEntity.ok(
-        ordenService.cancelar(id, motivo));
   }
 }
