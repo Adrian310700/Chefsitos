@@ -1,0 +1,33 @@
+meta {
+  name: agregar productos carrito
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/v1/carritos/{{carritoId}}/productos
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "productoId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "nombreProducto": "string",
+    "sku": "AAA-000",
+    "cantidad": 10,
+    "precioUnitario": 1,
+    "moneda": "MXN"
+  }
+}
+
+script:post-response {
+  let data = res.getBody();
+  let carritoId = data.carritoId;
+  bru.setVar("carritoId", carritoId);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

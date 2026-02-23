@@ -29,7 +29,7 @@ import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 @AutoConfigureTestRestTemplate
 class CarritoControllerIntegrationTest {
 
-  private static final String BASE_URL = "/api/v1/carrito";
+  private static final String BASE_URL = "/api/v1/carritos";
 
   @Autowired
   private TestRestTemplate restTemplate;
@@ -60,7 +60,7 @@ class CarritoControllerIntegrationTest {
 
       assertEquals(HttpStatus.CREATED, response.getStatusCode());
       assertNotNull(response.getHeaders().getFirst("Location"));
-      assertTrue(response.getHeaders().getFirst("Location").contains("/api/v1/carrito/"));
+      assertTrue(response.getHeaders().getFirst("Location").contains("/api/v1/carritos/"));
 
       assertNotNull(response.getBody());
       assertNotNull(response.getBody().carritoId());
@@ -132,10 +132,10 @@ class CarritoControllerIntegrationTest {
       AgregarProductoRequest agregarProductoRequest = new AgregarProductoRequest(
           productoId,
           "Producto Test",
-          "SKU123",
+          "SKU-123",
           cantidad,
           new BigDecimal("10.00"),
-          "USD");
+          "MXN");
       HttpEntity<AgregarProductoRequest> agregarRequest = new HttpEntity<>(agregarProductoRequest);
 
       ResponseEntity<CarritoResponse> agregarResponse = restTemplate.exchange(
@@ -152,7 +152,7 @@ class CarritoControllerIntegrationTest {
 
       assertEquals(esperadoSubtotal, agregarResponse.getBody().subtotal());
       assertEquals(esperadoSubtotal, agregarResponse.getBody().total());
-      assertEquals("USD", agregarResponse.getBody().moneda());
+      assertEquals("MXN", agregarResponse.getBody().moneda());
     }
   }
 }

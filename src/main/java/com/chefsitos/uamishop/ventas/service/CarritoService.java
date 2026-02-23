@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
@@ -37,7 +39,7 @@ public class CarritoService {
   // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
     return carritoRepository.findById(carritoId)
-        .orElseThrow(() -> new IllegalArgumentException(
+        .orElseThrow(() -> new ResourceNotFoundException(
             "Carrito no encontrado con ID: " + carritoId.valor()));
   }
 
