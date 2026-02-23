@@ -137,7 +137,7 @@ public class OrdenService {
 
   // Helpers
   public static ItemOrden mapItemCarritoToItemOrden(ItemCarrito itemCarrito) {
-    ProductoId prodId = ProductoId.of(itemCarrito.getProducto().getProductoId().toString());
+    ProductoId prodId = ProductoId.of(itemCarrito.getProducto().getProductoId().valor().toString());
     return new ItemOrden(
         prodId,
         itemCarrito.getProducto().nombreProducto(),

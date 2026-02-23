@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.chefsitos.uamishop.shared.validation.ValidUUID;
 import java.util.UUID;
 
 public record OrdenRequest(
@@ -19,7 +20,7 @@ public record OrdenRequest(
 
   public record ItemOrdenRequest(
 
-      @NotBlank(message = "El ID del producto es obligatorio") @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "El ID del producto debe ser un UUID válido") String productoId,
+      @NotBlank(message = "El ID del producto es obligatorio") @ValidUUID(message = "El ID del producto debe ser un UUID válido") String productoId,
 
       @Positive(message = "La cantidad debe ser mayor a 0") BigDecimal cantidad
 
