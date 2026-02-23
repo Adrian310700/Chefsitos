@@ -1,6 +1,5 @@
 package com.chefsitos.uamishop.ordenes.domain.enumeration;
 
-// estados  de la orden
 public enum EstadoOrden {
   PENDIENTE,
   CONFIRMADA,

@@ -7,8 +7,6 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public record CarritoId(UUID valor) {
 
-  // Constructor compacto (caracteristico de los records) solo incluye
-  // validaciones para asegurar que los campos no sean nulos o vacíos
   public CarritoId {
     if (valor == null) {
       throw new IllegalArgumentException("El ID del carrito no puede ser nulo");
@@ -18,6 +16,10 @@ public record CarritoId(UUID valor) {
   // Método para generar un ID para Carrito
   public static CarritoId generar() {
     return new CarritoId(UUID.randomUUID());
+  }
+
+  public static CarritoId of(String valor) {
+    return new CarritoId(UUID.fromString(valor));
   }
 
   public UUID getValue() {

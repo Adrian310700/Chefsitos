@@ -1,4 +1,7 @@
 package com.chefsitos.uamishop.catalogo.controller.dto;
 
-public record CambioEstadoRequest(boolean activo) {
+import jakarta.validation.constraints.NotNull;
+
+public record CambioEstadoRequest(
+    @NotNull(message = "El estado es obligatorio") Boolean activo) {
 }

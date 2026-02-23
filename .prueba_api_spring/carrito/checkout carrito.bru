@@ -1,0 +1,25 @@
+meta {
+  name: checkout carrito
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8080/api/v1/carritos/{{carritoId}}/checkout
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  let data = res.getBody();
+  let carritoId = data.carritoId;
+  if(carritoId){
+    bru.setVar("carritoId", carritoId);  
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
