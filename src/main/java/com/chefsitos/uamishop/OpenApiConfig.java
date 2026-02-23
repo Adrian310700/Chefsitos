@@ -11,18 +11,19 @@ import io.swagger.v3.oas.models.info.License;
 @Configuration
 public class OpenApiConfig {
 
-  @Bean
-  public OpenAPI customOpenAPI() {
-    return new OpenAPI()
-      .info(new Info()
-        .title("API REST - UamiShop Órdenes")
-        .version("1.0")
-        .description("API del Bounded Context Órdenes - TSIs")
-        .contact(new Contact()
-          .name("Equipo UamiShop")
-          .email("contacto@uamishop.com"))
-        .license(new License()
-          .name("API License")
-          .url("https://uam.mx")));
-  }
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("UAMIShop API")
+                        .version("0.0.3")
+                        .description("API REST para la aplicación UAMIShop")
+                        .contact(new Contact()
+                                .name("Chefsitos")
+                                .url("http://localhost:8080")
+                                .email("chefsitos@uamishop.com"))
+                        .license(new License()
+                                .name("API License")
+                                .url("http://localhost:8080")));
+    }
 }

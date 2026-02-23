@@ -1,7 +1,6 @@
 package com.chefsitos.uamishop.ventas.service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
