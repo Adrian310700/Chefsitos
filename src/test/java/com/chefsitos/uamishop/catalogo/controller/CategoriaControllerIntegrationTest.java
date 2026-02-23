@@ -66,10 +66,11 @@ public class CategoriaControllerIntegrationTest {
     return categoria;
   }
 
+  // 1. CREAR CATEGORIA ------------------------
   @Nested
   @DisplayName("POST /api/v1/categorias")
   class CrearCategoria {
-
+    // TEST DE EXITO
     @Test
     @DisplayName("Categoria sin asignar padre, retorna 201 y response")
     void crearCategoria_exito_sinPadre() {
@@ -99,6 +100,7 @@ public class CategoriaControllerIntegrationTest {
       assertNull(response.getBody().idCategoriaPadre());
     }
 
+    // TEST DE EXITO
     @Test
     @DisplayName("Categoria asignando un padre, retorna 201 y response")
     void crearCategoria_exito_conPadre() {
@@ -127,12 +129,198 @@ public class CategoriaControllerIntegrationTest {
       assertEquals(categoriaPadre.getCategoriaId().valor().toString(),
           response.getBody().idCategoriaPadre().toString());
     }
+
+    // TEST DE ERRORES
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre es null")
+    void crearCategoria_NombreNull() {
+
+      CategoriaRequest request = new CategoriaRequest(
+          null,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre es vacío")
+    void crearCategoria_NombreVacio() {
+
+      CategoriaRequest request = new CategoriaRequest(
+          "",
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre está en blanco")
+    void crearCategoria_NombreEnBlanco() {
+
+      CategoriaRequest request = new CategoriaRequest(
+          "   ",
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre supera los 200 caracteres")
+    void crearCategoria_NombreInvalido() {
+
+      String nombreLargo = "a".repeat(201);
+
+      CategoriaRequest request = new CategoriaRequest(
+          nombreLargo,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando el nombre tiene menos de 3 caracteres")
+    void crearCategoria_NombreInvalido_2Caracteres() {
+
+      CategoriaRequest request = new CategoriaRequest(
+          "ab",
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando el nombre supera los 100 caracteres")
+    void crearCategoria_NombreInvalido_MayorA100() {
+
+      String nombreLargo = "a".repeat(101); // pasa DTO (max 200), falla dominio (max 100)
+
+      CategoriaRequest request = new CategoriaRequest(
+          nombreLargo,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando la descripción supera los 500 caracteres")
+    void crearCategoria_DescripcionInvalido() {
+
+      String descripcionLarga = "a".repeat(501); // pasa DTO (max 1000), falla dominio (max 500)
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Nombre válido",
+          descripcionLarga,
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 404 cuando la categoría padre no existe")
+    void crearCategoria_PadreInexsistente() {
+
+      UUID idInexistente = UUID.randomUUID();
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Categoría válida",
+          "Descripción válida",
+          idInexistente);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          BASE_URL,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
   }
 
+  // 2. BUSCAR CATEGORIA POR ID -----------------------------
   @Nested
   @DisplayName("GET /api/v1/categorias/{id}")
   class BuscarCategoriaPorId {
-
+    // TEST DE EXITO
     @Test
     @DisplayName("Retorna 200 y response")
     void buscarCategoriaPorId_exito() {
@@ -158,12 +346,43 @@ public class CategoriaControllerIntegrationTest {
           response.getBody().descripcion());
       assertNull(response.getBody().idCategoriaPadre());
     }
+
+    // TEST DE ERRORES
+    @Test
+    @DisplayName("Debe retornar 404 cuando la categoría no existe")
+    void buscarCategoriaPorId_CategoriaNoExiste() {
+
+      UUID idInexistente = UUID.randomUUID();
+
+      ResponseEntity<String> response = restTemplate.getForEntity(
+          BASE_URL + "/" + idInexistente,
+          String.class);
+
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+      assertTrue(response.getBody().contains("Categoria no encontrada"));
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el UUID tiene formato inválido")
+    void buscarCategoriaPorId_error_uuidInvalido() {
+
+      String uuidInvalido = "abc123-no-es-uuid";
+
+      ResponseEntity<String> response = restTemplate.getForEntity(
+          BASE_URL + "/" + uuidInvalido,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+      assertTrue(response.getBody().contains("Failed to convert"));
+    }
+
   }
 
+  // 3. BUSCAR TODAS LAS CATEGORIAS ----------
   @Nested
   @DisplayName("GET /api/v1/categorias")
   class BuscarTodasCategorias {
-
+    // TEST DE EXITO
     @Test
     @DisplayName("Retorna 200 y List de response")
     void buscarTodasCategorias_exito() {
@@ -195,12 +414,14 @@ public class CategoriaControllerIntegrationTest {
       assertTrue(ids.contains(categoria1.getCategoriaId().valor()));
       assertTrue(ids.contains(categoria2.getCategoriaId().valor()));
     }
+    // NO HAY TEST DE ERRORES QUE SE PUEDAN HACER
   }
 
+  // 4. ACTUALIZAR CATEGORIA --------------
   @Nested
   @DisplayName("PUT /api/v1/categorias/{id}")
   class ActualizarCategoria {
-
+    // TEST DE EXITO
     @Test
     @DisplayName("Retorna 200 y response de categoria actualizado")
     void actualizarCategoria_exito() {
@@ -241,6 +462,219 @@ public class CategoriaControllerIntegrationTest {
 
       assertEquals(padre.getCategoriaId().valor(),
           response.getBody().idCategoriaPadre());
+    }
+
+    // TEST DE ERRORES
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre es null")
+    void actualizarCategoria_NombreNull() {
+
+      UUID id = UUID.randomUUID();
+
+      CategoriaRequest request = new CategoriaRequest(
+          null,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + id,
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el nombre supera los 200 caracteres")
+    void actualizarCategoria_NombreMayorA200() {
+
+      UUID id = UUID.randomUUID();
+
+      String nombreLargo = "a".repeat(201);
+
+      CategoriaRequest request = new CategoriaRequest(
+          nombreLargo,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + id,
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando la descripción supera los 1000 caracteres")
+    void actualizarCategoria_DescripcionMayorA1000() {
+
+      UUID id = UUID.randomUUID();
+
+      String descripcionLarga = "a".repeat(1001);
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Nombre válido",
+          descripcionLarga,
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + id,
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando el nombre tiene menos de 3 caracteres")
+    void actualizarCategoria_NombreMenorA3() {
+
+      // Crear categoría existente
+      Categoria categoria = crearCategoria("Electrónica", "Descripción válida", CategoriaId.generar());
+      categoriaRepository.save(categoria);
+
+      CategoriaRequest request = new CategoriaRequest(
+          "ab", // pasa DTO, falla dominio (<3)
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + categoria.getCategoriaId().valor(),
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando el nombre supera los 100 caracteres")
+    void actualizarCategoria_NombreMayorA100() {
+
+      Categoria categoria = crearCategoria("Electrónica", "Descripción válida", CategoriaId.generar());
+      categoriaRepository.save(categoria);
+
+      String nombreLargo = "a".repeat(101); // pasa DTO (≤200), falla dominio (>100)
+
+      CategoriaRequest request = new CategoriaRequest(
+          nombreLargo,
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + categoria.getCategoriaId().valor(),
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 422 cuando la descripción supera los 500 caracteres")
+    void actualizarCategoria_DescripcionMayorA500() {
+
+      Categoria categoria = crearCategoria("Electrónica", "Descripción válida", CategoriaId.generar());
+      categoriaRepository.save(categoria);
+
+      String descripcionLarga = "a".repeat(501); // pasa DTO (≤1000), falla dominio (>500)
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Nombre válido",
+          descripcionLarga,
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + categoria.getCategoriaId().valor(),
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 400 cuando el UUID es inválido")
+    void actualizarCategoria_UUIDInvalido() {
+
+      String uuidInvalido = "no-es-un-uuid";
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Nombre válido",
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + uuidInvalido,
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Debe retornar 404 cuando la categoría no existe")
+    void actualizarCategoria_CategoriaInexistente() {
+
+      UUID idInexistente = UUID.randomUUID();
+
+      CategoriaRequest request = new CategoriaRequest(
+          "Nombre válido",
+          "Descripción válida",
+          null);
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<CategoriaRequest> entity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<String> response = restTemplate.exchange(
+          BASE_URL + "/" + idInexistente,
+          HttpMethod.PUT,
+          entity,
+          String.class);
+
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
   }
 }
