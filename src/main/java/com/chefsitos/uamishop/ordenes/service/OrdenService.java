@@ -84,7 +84,7 @@ public class OrdenService {
 
     Orden nuevaOrden = Orden.crear(clienteOrden, itemsOrden, direccionEnvio, resumenPendiente);
     nuevaOrden = ordenRepository.save(nuevaOrden);
-    carritoService.completarCheckout(carritoId);
+    carritoService.completarCheckout(carritoId.getValue());
     return mapToResponseDTO(nuevaOrden);
   }
 
