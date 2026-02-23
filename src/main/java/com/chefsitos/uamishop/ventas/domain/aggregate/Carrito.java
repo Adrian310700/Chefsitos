@@ -11,7 +11,7 @@ import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
 import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
-import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ItemCarritoId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
@@ -51,7 +51,7 @@ public class Carrito {
 
   @OneToMany(cascade = CascadeType.ALL, // Si se guarda Carrito, se guardan sus ítems
       orphanRemoval = true, // Si se quita un ítem de la lista, se borra de la BD
-      fetch = FetchType.LAZY) // Carga los ítems solo cuando se necesiten
+      fetch = FetchType.EAGER) // Carga los ítems junto al Carrito para que las RN se evalúen correctamente
   @JoinColumn(name = "carrito_id") // Columna en la tabla items que referencia al carrito
   private List<ItemCarrito> items = new ArrayList<>();
 
