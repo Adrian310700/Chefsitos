@@ -19,6 +19,8 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
+import com.chefsitos.uamishop.catalogo.service.ProductoService;
+import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 
 import jakarta.transaction.Transactional;
 
@@ -26,9 +28,11 @@ import jakarta.transaction.Transactional;
 public class CarritoService {
 
   private final CarritoJpaRepository carritoRepository;
+  private final ProductoService productoService;
 
-  public CarritoService(CarritoJpaRepository carritoRepository) {
+  public CarritoService(CarritoJpaRepository carritoRepository, ProductoService productoService) {
     this.carritoRepository = carritoRepository;
+    this.productoService = productoService;
   }
 
   // Metodo SOLO para obtener el carrito por ID en el servicio de ordenes
@@ -74,12 +78,14 @@ public class CarritoService {
   public CarritoResponse agregarProducto(UUID carritoId, AgregarProductoRequest request) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
 
+    ProductoResponse producto = productoService.buscarPorId(request.productoId());
+
     ProductoRef productoRef = new ProductoRef(
         ProductoId.of(request.productoId().toString()),
-        request.nombreProducto(),
-        request.sku());
+        producto.nombreProducto(),
+        "DEF-000"); // sku: placeholder hasta tener campo propio
 
-    Money precioUnitario = new Money(request.precioUnitario(), request.moneda());
+    Money precioUnitario = new Money(producto.precio(), producto.moneda());
     carrito.agregarProducto(productoRef, request.cantidad(), precioUnitario);
     return CarritoResponse.from(carritoRepository.save(carrito));
   }

@@ -18,6 +18,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
+import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
+import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
+import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
+import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
@@ -37,9 +43,37 @@ class CarritoControllerIntegrationTest {
   @Autowired
   private CarritoJpaRepository carritoRepository;
 
+  @Autowired
+  private ProductoJpaRepository productoRepository;
+
+  @Autowired
+  private CategoriaJpaRepository categoriaRepository;
+
   @AfterEach
   void cleanUp() {
     carritoRepository.deleteAll();
+    productoRepository.deleteAll();
+    categoriaRepository.deleteAll();
+  }
+
+  // Helpers
+  private Categoria crearCategoriaEnBD(String nombre) {
+    CategoriaId categoriaId = CategoriaId.of(UUID.randomUUID().toString());
+    Categoria categoria = Categoria.crear(
+        categoriaId,
+        nombre,
+        "Descripción " + nombre);
+    return categoriaRepository.save(categoria);
+  }
+
+  private Producto crearProductoEnBD(String nombre, BigDecimal precio, String moneda, CategoriaId categoriaId) {
+    Producto producto = Producto.crear(
+        nombre,
+        "Descripción " + nombre,
+        new Money(precio, moneda),
+        categoriaId);
+
+    return productoRepository.save(producto);
   }
 
   @Nested
@@ -126,16 +160,19 @@ class CarritoControllerIntegrationTest {
 
       UUID carritoId = response.getBody().carritoId();
 
-      UUID productoId = UUID.randomUUID();
+      Categoria categoria = crearCategoriaEnBD("Electronicos");
+      Producto producto = crearProductoEnBD(
+          "Producto Test",
+          new BigDecimal("10.00"),
+          "MXN",
+          categoria.getCategoriaId());
+
+      UUID productoId = producto.getProductoId().valor();
       int cantidad = 2;
 
       AgregarProductoRequest agregarProductoRequest = new AgregarProductoRequest(
           productoId,
-          "Producto Test",
-          "SKU-123",
-          cantidad,
-          new BigDecimal("10.00"),
-          "MXN");
+          cantidad);
       HttpEntity<AgregarProductoRequest> agregarRequest = new HttpEntity<>(agregarProductoRequest);
 
       ResponseEntity<CarritoResponse> agregarResponse = restTemplate.exchange(
