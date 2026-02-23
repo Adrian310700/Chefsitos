@@ -1,11 +1,15 @@
 package com.chefsitos.uamishop.ordenes.controller;
 
 import com.chefsitos.uamishop.ordenes.controller.dto.CancelarOrdenRequest;
+import com.chefsitos.uamishop.ordenes.controller.dto.CrearOrdenDesdeCarritoRequest;
+import com.chefsitos.uamishop.ordenes.controller.dto.DireccionEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.controller.dto.PagarOrdenRequest;
+import com.chefsitos.uamishop.ordenes.domain.valueObject.DireccionEnvio;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
+import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ordenes.service.OrdenService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +29,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.lang.annotation.ElementType;
 
 @RestController
 @RequestMapping("/api/${api.V1}/ordenes")
@@ -38,18 +43,47 @@ public class OrdenController {
     this.ordenService = ordenService;
   }
 
-  @Operation(summary = "Crear orden", description = "Crea una nueva orden a partir del request del cliente")
+  @Operation(summary = "Crear orden (Manual/Directa)", description = "Crea una nueva orden a partir del request del cliente, sin usar carrito.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Orden creada exitosamente", headers = @Header(name = "Location", description = "URI del recurso creado", schema = @Schema(type = "string")), content = @Content(schema = @Schema(implementation = OrdenResponseDTO.class)))
   })
   @ApiErrors.BadRequest
   @ApiErrors.UnprocessableEntity
-  @PostMapping
+  @PostMapping("/directa")
   public ResponseEntity<OrdenResponseDTO> crear(@Valid @RequestBody OrdenRequest request) {
     OrdenResponseDTO response = ordenService.crear(request);
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
         .path("/{id}")
+        .buildAndExpand(response.id())
+        .toUri();
+    return ResponseEntity.created(location).body(response);
+  }
+
+  @Operation(summary = "Crear orden desde carrito", description = "Convierte un carrito (en estado EN_CHECKOUT) en una Orden.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "201", description = "Orden creada exitosamente desde el carrito", headers = @Header(name = "Location", description = "URI del recurso creado", schema = @Schema(type = "string")), content = @Content(schema = @Schema(implementation = OrdenResponseDTO.class)))
+  })
+  @ApiErrors.BadRequest
+  @ApiErrors.NotFound
+  @ApiErrors.UnprocessableEntity
+  @PostMapping("/desde-carrito")
+  public ResponseEntity<OrdenResponseDTO> crearDesdeCarrito(@Valid @RequestBody CrearOrdenDesdeCarritoRequest request) {
+    DireccionEnvio direccionEnvio = new DireccionEnvio(
+        request.direccion().nombreDestinatario(),
+        request.direccion().calle(),
+        request.direccion().ciudad(),
+        request.direccion().estado(),
+        request.direccion().codigoPostal(),
+        "México",
+        request.direccion().telefono(),
+        request.direccion().instrucciones());
+
+    OrdenResponseDTO response = ordenService.crearDesdeCarrito(CarritoId.of(request.carritoId().toString()),
+        direccionEnvio);
+    URI location = ServletUriComponentsBuilder
+        .fromCurrentContextPath() // Utilizamos fromCurrentContextPath porque este endpoint es /desde-carrito
+        .path("/api/v1/ordenes/{id}")
         .buildAndExpand(response.id())
         .toUri();
     return ResponseEntity.created(location).body(response);

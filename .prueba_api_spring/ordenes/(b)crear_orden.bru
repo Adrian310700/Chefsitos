@@ -35,6 +35,14 @@ vars:pre-request {
   productoId: ed20f275-e17c-4e34-b005-0cdc432c5730
 }
 
+script:post-response {
+  let data = res.getBody();
+  let productoId = data.idProducto;
+  if(productoId){
+    bru.setVar("productoId",productoId)
+  }
+}
+
 settings {
   encodeUrl: true
   timeout: 0

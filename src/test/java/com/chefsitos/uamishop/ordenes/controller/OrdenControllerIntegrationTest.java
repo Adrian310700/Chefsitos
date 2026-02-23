@@ -109,7 +109,7 @@ class OrdenControllerIntegrationTest {
     UUID productoId = givenProductoEnCatalogo();
     UUID clienteId = UUID.randomUUID();
     ResponseEntity<OrdenResponseDTO> createResp = restTemplate.postForEntity(
-        BASE_URL,
+        BASE_URL + "/directa",
         buildOrdenRequest(clienteId, productoId),
         OrdenResponseDTO.class);
     assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
@@ -118,7 +118,7 @@ class OrdenControllerIntegrationTest {
   }
 
   @Nested
-  @DisplayName("POST /api/v1/ordenes")
+  @DisplayName("POST /api/v1/ordenes/directa")
   class CrearOrden {
 
     @Test
@@ -131,7 +131,7 @@ class OrdenControllerIntegrationTest {
       HttpEntity<OrdenRequest> request = new HttpEntity<>(body);
 
       ResponseEntity<OrdenResponseDTO> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           request,
           OrdenResponseDTO.class);
@@ -159,7 +159,8 @@ class OrdenControllerIntegrationTest {
     void listarOrdenes_retorna200YLista() {
       UUID productoId = givenProductoEnCatalogo();
       UUID clienteId = UUID.randomUUID();
-      restTemplate.postForEntity(BASE_URL, buildOrdenRequest(clienteId, productoId), OrdenResponseDTO.class);
+      restTemplate.postForEntity(BASE_URL + "/directa", buildOrdenRequest(clienteId, productoId),
+          OrdenResponseDTO.class);
 
       ResponseEntity<OrdenResponseDTO[]> response = restTemplate.getForEntity(
           BASE_URL,
@@ -183,7 +184,7 @@ class OrdenControllerIntegrationTest {
       UUID clienteId = UUID.randomUUID();
 
       ResponseEntity<OrdenResponseDTO> createResp = restTemplate.postForEntity(
-          BASE_URL,
+          BASE_URL + "/directa",
           buildOrdenRequest(clienteId, productoId),
           OrdenResponseDTO.class);
 
@@ -280,7 +281,7 @@ class OrdenControllerIntegrationTest {
       OrdenRequest request = new OrdenRequest(clienteId, direccion, List.of());
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);
@@ -310,7 +311,7 @@ class OrdenControllerIntegrationTest {
           List.of(new ItemOrdenRequest(productoId.toString(), new BigDecimal("1"))));
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);
@@ -340,7 +341,7 @@ class OrdenControllerIntegrationTest {
           List.of(new ItemOrdenRequest("NO-ES-UUID", new BigDecimal("1"))));
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);
@@ -371,7 +372,7 @@ class OrdenControllerIntegrationTest {
           List.of(new ItemOrdenRequest(productoId.toString(), new BigDecimal("0"))));
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);
@@ -402,7 +403,7 @@ class OrdenControllerIntegrationTest {
           List.of(new ItemOrdenRequest(productoId.toString(), new BigDecimal("1"))));
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);
@@ -669,7 +670,7 @@ class OrdenControllerIntegrationTest {
           List.of(new ItemOrdenRequest(productoInexistente.toString(), new BigDecimal("1"))));
 
       ResponseEntity<ApiError> response = restTemplate.exchange(
-          BASE_URL,
+          BASE_URL + "/directa",
           HttpMethod.POST,
           new HttpEntity<>(request),
           ApiError.class);

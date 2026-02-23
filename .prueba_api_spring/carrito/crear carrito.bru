@@ -19,7 +19,10 @@ body:json {
 script:post-response {
   let data = res.getBody();
   let carritoId = data.carritoId;
-  bru.setVar("carritoId", carritoId);
+  if(carritoId){
+    bru.setVar("carritoId", carritoId);  
+  }
+  
 }
 
 settings {
