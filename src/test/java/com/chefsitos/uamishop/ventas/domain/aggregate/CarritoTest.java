@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
-import com.chefsitos.uamishop.ventas.domain.valueObject.ClienteId;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 
