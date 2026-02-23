@@ -7,11 +7,11 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>4.0.3</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <relativePath />
   </parent>
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.3-SNAPSHOT</version>
   <name>uamishop</name>
   <description>API REST para la gestión de una tienda minorista de productos físicos</description>
   <url />
