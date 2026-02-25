@@ -21,7 +21,7 @@ public interface ApiErrors {
    * o falta de parámetros.
    */
   @Target({ ElementType.METHOD, ElementType.TYPE })
-  @Retention(RetentionPolicy.RUNTIME)
+  @Retention(RetentionPolicy.RUNTIME) 
   @ApiResponse(responseCode = "400", description = "Solicitud incorrecta o payload inválido", content = @Content(schema = @Schema(implementation = ApiError.class)))
   @interface BadRequest {
   }

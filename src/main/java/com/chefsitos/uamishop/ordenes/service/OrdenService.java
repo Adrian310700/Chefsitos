@@ -21,7 +21,6 @@ import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,8 +36,6 @@ public class OrdenService {
 
   @Autowired
   private ProductoService productoService;
-
-  private static final String MONEDA_DEFAULT = "MXN";
 
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(

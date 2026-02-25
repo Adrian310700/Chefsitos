@@ -3,9 +3,9 @@ package com.chefsitos.uamishop.catalogo.service;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaResponse;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
@@ -21,13 +21,14 @@ import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 
-@Service
-public class ProductoService {
+import lombok.AllArgsConstructor;
 
-  @Autowired
+@Service
+@AllArgsConstructor
+public class ProductoService implements CatalogoApi {
+
   private ProductoJpaRepository productoRepository;
 
-  @Autowired
   private CategoriaJpaRepository categoriaRepository;
 
   public ProductoResponse crear(ProductoRequest request) {

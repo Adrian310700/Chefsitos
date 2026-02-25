@@ -2,7 +2,6 @@ package com.chefsitos.uamishop.ordenes.controller;
 
 import com.chefsitos.uamishop.ordenes.controller.dto.CancelarOrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.CrearOrdenDesdeCarritoRequest;
-import com.chefsitos.uamishop.ordenes.controller.dto.DireccionEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
@@ -29,7 +28,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.lang.annotation.ElementType;
 
 @RestController
 @RequestMapping("/api/${api.V1}/ordenes")
