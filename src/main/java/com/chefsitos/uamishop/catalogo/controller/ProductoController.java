@@ -21,10 +21,8 @@ import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
-import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 import com.chefsitos.uamishop.catalogo.service.ProductoService;
 import com.chefsitos.uamishop.shared.ApiErrors;
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import jakarta.validation.Valid;
 
@@ -138,9 +136,9 @@ public class ProductoController {
         id,
         request.nombreProducto(),
         request.descripcion(),
-        new Money(request.precio(),
-            request.moneda()),
-        CategoriaId.of(request.idCategoria()));
+        request.precio(),
+        request.moneda(),
+        request.idCategoria());
 
     return ResponseEntity.ok(ProductoResponse.from(productoActualizado));
   }

@@ -1,5 +1,6 @@
 package com.chefsitos.uamishop.catalogo.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,13 +53,13 @@ public class ProductoService implements ProductoApi {
     return productos;
   }
 
-  public Producto actualizar(UUID id, String nombreProducto, String descripcion, Money nuevoPrecio,
-      CategoriaId idCategoria) {
+  public Producto actualizar(UUID id, String nombreProducto, String descripcion, BigDecimal precio, String moneda,
+      String idCategoria) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
         .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
     if (idCategoria != null) {
-      Categoria categoria = categoriaRepository.findById(idCategoria)
+      Categoria categoria = categoriaRepository.findById(CategoriaId.of(idCategoria))
           .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + idCategoria));
       producto.cambiarCategoria(categoria.getCategoriaId());
     }
@@ -69,12 +70,12 @@ public class ProductoService implements ProductoApi {
     producto.actualizarInformacion(nuevoNombre, nuevaDescripcion);
 
     // Lógica para actualizar el precio
-    if (nuevoPrecio.cantidad() != null && nuevoPrecio.moneda() != null) {
-      producto.cambiarPrecio(nuevoPrecio);
-    } else if (nuevoPrecio.cantidad() != null) {
-      producto.cambiarPrecio(new Money(nuevoPrecio.cantidad(), producto.getPrecio().moneda()));
-    } else if (nuevoPrecio.moneda() != null) {
-      producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), nuevoPrecio.moneda()));
+    if (precio != null && moneda != null) {
+      producto.cambiarPrecio(new Money(precio, moneda));
+    } else if (precio != null) {
+      producto.cambiarPrecio(new Money(precio, producto.getPrecio().moneda()));
+    } else if (moneda != null) {
+      producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), moneda));
     }
 
     return productoRepository.save(producto);
