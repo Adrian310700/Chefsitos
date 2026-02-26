@@ -16,11 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
+import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
+import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 import com.chefsitos.uamishop.catalogo.service.ProductoService;
 import com.chefsitos.uamishop.shared.ApiErrors;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import jakarta.validation.Valid;
 
@@ -51,7 +55,8 @@ public class ProductoController {
   @ApiErrors.UnprocessableEntity
   @PostMapping
   public ResponseEntity<ProductoResponse> crear(@RequestBody @Valid ProductoRequest request) {
-    ProductoResponse response = productoService.crear(request);
+    Producto producto = productoService.crear(request);
+    ProductoResponse response = ProductoResponse.from(producto);
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
         .path("/{id}")
@@ -68,8 +73,9 @@ public class ProductoController {
   @GetMapping("/{id}")
   public ResponseEntity<ProductoResponse> obtener(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
-    ProductoResponse response = productoService.buscarPorId(id);
-    return ResponseEntity.ok(response);
+    ProductoDTO response = productoService.buscarPorId(id);
+
+    return ResponseEntity.ok(ProductoResponse.from(response));
   }
 
   @Operation(summary = "Listar productos", description = "Devuelve la lista de todos los productos disponibles en el catálogo")
@@ -80,7 +86,9 @@ public class ProductoController {
   @ApiErrors.Unauthorized
   @ApiErrors.Forbidden
   public ResponseEntity<List<ProductoResponse>> buscarTodos() {
-    List<ProductoResponse> productos = productoService.buscarTodos();
+    List<ProductoResponse> productos = productoService.buscarTodos()
+        .stream().map(ProductoResponse::from)
+        .toList();
     return ResponseEntity.ok(productos);
   }
 
@@ -93,7 +101,8 @@ public class ProductoController {
   @PostMapping("/{id}/activar")
   public ResponseEntity<ProductoResponse> activar(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
-    ProductoResponse response = productoService.activar(id);
+    Producto producto = productoService.activar(id);
+    ProductoResponse response = ProductoResponse.from(producto);
     // Tambien se podria usar un status 204 para decir que se activo correctamente
     // pero no devolver nuevamente el producto
     // return ResponseEntity.noContent().build();
@@ -109,7 +118,8 @@ public class ProductoController {
   @PostMapping("/{id}/desactivar")
   public ResponseEntity<ProductoResponse> desactivar(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
-    ProductoResponse response = productoService.desactivar(id);
+    Producto producto = productoService.desactivar(id);
+    ProductoResponse response = ProductoResponse.from(producto);
     return ResponseEntity.ok(response);
   }
 
@@ -123,8 +133,16 @@ public class ProductoController {
   public ResponseEntity<ProductoResponse> actualizar(
       @PathVariable UUID id,
       @RequestBody @Valid ProductoPatchRequest request) {
-    ProductoResponse response = productoService.actualizar(id, request);
-    return ResponseEntity.ok(response);
+
+    Producto productoActualizado = productoService.actualizar(
+        id,
+        request.nombreProducto(),
+        request.descripcion(),
+        new Money(request.precio(),
+            request.moneda()),
+        CategoriaId.of(request.idCategoria()));
+
+    return ResponseEntity.ok(ProductoResponse.from(productoActualizado));
   }
 
 }

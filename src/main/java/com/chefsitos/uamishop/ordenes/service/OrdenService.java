@@ -1,5 +1,14 @@
 package com.chefsitos.uamishop.ordenes.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.catalogo.api.ProductoApi;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
@@ -7,35 +16,24 @@ import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoPago;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.service.CarritoService;
-import com.chefsitos.uamishop.catalogo.service.ProductoService;
-import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
-import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class OrdenService {
 
-  @Autowired
-  private OrdenJpaRepository ordenRepository;
+  private final OrdenJpaRepository ordenRepository;
 
-  @Autowired
-  private CarritoService carritoService;
+  private final CarritoService carritoService;
 
-  @Autowired
-  private ProductoService productoService;
+  private final ProductoApi productoService;
 
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
@@ -50,7 +48,7 @@ public class OrdenService {
 
     List<ItemOrden> items = request.items().stream()
         .map(i -> {
-          ProductoResponse producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
+          ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
           return new ItemOrden(
               ProductoId.of(i.productoId()),
               producto.nombreProducto(),

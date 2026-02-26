@@ -8,7 +8,6 @@ import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.controller.dto.PagarOrdenRequest;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.DireccionEnvio;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ordenes.service.OrdenService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.headers.Header;
 
 import com.chefsitos.uamishop.shared.ApiErrors;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
