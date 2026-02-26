@@ -3,37 +3,32 @@ package com.chefsitos.uamishop.ventas.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-
-import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
-import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
-import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
-import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.catalogo.api.ProductoApi;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
+import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
-import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
-import com.chefsitos.uamishop.catalogo.service.ProductoService;
-import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
-
-import jakarta.transaction.Transactional;
 
 @Service
+@AllArgsConstructor
 public class CarritoService {
 
   private final CarritoJpaRepository carritoRepository;
-  private final ProductoService productoService;
-
-  public CarritoService(CarritoJpaRepository carritoRepository, ProductoService productoService) {
-    this.carritoRepository = carritoRepository;
-    this.productoService = productoService;
-  }
+  private final ProductoApi productoService;
 
   // Metodo SOLO para obtener el carrito por ID en el servicio de ordenes
   public Carrito obtenerCarrito(CarritoId carritoId) {
@@ -78,7 +73,7 @@ public class CarritoService {
   public CarritoResponse agregarProducto(UUID carritoId, AgregarProductoRequest request) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
 
-    ProductoResponse producto = productoService.buscarPorId(request.productoId());
+    ProductoDTO producto = productoService.buscarPorId(request.productoId());
 
     ProductoRef productoRef = new ProductoRef(
         ProductoId.of(request.productoId().toString()),
