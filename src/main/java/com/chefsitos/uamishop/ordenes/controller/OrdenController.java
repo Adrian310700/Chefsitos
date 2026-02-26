@@ -2,14 +2,12 @@ package com.chefsitos.uamishop.ordenes.controller;
 
 import com.chefsitos.uamishop.ordenes.controller.dto.CancelarOrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.CrearOrdenDesdeCarritoRequest;
-import com.chefsitos.uamishop.ordenes.controller.dto.DireccionEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.controller.dto.PagarOrdenRequest;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.DireccionEnvio;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.InfoEnvio;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ordenes.service.OrdenService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.headers.Header;
 
 import com.chefsitos.uamishop.shared.ApiErrors;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.lang.annotation.ElementType;
 
 @RestController
 @RequestMapping("/api/${api.V1}/ordenes")

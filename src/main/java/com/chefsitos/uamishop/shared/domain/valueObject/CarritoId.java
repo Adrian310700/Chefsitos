@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.ventas.domain.valueObject;
+package com.chefsitos.uamishop.shared.domain.valueObject;
 
 import java.util.UUID;
 

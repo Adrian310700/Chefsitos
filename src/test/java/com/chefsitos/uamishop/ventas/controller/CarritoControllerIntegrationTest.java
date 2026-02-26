@@ -23,12 +23,12 @@ import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
