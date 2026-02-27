@@ -94,7 +94,7 @@ public class OrdenController {
   })
   @GetMapping
   public ResponseEntity<List<OrdenResponseDTO>> buscarTodas() {
-    return ResponseEntity.ok(ordenService.buscarTodas());
+    return ResponseEntity.ok(ordenService.buscarTodasResponse());
   }
 
   @Operation(summary = "Buscar orden por ID")
