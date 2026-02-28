@@ -104,9 +104,7 @@ public class OrdenController {
   @ApiErrors.NotFound
   @GetMapping("/{id}")
   public ResponseEntity<OrdenResponseDTO> buscarPorId(@PathVariable UUID id) {
-    var orden = ordenService.buscarPorId(id);
-    OrdenResponseDTO response = OrdenService.mapToResponseDTO(orden);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ordenService.buscarPorIdResponse(id));
   }
 
   // Acción de transición de estado: PENDIENTE → CONFIRMADA

@@ -25,44 +25,46 @@ import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
 import com.chefsitos.uamishop.ventas.service.CarritoService;
 
+import com.chefsitos.uamishop.ordenes.api.OrdenesApi;
+import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
+
 @Service
 @AllArgsConstructor
-public class OrdenService {
+public class OrdenService implements OrdenesApi {
 
   private final OrdenJpaRepository ordenRepository;
-
   private final CarritoService carritoService;
-
   private final ProductoApi productoService;
 
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
-        request.direccion().nombreDestinatario(),
-        request.direccion().calle(),
-        request.direccion().ciudad(),
-        request.direccion().estado(),
-        request.direccion().codigoPostal(),
-        "México", // RN-VO-04
-        request.direccion().telefono(),
-        request.direccion().instrucciones());
+      request.direccion().nombreDestinatario(),
+      request.direccion().calle(),
+      request.direccion().ciudad(),
+      request.direccion().estado(),
+      request.direccion().codigoPostal(),
+      "México",
+      request.direccion().telefono(),
+      request.direccion().instrucciones());
 
     List<ItemOrden> items = request.items().stream()
-        .map(i -> {
-          ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
-          return new ItemOrden(
-              ProductoId.of(i.productoId()),
-              producto.nombreProducto(),
-              producto.nombreProducto(), // sku: alias hasta tener campo propio
-              i.cantidad().intValue(),
-              new Money(producto.precio(), producto.moneda()));
-        })
-        .toList();
+      .map(i -> {
+        ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
+        return new ItemOrden(
+          ProductoId.of(i.productoId()),
+          producto.nombreProducto(),
+          producto.nombreProducto(),
+          i.cantidad().intValue(),
+          new Money(producto.precio(), producto.moneda()));
+      })
+      .toList();
 
     ResumenPago resumenPendiente = new ResumenPago(
-        "PENDIENTE", null, EstadoPago.PENDIENTE, null);
+      "PENDIENTE", null, EstadoPago.PENDIENTE, null);
 
     Orden orden = Orden.crear(
-        new ClienteId(request.clienteId()), items, direccion, resumenPendiente);
+      new ClienteId(request.clienteId()), items, direccion, resumenPendiente);
+
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
@@ -71,84 +73,95 @@ public class OrdenService {
     ClienteId clienteOrden = ClienteId.of(carrito.getClienteId().valor().toString());
 
     List<ItemOrden> itemsOrden = carrito.getItems().stream()
-        .map(OrdenService::mapItemCarritoToItemOrden)
-        .collect(Collectors.toList());
+      .map(OrdenService::mapItemCarritoToItemOrden)
+      .collect(Collectors.toList());
 
     ResumenPago resumenPendiente = new ResumenPago(
-        "PENDIENTE", null, EstadoPago.PENDIENTE, null);
+      "PENDIENTE", null, EstadoPago.PENDIENTE, null);
 
     Orden nuevaOrden = Orden.crear(clienteOrden, itemsOrden, direccionEnvio, resumenPendiente);
     nuevaOrden = ordenRepository.save(nuevaOrden);
     carritoService.completarCheckout(carritoId.getValue());
+
     return mapToResponseDTO(nuevaOrden);
   }
 
-  public Orden buscarPorId(UUID id) {
+  private Orden obtenerOrden(UUID id) {
     return ordenRepository.findById(new OrdenId(id))
-        .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
+  }
+
+  @Override
+  public OrdenDTO buscarPorId(UUID id) {
+    Orden orden = obtenerOrden(id);
+    return OrdenDTO.from(orden);
+  }
+
+  public OrdenResponseDTO buscarPorIdResponse(UUID id) {
+    Orden orden = obtenerOrden(id);
+    return mapToResponseDTO(orden);
   }
 
   public List<OrdenResponseDTO> buscarTodas() {
     return ordenRepository.findAll().stream()
-        .map(OrdenService::mapToResponseDTO)
-        .collect(Collectors.toList());
+      .map(OrdenService::mapToResponseDTO)
+      .collect(Collectors.toList());
   }
 
   public OrdenResponseDTO confirmar(UUID id) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.confirmar();
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
   public OrdenResponseDTO procesarPago(UUID id, String referenciaPago) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.procesarPago(referenciaPago);
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
   public OrdenResponseDTO marcarEnProceso(UUID id) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.marcarEnProceso();
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
   public OrdenResponseDTO marcarEnviada(UUID id, InfoEnvio infoEnvio) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.marcarEnviada(infoEnvio);
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
   public OrdenResponseDTO marcarEntregada(UUID id) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.marcarEntregada();
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
   public OrdenResponseDTO cancelar(UUID id, String motivo) {
-    Orden orden = buscarPorId(id);
+    Orden orden = obtenerOrden(id);
     orden.cancelar(motivo);
     return mapToResponseDTO(ordenRepository.save(orden));
   }
 
-  // Helpers
   public static ItemOrden mapItemCarritoToItemOrden(ItemCarrito itemCarrito) {
     ProductoId prodId = ProductoId.of(itemCarrito.getProducto().getProductoId().valor().toString());
     return new ItemOrden(
-        prodId,
-        itemCarrito.getProducto().nombreProducto(),
-        itemCarrito.getProducto().sku(),
-        itemCarrito.getCantidad(),
-        itemCarrito.getPrecioUnitario());
+      prodId,
+      itemCarrito.getProducto().nombreProducto(),
+      itemCarrito.getProducto().sku(),
+      itemCarrito.getCantidad(),
+      itemCarrito.getPrecioUnitario());
   }
 
   public static OrdenResponseDTO mapToResponseDTO(Orden orden) {
     return new OrdenResponseDTO(
-        orden.getId().valor(),
-        orden.getNumeroOrden(),
-        orden.getClienteId().valor(),
-        orden.getEstado(),
-        orden.getTotal().cantidad(),
-        orden.getTotal().moneda(),
-        orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
+      orden.getId().valor(),
+      orden.getNumeroOrden(),
+      orden.getClienteId().valor(),
+      orden.getEstado(),
+      orden.getTotal().cantidad(),
+      orden.getTotal().moneda(),
+      orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
   }
 }
