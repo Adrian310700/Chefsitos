@@ -21,9 +21,9 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
-import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
-import com.chefsitos.uamishop.ventas.service.CarritoService;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
+import com.chefsitos.uamishop.ventas.api.CarritoApi;
 
 @Service
 @AllArgsConstructor
@@ -31,9 +31,9 @@ public class OrdenService {
 
   private final OrdenJpaRepository ordenRepository;
 
-  private final CarritoService carritoService;
-
   private final ProductoApi productoService;
+
+  private final CarritoApi carritoService;
 
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
@@ -67,10 +67,10 @@ public class OrdenService {
   }
 
   public OrdenResponseDTO crearDesdeCarrito(CarritoId carritoId, DireccionEnvio direccionEnvio) {
-    Carrito carrito = carritoService.obtenerCarrito(carritoId);
-    ClienteId clienteOrden = ClienteId.of(carrito.getClienteId().valor().toString());
+    CarritoDTO carrito = carritoService.obtenerCarrito(carritoId.getValue());
+    ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
 
-    List<ItemOrden> itemsOrden = carrito.getItems().stream()
+    List<ItemOrden> itemsOrden = carrito.items().stream()
         .map(OrdenService::mapItemCarritoToItemOrden)
         .collect(Collectors.toList());
 
@@ -131,14 +131,14 @@ public class OrdenService {
   }
 
   // Helpers
-  public static ItemOrden mapItemCarritoToItemOrden(ItemCarrito itemCarrito) {
-    ProductoId prodId = ProductoId.of(itemCarrito.getProducto().getProductoId().valor().toString());
+  public static ItemOrden mapItemCarritoToItemOrden(ItemCarritoDTO item) {
+    ProductoId productoId = ProductoId.of(item.productoId().toString());
     return new ItemOrden(
-        prodId,
-        itemCarrito.getProducto().nombreProducto(),
-        itemCarrito.getProducto().sku(),
-        itemCarrito.getCantidad(),
-        itemCarrito.getPrecioUnitario());
+        productoId,
+        item.nombreProducto(),
+        item.sku(), // sku: workaround hasta tener campo propio en catálogo
+        item.cantidad(),
+        new Money(item.precioUnitario(), item.moneda()));
   }
 
   public static OrdenResponseDTO mapToResponseDTO(Orden orden) {
