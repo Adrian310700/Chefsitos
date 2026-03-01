@@ -22,18 +22,15 @@ import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
+import com.chefsitos.uamishop.ventas.api.CarritoApi;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 
 @Service
 @AllArgsConstructor
-public class CarritoService {
+public class CarritoService implements CarritoApi {
 
   private final CarritoJpaRepository carritoRepository;
   private final ProductoApi productoService;
-
-  // Metodo SOLO para obtener el carrito por ID en el servicio de ordenes
-  public Carrito obtenerCarrito(CarritoId carritoId) {
-    return buscarCarrito(carritoId);
-  }
 
   // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
@@ -62,11 +59,10 @@ public class CarritoService {
   }
 
   @Transactional
-  public CarritoResponse obtenerCarrito(UUID carritoId) {
+  public CarritoDTO obtenerCarrito(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
-    CarritoResponse carritoResponse = CarritoResponse.from(carrito);
+    CarritoDTO carritoResponse = CarritoDTO.from(carrito);
     return carritoResponse;
-
   }
 
   @Transactional
@@ -117,10 +113,10 @@ public class CarritoService {
   }
 
   @Transactional
-  public CarritoResponse completarCheckout(UUID carritoId) {
+  public CarritoDTO completarCheckout(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.completarCheckout();
-    return CarritoResponse.from(carritoRepository.save(carrito));
+    return CarritoDTO.from(carritoRepository.save(carrito));
   }
 
   @Transactional

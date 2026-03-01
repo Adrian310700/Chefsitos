@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.chefsitos.uamishop.shared.ApiErrors;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
@@ -69,7 +70,8 @@ public class CarritoController {
   @GetMapping("/{carritoId}")
   public ResponseEntity<CarritoResponse> obtenerCarrito(
       @Parameter(description = "ID único del carrito") @PathVariable UUID carritoId) {
-    CarritoResponse response = carritoService.obtenerCarrito(carritoId);
+    CarritoDTO carritoDTO = carritoService.obtenerCarrito(carritoId);
+    CarritoResponse response = CarritoResponse.from(carritoDTO);
     return ResponseEntity.ok(response);
   }
 
@@ -151,7 +153,8 @@ public class CarritoController {
   @PostMapping("/{carritoId}/checkout/completar")
   public ResponseEntity<CarritoResponse> completarCheckout(
       @Parameter(description = "ID único del carrito") @PathVariable UUID carritoId) {
-    CarritoResponse response = carritoService.completarCheckout(carritoId);
+    CarritoDTO carritoDTO = carritoService.completarCheckout(carritoId);
+    CarritoResponse response = CarritoResponse.from(carritoDTO);
     return ResponseEntity.ok(response);
   }
 
