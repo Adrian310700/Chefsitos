@@ -98,12 +98,6 @@ public class OrdenService implements OrdenesApi {
   public OrdenResponseDTO crearDesdeCarrito(CarritoId carritoId, DireccionEnvio direccionEnvio) {
     CarritoDTO carrito = carritoService.obtenerCarrito(carritoId.getValue());
 
-    // Validación: el carrito debe estar en EN_CHECKOUT
-    // if (!"EN_CHECKOUT".equals(carrito.estado())) {
-    // throw new IllegalStateException(
-    // "El carrito debe estar en checkout para crear una orden");
-    // }
-
     ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
 
     List<ItemOrden> itemsOrden = carrito.items().stream()

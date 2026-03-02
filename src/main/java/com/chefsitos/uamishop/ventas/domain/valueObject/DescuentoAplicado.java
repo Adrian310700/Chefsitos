@@ -2,18 +2,18 @@ package com.chefsitos.uamishop.ventas.domain.valueObject;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
-
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+
 import java.math.BigDecimal;
 
 @Embeddable
 public record DescuentoAplicado(
-    String codigo,
-    @Enumerated(EnumType.STRING) TipoDescuento tipo,
-    BigDecimal valor,
-    Money montoDescontado) {
+  String codigo,
+  @Enumerated(EnumType.STRING) TipoDescuento tipo,
+  BigDecimal valor,
+  Money montoDescontado) {
 
   private static final BigDecimal MAX_DESCUENTO = BigDecimal.valueOf(30);
 
@@ -52,8 +52,7 @@ public record DescuentoAplicado(
       return Money.zero(subtotal.moneda());
     }
     BigDecimal porcentajeDecimal = valor.divide(BigDecimal.valueOf(100));
-    Money descuento = subtotal.multiplicar(porcentajeDecimal);
-    return descuento;
+    return subtotal.multiplicar(porcentajeDecimal);
   }
 
 }

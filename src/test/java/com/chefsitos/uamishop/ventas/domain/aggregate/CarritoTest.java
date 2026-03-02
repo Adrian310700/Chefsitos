@@ -1,20 +1,19 @@
 package com.chefsitos.uamishop.ventas.domain.aggregate;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
+import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
+import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
+import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
-import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
-import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
-import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
-import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
-
+import java.math.BigDecimal;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CarritoTest {
 
@@ -47,13 +46,13 @@ class CarritoTest {
   void noPermiteCantidadInvalida() {
     // RN-VEN-01
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.agregarProducto(producto1, 0, precio10));
+      () -> carrito.agregarProducto(producto1, 0, precio10));
 
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.agregarProducto(producto1, -1, precio10));
+      () -> carrito.agregarProducto(producto1, -1, precio10));
     // RN-VEN-02
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.agregarProducto(producto1, 11, precio10));
+      () -> carrito.agregarProducto(producto1, 11, precio10));
   }
 
   // RN-VEN-04
@@ -73,13 +72,13 @@ class CarritoTest {
       // SKUs en formato AAA-000
       String sku = String.format("%c%c%c-%03d", 'A' + (i / 26), 'A' + (i % 26), 'A', i);
       carrito.agregarProducto(
-          new ProductoRef(ProductoId.generar(), "P" + i, sku),
-          1,
-          precio10);
+        new ProductoRef(ProductoId.generar(), "P" + i, sku),
+        1,
+        precio10);
     }
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.agregarProducto(producto1, 1, precio10));
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.agregarProducto(producto1, 1, precio10));
   }
 
   // RN-VEN-05
@@ -96,10 +95,10 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 3, precio10);
 
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.modificarCantidad(producto1.getProductoId(), -3));
+      () -> carrito.modificarCantidad(producto1.getProductoId(), -3));
 
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.modificarCantidad(producto1.getProductoId(), 11));
+      () -> carrito.modificarCantidad(producto1.getProductoId(), 11));
   }
 
   @Test
@@ -117,8 +116,8 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 10, precio10);
     carrito.iniciarCheckout();
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.modificarCantidad(producto1.getProductoId(), 1));
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.modificarCantidad(producto1.getProductoId(), 1));
   }
 
   @Test
@@ -138,16 +137,16 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 10, precio10);
     carrito.iniciarCheckout();
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.eliminarProducto(producto1.getProductoId()));
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.eliminarProducto(producto1.getProductoId()));
   }
 
   // RN-VEN-08
   @Test
   void eliminarProductoInexistente() {
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.eliminarProducto(producto1.getProductoId()));
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.eliminarProducto(producto1.getProductoId()));
   }
 
   // RN-VEN-09
@@ -156,8 +155,8 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 10, precio10);
     carrito.iniciarCheckout();
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.vaciar());
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.vaciar());
   }
 
   // RN-VEN-10
@@ -171,10 +170,10 @@ class CarritoTest {
   // RN-VEN-12
   @Test
   void iniciarCheckoutInvalido() {
-    assertThrows(IllegalStateException.class, carrito::iniciarCheckout);
+    assertThrows(BusinessRuleException.class, carrito::iniciarCheckout);
 
     carrito.agregarProducto(producto1, 4, precio10); // $40
-    assertThrows(IllegalStateException.class, carrito::iniciarCheckout);
+    assertThrows(BusinessRuleException.class, carrito::iniciarCheckout);
   }
 
   // RN-VEN-13
@@ -185,7 +184,7 @@ class CarritoTest {
     carrito.iniciarCheckout();
 
     assertDoesNotThrow(() -> carrito.completarCheckout());
-    assertThrows(IllegalStateException.class, carrito::abandonar);
+    assertThrows(BusinessRuleException.class, carrito::abandonar);
   }
 
   // RN-VEN-15
@@ -194,9 +193,9 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 10, precio10); // $100
 
     carrito.aplicarDescuento(DescuentoAplicado.crear(
-        "DESC20",
-        TipoDescuento.CUPON,
-        BigDecimal.valueOf(20)));
+      "DESC20",
+      TipoDescuento.CUPON,
+      BigDecimal.valueOf(20)));
 
     assertEquals(new Money(BigDecimal.valueOf(80.0), "MXN"), carrito.calcularTotal());
   }
@@ -207,10 +206,10 @@ class CarritoTest {
     carrito.agregarProducto(producto1, 10, precio10);
 
     assertThrows(IllegalArgumentException.class,
-        () -> carrito.aplicarDescuento(DescuentoAplicado.crear(
-            "DESC35",
-            TipoDescuento.CUPON,
-            BigDecimal.valueOf(35))));
+      () -> carrito.aplicarDescuento(DescuentoAplicado.crear(
+        "DESC35",
+        TipoDescuento.CUPON,
+        BigDecimal.valueOf(35))));
   }
 
   @Test
@@ -229,9 +228,9 @@ class CarritoTest {
 
     carrito.aplicarDescuento(DescuentoAplicado.crear("CUPON1", TipoDescuento.CUPON, BigDecimal.valueOf(10)));
 
-    assertThrows(IllegalStateException.class,
-        () -> carrito.aplicarDescuento(
-            DescuentoAplicado.crear("CUPON2", TipoDescuento.CUPON, BigDecimal.valueOf(15))));
+    assertThrows(BusinessRuleException.class,
+      () -> carrito.aplicarDescuento(
+        DescuentoAplicado.crear("CUPON2", TipoDescuento.CUPON, BigDecimal.valueOf(15))));
   }
 
   // Permite promociones adicionales además del cupón

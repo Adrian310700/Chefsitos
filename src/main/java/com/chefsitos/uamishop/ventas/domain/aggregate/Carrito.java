@@ -31,6 +31,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
 
 @Entity
 @Table(name = "carritos")
@@ -42,25 +43,31 @@ public class Carrito {
   @AttributeOverride(name = "valor", column = @Column(name = "carrito_id"))
   private CarritoId id;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
 
+  @Getter
   @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "carrito_descuentos", joinColumns = @JoinColumn(name = "carrito_id"))
-  private List<DescuentoAplicado> descuentos = new ArrayList<>();
+  private final List<DescuentoAplicado> descuentos = new ArrayList<>();
 
+  @Getter
   @OneToMany(cascade = CascadeType.ALL, // Si se guarda Carrito, se guardan sus ítems
       orphanRemoval = true, // Si se quita un ítem de la lista, se borra de la BD
       fetch = FetchType.EAGER) // Carga los ítems junto al Carrito para que las RN se evalúen correctamente
   @JoinColumn(name = "carrito_id") // Columna en la tabla items que referencia al carrito
-  private List<ItemCarrito> items = new ArrayList<>();
+  private final List<ItemCarrito> items = new ArrayList<>();
 
+  @Getter
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private EstadoCarrito estado;
 
+  @Getter
   private LocalDateTime fechaCreacion;
+  @Getter
   private LocalDateTime fechaActualizacion;
 
   protected Carrito() {
@@ -240,27 +247,4 @@ public class Carrito {
     return id;
   }
 
-  public LocalDateTime getFechaActualizacion() {
-    return fechaActualizacion;
-  }
-
-  public LocalDateTime getFechaCreacion() {
-    return fechaCreacion;
-  }
-
-  public ClienteId getClienteId() {
-    return clienteId;
-  }
-
-  public EstadoCarrito getEstado() {
-    return estado;
-  }
-
-  public List<ItemCarrito> getItems() {
-    return items;
-  }
-
-  public List<DescuentoAplicado> getDescuentos() {
-    return descuentos;
-  }
 }

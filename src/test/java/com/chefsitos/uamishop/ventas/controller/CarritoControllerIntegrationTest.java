@@ -183,8 +183,8 @@ class CarritoControllerIntegrationTest {
       assertEquals(HttpStatus.OK, agregarResponse.getStatusCode());
       assertNotNull(agregarResponse.getBody());
       assertEquals(1, agregarResponse.getBody().items().size());
-      assertEquals(productoId, agregarResponse.getBody().items().get(0).productoId());
-      assertEquals(cantidad, agregarResponse.getBody().items().get(0).cantidad());
+      assertEquals(productoId, agregarResponse.getBody().items().getFirst().productoId());
+      assertEquals(cantidad, agregarResponse.getBody().items().getFirst().cantidad());
       BigDecimal esperadoSubtotal = new BigDecimal("10.00").multiply(BigDecimal.valueOf(cantidad));
 
       assertEquals(esperadoSubtotal, agregarResponse.getBody().subtotal());

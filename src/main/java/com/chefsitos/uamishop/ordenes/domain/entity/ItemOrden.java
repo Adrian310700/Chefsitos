@@ -3,37 +3,44 @@ package com.chefsitos.uamishop.ordenes.domain.entity;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.ItemOrdenId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
-
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "orden_items")
 public class ItemOrden {
 
+  // Getters necesarios para la persistencia y lectura
+  @Getter
   @EmbeddedId
   @AttributeOverride(name = "valor", column = @Column(name = "id"))
   private ItemOrdenId id;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "producto_id"))
   private ProductoId productoId;
 
+  @Getter
   private String nombreProducto;
+  @Getter
   private String sku;
   private Integer cantidad;
 
+  @Getter
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_unitario_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "precio_unitario_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "precio_unitario_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "precio_unitario_moneda"))
   })
   private Money precioUnitario;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
   })
   private Money subtotal;
 
@@ -59,28 +66,8 @@ public class ItemOrden {
     return precioUnitario.multiplicar(new BigDecimal(cantidad));
   }
 
-  // Getters necesarios para la persistencia y lectura
-  public ItemOrdenId getId() {
-    return id;
-  }
-
-  public ProductoId getProductoId() {
-    return productoId;
-  }
-
-  public String getNombreProducto() {
-    return nombreProducto;
-  }
-
   public int getCantidad() {
     return cantidad;
   }
 
-  public Money getPrecioUnitario() {
-    return precioUnitario;
-  }
-
-  public String getSku() {
-    return sku;
-  }
 }

@@ -36,7 +36,7 @@ import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
  * Pruebas de integración sobre la API interna del módulo Ordenes (OrdenesApi).
  *
  * <p>
- * Se prueba directamente la interfaz {@link OrdenesApi} sin usar
+ * Se prueba directamente la interfaz {@Link OrdenesApi} sin usar
  * TestRestTemplate
  * ni llamadas HTTP. Esto valida el comportamiento del módulo a nivel de API
  * inter-módulo, tal como lo consumirían otros módulos en la arquitectura

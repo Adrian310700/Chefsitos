@@ -1,14 +1,9 @@
 package com.chefsitos.uamishop.catalogo.domain.entity;
 
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
-
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
+import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
 @Table(name = "categorias")
@@ -18,14 +13,17 @@ public class Categoria {
   @AttributeOverride(name = "valor", column = @Column(name = "id")) // Aseguramos nombre 'id'
   private CategoriaId id;
 
+  @Getter
   private String nombre;
+  @Getter
   private String descripcion;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "padre_id", nullable = true))
   private CategoriaId categoriaPadreId;
 
-  private Categoria() {
+  protected Categoria() {
   }
 
   public static Categoria crear(CategoriaId id, String nombre, String descripcion) {
@@ -67,7 +65,7 @@ public class Categoria {
     // RN-CAT-16
     if (this.id.equals(categoriaPadreId)) {
       throw new BusinessRuleException(
-          "La id de la categoria padre no puede ser la misma que la de la categoria actual");
+        "La id de la categoria padre no puede ser la misma que la de la categoria actual");
     }
     this.categoriaPadreId = categoriaPadreId;
   }
@@ -76,15 +74,4 @@ public class Categoria {
     return this.id;
   }
 
-  public String getNombre() {
-    return this.nombre;
-  }
-
-  public String getDescripcion() {
-    return this.descripcion;
-  }
-
-  public CategoriaId getCategoriaPadreId() {
-    return this.categoriaPadreId;
-  }
 }

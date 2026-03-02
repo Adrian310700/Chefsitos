@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
+import lombok.Getter;
 
 @Entity
 @Table(name = "productos")
@@ -28,9 +29,12 @@ public class Producto {
   @AttributeOverride(name = "valor", column = @Column(name = "id")) // Cambia 'valor' por 'id'
   private ProductoId id;
 
+  @Getter
   private String nombre;
+  @Getter
   private String descripcion;
 
+  @Getter
   @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "cantidad", column = @Column(name = "precio_monto")),
@@ -38,18 +42,22 @@ public class Producto {
   })
   private Money precio;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "categoria_id"))
   private CategoriaId categoriaId;
 
+  @Getter
   @ElementCollection
   @CollectionTable(name = "producto_imagenes", joinColumns = @JoinColumn(name = "producto_id"))
   private List<Imagen> imagenes;
+  @Getter
   private boolean disponible;
+  @Getter
   private LocalDateTime fechaCreacion;
 
   // Constructor privado para forzar el uso del metodo de crear
-  private Producto() {
+  protected Producto() {
   }
 
   // Factory method para crear un nuevo producto con validaciones de negocio
@@ -167,31 +175,4 @@ public class Producto {
     return this.id;
   }
 
-  public String getNombre() {
-    return this.nombre;
-  }
-
-  public String getDescripcion() {
-    return this.descripcion;
-  }
-
-  public Money getPrecio() {
-    return this.precio;
-  }
-
-  public CategoriaId getCategoriaId() {
-    return this.categoriaId;
-  }
-
-  public List<Imagen> getImagenes() {
-    return this.imagenes;
-  }
-
-  public boolean isDisponible() {
-    return this.disponible;
-  }
-
-  public LocalDateTime getFechaCreacion() {
-    return this.fechaCreacion;
-  }
 }

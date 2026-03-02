@@ -8,7 +8,6 @@ import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
  * API pública del módulo Ordenes.
  * ÚNICO punto de entrada para otros módulos que necesiten interactuar con
  * Órdenes.
- *
  * Las clases internas (domain, service, repository) NO deben ser accedidas
  * desde fuera de este módulo. Solo se expone esta interfaz y los DTOs en el
  * paquete api/dto.
