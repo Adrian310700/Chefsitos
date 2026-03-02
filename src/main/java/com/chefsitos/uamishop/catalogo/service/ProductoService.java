@@ -1,151 +1,143 @@
 package com.chefsitos.uamishop.catalogo.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.chefsitos.uamishop.catalogo.api.ProductoApi;
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaResponse;
-import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
-import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
-import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 @Service
-public class ProductoService {
+@AllArgsConstructor
+public class ProductoService implements ProductoApi {
 
-  @Autowired
-  private ProductoJpaRepository productoRepository;
+  private final ProductoJpaRepository productoRepository;
+  private final CategoriaJpaRepository categoriaRepository;
 
-  @Autowired
-  private CategoriaJpaRepository categoriaRepository;
-
-  public ProductoResponse crear(ProductoRequest request) {
+  public Producto crear(ProductoRequest request) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(request.idCategoria()))
-        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
+      .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
 
     Producto nuevoProducto = Producto.crear(
-        request.nombreProducto(),
-        request.descripcion(),
-        new Money(request.precio(), request.moneda()),
-        categoria.getCategoriaId());
+      request.nombreProducto(),
+      request.descripcion(),
+      new Money(request.precio(), request.moneda()),
+      categoria.getCategoriaId());
 
-    productoRepository.save(nuevoProducto);
-
-    return ProductoResponse.from(nuevoProducto);
+    return productoRepository.save(nuevoProducto);
   }
 
-  public ProductoResponse buscarPorId(UUID id) {
+  public ProductoDTO buscarPorId(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
-        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-    return ProductoResponse.from(producto);
+    return ProductoDTO.from(producto);
   }
 
-  public List<ProductoResponse> buscarTodos() {
-    List<Producto> productos = productoRepository.findAll();
-    return productos.stream().map(ProductoResponse::from).toList();
+  public List<Producto> buscarTodos() {
+    return productoRepository.findAll();
   }
 
-  public ProductoResponse actualizar(UUID id, ProductoPatchRequest request) {
+  public Producto actualizar(UUID id, String nombreProducto, String descripcion, BigDecimal precio, String moneda,
+                             String idCategoria) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
-        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-    String nuevoNombre = request.nombreProducto() != null ? request.nombreProducto() : producto.getNombre();
-    String nuevaDescripcion = request.descripcion() != null ? request.descripcion() : producto.getDescripcion();
-
-    producto.actualizarInformacion(nuevoNombre, nuevaDescripcion);
-
-    if (request.precio() != null && request.moneda() != null) {
-      producto.cambiarPrecio(new Money(request.precio(), request.moneda()));
-    } else if (request.precio() != null) {
-      producto.cambiarPrecio(new Money(request.precio(), producto.getPrecio().moneda()));
-    } else if (request.moneda() != null) {
-      producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), request.moneda()));
-    }
-
-    if (request.idCategoria() != null) {
-      Categoria categoria = categoriaRepository.findById(CategoriaId.of(request.idCategoria()))
-          .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + request.idCategoria()));
+    if (idCategoria != null) {
+      Categoria categoria = categoriaRepository.findById(CategoriaId.of(idCategoria))
+        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + idCategoria));
       producto.cambiarCategoria(categoria.getCategoriaId());
     }
 
-    producto = productoRepository.save(producto);
+    String nuevoNombre = nombreProducto != null ? nombreProducto : producto.getNombre();
+    String nuevaDescripcion = descripcion != null ? descripcion : producto.getDescripcion();
 
-    return ProductoResponse.from(producto);
+    producto.actualizarInformacion(nuevoNombre, nuevaDescripcion);
+
+    // Lógica para actualizar el precio
+    if (precio != null && moneda != null) {
+      producto.cambiarPrecio(new Money(precio, moneda));
+    } else if (precio != null) {
+      producto.cambiarPrecio(new Money(precio, producto.getPrecio().moneda()));
+    } else if (moneda != null) {
+      producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), moneda));
+    }
+
+    return productoRepository.save(producto);
   }
 
-  public ProductoResponse activar(UUID id) {
+  public Producto activar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
-        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
     producto.activar();
-    producto = productoRepository.save(producto);
-    return ProductoResponse.from(producto);
+    return productoRepository.save(producto);
   }
 
-  public ProductoResponse desactivar(UUID id) {
+  public Producto desactivar(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
-        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
     producto.desactivar();
-    producto = productoRepository.save(producto);
-    return ProductoResponse.from(producto);
+    return productoRepository.save(producto);
   }
 
   public CategoriaResponse crearCategoria(CategoriaRequest request) {
     Categoria nuevaCategoria = Categoria.crear(
-        CategoriaId.generar(),
-        request.nombreCategoria(),
-        request.descripcion());
+      CategoriaId.generar(),
+      request.nombreCategoria(),
+      request.descripcion());
 
     if (request.categoriaPadreId() != null) {
       categoriaRepository.findById(CategoriaId.of(request.categoriaPadreId().toString()))
-          .orElseThrow(() -> new ResourceNotFoundException(
-              "Categoría padre no encontrada con ID: " + request.categoriaPadreId()));
+        .orElseThrow(() -> new ResourceNotFoundException(
+          "Categoría padre no encontrada con ID: " + request.categoriaPadreId()));
       nuevaCategoria.asignarPadre(CategoriaId.of(request.categoriaPadreId().toString()));
     }
 
     nuevaCategoria = categoriaRepository.save(nuevaCategoria);
 
     return new CategoriaResponse(
-        nuevaCategoria.getCategoriaId().valor(),
-        nuevaCategoria.getNombre(),
-        nuevaCategoria.getDescripcion(),
-        nuevaCategoria.getCategoriaPadreId() != null ? nuevaCategoria.getCategoriaPadreId().valor() : null);
+      nuevaCategoria.getCategoriaId().valor(),
+      nuevaCategoria.getNombre(),
+      nuevaCategoria.getDescripcion(),
+      nuevaCategoria.getCategoriaPadreId() != null ? nuevaCategoria.getCategoriaPadreId().valor() : null);
   }
 
   public CategoriaResponse buscarCategoriaPorId(UUID id) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
-        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
 
     return new CategoriaResponse(
-        categoria.getCategoriaId().valor(),
-        categoria.getNombre(),
-        categoria.getDescripcion(),
-        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
+      categoria.getCategoriaId().valor(),
+      categoria.getNombre(),
+      categoria.getDescripcion(),
+      categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
   }
 
   public List<CategoriaResponse> buscarTodasCategorias() {
     List<Categoria> categorias = categoriaRepository.findAll();
     return categorias.stream().map(categoria -> new CategoriaResponse(
-        categoria.getCategoriaId().valor(),
-        categoria.getNombre(),
-        categoria.getDescripcion(),
-        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null)).toList();
+      categoria.getCategoriaId().valor(),
+      categoria.getNombre(),
+      categoria.getDescripcion(),
+      categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null)).toList();
   }
 
   public CategoriaResponse actualizarCategoria(UUID id, CategoriaRequest request) {
     Categoria categoria = categoriaRepository.findById(CategoriaId.of(id + ""))
-        .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
+      .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + id));
 
     categoria.actualizar(request.nombreCategoria(), request.descripcion());
 
@@ -158,10 +150,10 @@ public class ProductoService {
     categoria = categoriaRepository.save(categoria);
 
     return new CategoriaResponse(
-        categoria.getCategoriaId().valor(),
-        categoria.getNombre(),
-        categoria.getDescripcion(),
-        categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
+      categoria.getCategoriaId().valor(),
+      categoria.getNombre(),
+      categoria.getDescripcion(),
+      categoria.getCategoriaPadreId() != null ? categoria.getCategoriaPadreId().valor() : null);
   }
 
 }

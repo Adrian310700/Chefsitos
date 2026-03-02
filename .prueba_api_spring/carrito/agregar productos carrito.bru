@@ -13,18 +13,17 @@ post {
 body:json {
   {
     "productoId": "{{productoId}}",
-    "nombreProducto": "string",
-    "sku": "AAA-000",
-    "cantidad": 10,
-    "precioUnitario": 1,
-    "moneda": "MXN"
+    "cantidad": 2
   }
 }
 
 script:post-response {
   let data = res.getBody();
   let carritoId = data.carritoId;
-  bru.setVar("carritoId", carritoId);
+  if(carritoId){
+    bru.setVar("carritoId", carritoId);  
+  }
+  
 }
 
 settings {

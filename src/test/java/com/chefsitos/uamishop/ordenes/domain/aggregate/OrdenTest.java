@@ -37,12 +37,10 @@ public class OrdenTest {
 
   private Orden orden;
   private DireccionEnvio direccionValida;
-  private ClienteId clienteIdValido;
-  private ItemOrden itemValido;
 
   @BeforeEach
   void setUp() {
-    clienteIdValido = new ClienteId(UUID.randomUUID());
+    ClienteId clienteIdValido = new ClienteId(UUID.randomUUID());
 
     // RN-VO-03 y RN-VO-04: Dirección válida con país = "México"
     direccionValida = new DireccionEnvio(
@@ -58,12 +56,12 @@ public class OrdenTest {
     Money precio = new Money(BigDecimal.valueOf(100), "MXN");
     ProductoId productoId = ProductoId.generar();
 
-    itemValido = new ItemOrden(
-        productoId,
-        "Producto Test",
-        "SKU-001",
-        1,
-        precio);
+    ItemOrden itemValido = new ItemOrden(
+      productoId,
+      "Producto Test",
+      "SKU-001",
+      1,
+      precio);
 
     // Usar el método fábrica Orden.crear() — única forma de construir una Orden
     orden = Orden.crear(clienteIdValido, List.of(itemValido), direccionValida);

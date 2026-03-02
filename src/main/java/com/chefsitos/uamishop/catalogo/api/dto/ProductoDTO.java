@@ -1,15 +1,14 @@
-package com.chefsitos.uamishop.catalogo.controller.dto;
+package com.chefsitos.uamishop.catalogo.api.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 
-public record ProductoResponse(
+public record ProductoDTO(
     UUID idProducto,
-    String nombreProducto,
+    String nombreProducto,  
     String descripcion,
     BigDecimal precio,
     String moneda,
@@ -17,8 +16,8 @@ public record ProductoResponse(
     LocalDateTime fechaCreacion,
     UUID idCategoria) {
 
-  public static ProductoResponse from(Producto producto) {
-    return new ProductoResponse(
+  public static ProductoDTO from(Producto producto) {
+    return new ProductoDTO(
         producto.getProductoId().valor(),
         producto.getNombre(),
         producto.getDescripcion(),
@@ -27,17 +26,5 @@ public record ProductoResponse(
         producto.isDisponible(),
         producto.getFechaCreacion(),
         producto.getCategoriaId().valor());
-  }
-
-  public static ProductoResponse from(ProductoDTO producto) {
-    return new ProductoResponse(
-        producto.idProducto(),
-        producto.nombreProducto(),
-        producto.descripcion(),
-        producto.precio(),
-        producto.moneda(),
-        producto.disponible(),
-        producto.fechaCreacion(),
-        producto.idCategoria());
   }
 }

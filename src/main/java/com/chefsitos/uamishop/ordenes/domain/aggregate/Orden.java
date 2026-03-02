@@ -7,8 +7,9 @@ import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
-
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,72 +19,79 @@ import java.util.List;
 @Table(name = "ordenes")
 public class Orden {
 
+  @Getter
   @EmbeddedId
   @AttributeOverride(name = "valor", column = @Column(name = "id"))
   private OrdenId id;
 
+  @Getter
   @Column(name = "numero_orden", nullable = false, unique = true)
   private String numeroOrden;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
 
+  @Getter
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "orden_id", nullable = false)
   private List<ItemOrden> items;
 
+  @Getter
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "nombreDestinatario", column = @Column(name = "envio_nombre_destinatario")),
-      @AttributeOverride(name = "calle", column = @Column(name = "envio_calle")),
-      @AttributeOverride(name = "ciudad", column = @Column(name = "envio_ciudad")),
-      @AttributeOverride(name = "estado", column = @Column(name = "envio_estado")),
-      @AttributeOverride(name = "codigoPostal", column = @Column(name = "envio_cp")),
-      @AttributeOverride(name = "pais", column = @Column(name = "envio_pais")),
-      @AttributeOverride(name = "telefono", column = @Column(name = "envio_telefono")),
-      @AttributeOverride(name = "instrucciones", column = @Column(name = "envio_instrucciones"))
+    @AttributeOverride(name = "nombreDestinatario", column = @Column(name = "envio_nombre_destinatario")),
+    @AttributeOverride(name = "calle", column = @Column(name = "envio_calle")),
+    @AttributeOverride(name = "ciudad", column = @Column(name = "envio_ciudad")),
+    @AttributeOverride(name = "estado", column = @Column(name = "envio_estado")),
+    @AttributeOverride(name = "codigoPostal", column = @Column(name = "envio_cp")),
+    @AttributeOverride(name = "pais", column = @Column(name = "envio_pais")),
+    @AttributeOverride(name = "telefono", column = @Column(name = "envio_telefono")),
+    @AttributeOverride(name = "instrucciones", column = @Column(name = "envio_instrucciones"))
   })
   private DireccionEnvio direccionEnvio;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "metodoPago", column = @Column(name = "pago_metodo")),
-      @AttributeOverride(name = "referenciaExterna", column = @Column(name = "pago_referencia")),
-      @AttributeOverride(name = "estado", column = @Column(name = "pago_estado")),
-      @AttributeOverride(name = "fechaProcesamiento", column = @Column(name = "pago_fecha"))
+    @AttributeOverride(name = "metodoPago", column = @Column(name = "pago_metodo")),
+    @AttributeOverride(name = "referenciaExterna", column = @Column(name = "pago_referencia")),
+    @AttributeOverride(name = "estado", column = @Column(name = "pago_estado")),
+    @AttributeOverride(name = "fechaProcesamiento", column = @Column(name = "pago_fecha"))
   })
   private ResumenPago resumenPago;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "proveedorLogistico", column = @Column(name = "envio_proveedor")),
-      @AttributeOverride(name = "numeroGuia", column = @Column(name = "envio_guia")),
-      @AttributeOverride(name = "fechaEstimadaEntrega", column = @Column(name = "envio_fecha_estimada"))
+    @AttributeOverride(name = "proveedorLogistico", column = @Column(name = "envio_proveedor")),
+    @AttributeOverride(name = "numeroGuia", column = @Column(name = "envio_guia")),
+    @AttributeOverride(name = "fechaEstimadaEntrega", column = @Column(name = "envio_fecha_estimada"))
   })
   private InfoEnvio infoEnvio;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "subtotal_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_moneda"))
   })
   private Money subtotal;
 
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "descuento_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "descuento_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "descuento_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "descuento_moneda"))
   })
   private Money descuento;
 
+  @Getter
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "total_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "total_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "total_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "total_moneda"))
   })
   private Money total;
 
+  @Getter
   @Enumerated(EnumType.STRING)
   @Column(name = "estado_orden", nullable = false)
   private EstadoOrden estado;
@@ -95,11 +103,11 @@ public class Orden {
   @CollectionTable(name = "orden_historial_estados", joinColumns = @JoinColumn(name = "orden_id"))
   private List<CambioEstado> historialEstados;
 
-  private Orden() {
+  protected Orden() {
   }
 
   public static Orden crear(ClienteId clienteId, List<ItemOrden> items, DireccionEnvio direccionEnvio,
-      ResumenPago resumenPago) {
+                            ResumenPago resumenPago) {
     // RN-ORD-01
     if (items == null || items.isEmpty()) {
       throw new BusinessRuleException("La orden debe tener al menos un item.");
@@ -108,7 +116,7 @@ public class Orden {
     Orden orden = new Orden();
     orden.id = OrdenId.generar();
     orden.numeroOrden = "ORD-" + LocalDateTime.now().getYear() + "-"
-        + orden.id.valor().toString().substring(0, 6).toUpperCase();
+      + orden.id.valor().toString().substring(0, 6).toUpperCase();
     orden.clienteId = clienteId;
     orden.items = new ArrayList<>(items);
     orden.direccionEnvio = direccionEnvio;
@@ -133,7 +141,7 @@ public class Orden {
     if (items.isEmpty())
       return;
 
-    String moneda = items.get(0).getPrecioUnitario().moneda();
+    String moneda = items.getFirst().getPrecioUnitario().moneda();
 
     Money subtotalTemp = Money.zero(moneda);
     for (ItemOrden item : items) {
@@ -200,7 +208,7 @@ public class Orden {
     }
     this.infoEnvio = infoEnvio;
     registrarCambioEstado(EstadoOrden.ENVIADA,
-        "Orden despachada con guía: " + infoEnvio.numeroGuia(), "LOGISTICA");
+      "Orden despachada con guía: " + infoEnvio.numeroGuia(), "LOGISTICA");
   }
 
   public void marcarEnTransito() {
@@ -224,7 +232,7 @@ public class Orden {
     EstadoOrden estadoActual = obtenerEstadoActual();
     // RN-ORD-14
     if (estadoActual == EstadoOrden.ENVIADA || estadoActual == EstadoOrden.EN_TRANSITO
-        || estadoActual == EstadoOrden.ENTREGADA) {
+      || estadoActual == EstadoOrden.ENTREGADA) {
       throw new BusinessRuleException("No se puede cancelar una orden que ya ha sido enviada o entregada.");
     }
     // RN-ORD-15
@@ -241,30 +249,14 @@ public class Orden {
 
   private void registrarCambioEstado(EstadoOrden nuevoEstado, String motivo, String usuario) {
     CambioEstado cambio = new CambioEstado(
-        obtenerEstadoActual(),
-        nuevoEstado,
-        LocalDateTime.now(),
-        motivo,
-        usuario);
+      obtenerEstadoActual(),
+      nuevoEstado,
+      LocalDateTime.now(),
+      motivo,
+      usuario);
 
     this.historialEstados.add(cambio);
     this.estado = nuevoEstado;
-  }
-
-  public OrdenId getId() {
-    return id;
-  }
-
-  public String getNumeroOrden() {
-    return numeroOrden;
-  }
-
-  public EstadoOrden getEstado() {
-    return estado;
-  }
-
-  public Money getTotal() {
-    return total;
   }
 
   public List<CambioEstado> obtenerHistorial() {
@@ -275,15 +267,4 @@ public class Orden {
     return this.estado;
   }
 
-  public List<ItemOrden> getItems() {
-    return items;
-  }
-
-  public DireccionEnvio getDireccionEnvio() {
-    return direccionEnvio;
-  }
-
-  public ClienteId getClienteId() {
-    return clienteId;
-  }
 }

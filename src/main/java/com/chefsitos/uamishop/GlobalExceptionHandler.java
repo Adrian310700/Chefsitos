@@ -1,5 +1,6 @@
 package com.chefsitos.uamishop;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   public ResponseEntity<ApiError> handleBusinessRuleException(
       BusinessRuleException ex, WebRequest request) {
 
-    log.warn("Regla de negocio violada: {}", ex.getMessage(), ex.getRule());
+    log.warn("Regla de negocio violada: {}, {}", ex.getMessage(), ex.getRule());
 
     ApiError apiError = new ApiError(
         HttpStatus.UNPROCESSABLE_CONTENT.value(),
@@ -70,10 +71,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException ex,
-      HttpHeaders headers,
-      HttpStatusCode status,
-      WebRequest request) {
+    MethodArgumentNotValidException ex,
+    @NonNull HttpHeaders headers,
+    @NonNull HttpStatusCode status,
+    @NonNull WebRequest request) {
 
     String defaultMessage = ex.getBindingResult().getFieldErrors().stream()
         .findFirst()

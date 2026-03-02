@@ -1,5 +1,8 @@
 package com.chefsitos.uamishop.shared.exception;
 
+import lombok.Getter;
+
+@Getter
 public class BadRequestException extends RuntimeException {
   private static final long serialVersionUID = 1L;
   private final String rule;
@@ -14,7 +17,4 @@ public class BadRequestException extends RuntimeException {
     this.rule = rule;
   }
 
-  public String getRule() {
-    return rule;
-  }
 }

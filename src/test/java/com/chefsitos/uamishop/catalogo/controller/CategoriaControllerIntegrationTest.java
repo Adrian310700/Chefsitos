@@ -23,6 +23,7 @@ import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import org.junit.jupiter.api.Nested;
 
+import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -48,22 +49,20 @@ public class CategoriaControllerIntegrationTest {
 
   // Funcion para crear un request body de categoria cada que sea necesario
   private CategoriaRequest crearRequestCategoria(String nombre, String descripcion, UUID idPadre) {
-    CategoriaRequest request = new CategoriaRequest(
+
+    return new CategoriaRequest(
         nombre,
         descripcion,
         idPadre);
-
-    return request;
   }
 
   // Funcion para crear un objeto de tipo categoria
   private Categoria crearCategoria(String nombre, String descripcion, CategoriaId idPadre) {
-    Categoria categoria = Categoria.crear(
+
+    return Categoria.crear(
         idPadre,
         nombre,
         descripcion);
-
-    return categoria;
   }
 
   // 1. CREAR CATEGORIA ------------------------
@@ -395,12 +394,12 @@ public class CategoriaControllerIntegrationTest {
       categoriaRepository.save(categoria2);
 
       // Ejecutar GET usando ParameterizedTypeReference
-      ResponseEntity<java.util.List<CategoriaResponse>> response = restTemplate.exchange(
+      ResponseEntity<List<CategoriaResponse>> response = restTemplate.exchange(
           BASE_URL,
           HttpMethod.GET,
           null,
-          new ParameterizedTypeReference<java.util.List<CategoriaResponse>>() {
-          });
+        new ParameterizedTypeReference<>() {
+        });
 
       // Validar respuesta
       assertEquals(HttpStatus.OK, response.getStatusCode());

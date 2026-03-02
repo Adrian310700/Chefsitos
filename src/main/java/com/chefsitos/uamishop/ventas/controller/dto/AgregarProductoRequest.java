@@ -1,6 +1,5 @@
 package com.chefsitos.uamishop.ventas.controller.dto;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import jakarta.validation.constraints.*;

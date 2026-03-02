@@ -1,8 +1,11 @@
 package com.chefsitos.uamishop.shared.exception;
 
+import lombok.Getter;
+
 /**
  * Excepción lanzada cuando un recurso solicitado no es encontrado.
  */
+@Getter
 public class ResourceNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -22,11 +25,4 @@ public class ResourceNotFoundException extends RuntimeException {
         this.resourceId = resourceId;
     }
 
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public String getResourceId() {
-        return resourceId;
-    }
 }

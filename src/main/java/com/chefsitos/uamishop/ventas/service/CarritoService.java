@@ -1,57 +1,48 @@
 package com.chefsitos.uamishop.ventas.service;
 
+import com.chefsitos.uamishop.catalogo.api.ProductoApi;
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
+import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
+import com.chefsitos.uamishop.shared.domain.valueObject.Money;
+import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.ventas.api.CarritoApi;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
+import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
+import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
+import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
+import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
+import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
-
-import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-
-import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
-import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
-import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
-import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
-import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
-import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
-import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
-import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
-import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
-import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
-import com.chefsitos.uamishop.catalogo.service.ProductoService;
-import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
-
-import jakarta.transaction.Transactional;
-
 @Service
-public class CarritoService {
+@AllArgsConstructor
+public class CarritoService implements CarritoApi {
 
   private final CarritoJpaRepository carritoRepository;
-  private final ProductoService productoService;
-
-  public CarritoService(CarritoJpaRepository carritoRepository, ProductoService productoService) {
-    this.carritoRepository = carritoRepository;
-    this.productoService = productoService;
-  }
-
-  // Metodo SOLO para obtener el carrito por ID en el servicio de ordenes
-  public Carrito obtenerCarrito(CarritoId carritoId) {
-    return buscarCarrito(carritoId);
-  }
+  private final ProductoApi productoService;
 
   // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
     return carritoRepository.findById(carritoId)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Carrito no encontrado con ID: " + carritoId.valor()));
+      .orElseThrow(() -> new ResourceNotFoundException(
+        "Carrito no encontrado con ID: " + carritoId.valor()));
   }
 
   @Transactional
   public CarritoResponse crear(CarritoRequest request) {
     // Buscar si el cliente ya tiene un carrito activo
     Optional<Carrito> carritoOptExistente = carritoRepository
-        .findByClienteIdAndEstado(ClienteId.of(request.clienteId().toString()), EstadoCarrito.ACTIVO);
+      .findByClienteIdAndEstado(ClienteId.of(request.clienteId().toString()), EstadoCarrito.ACTIVO);
 
     // Si existe retornarlo
     if (carritoOptExistente.isPresent()) {
@@ -67,23 +58,21 @@ public class CarritoService {
   }
 
   @Transactional
-  public CarritoResponse obtenerCarrito(UUID carritoId) {
+  public CarritoDTO obtenerCarrito(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
-    CarritoResponse carritoResponse = CarritoResponse.from(carrito);
-    return carritoResponse;
-
+    return CarritoDTO.from(carrito);
   }
 
   @Transactional
   public CarritoResponse agregarProducto(UUID carritoId, AgregarProductoRequest request) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
 
-    ProductoResponse producto = productoService.buscarPorId(request.productoId());
+    ProductoDTO producto = productoService.buscarPorId(request.productoId());
 
     ProductoRef productoRef = new ProductoRef(
-        ProductoId.of(request.productoId().toString()),
-        producto.nombreProducto(),
-        "DEF-000"); // sku: placeholder hasta tener campo propio
+      ProductoId.of(request.productoId().toString()),
+      producto.nombreProducto(),
+      "DEF-000"); // sku: placeholder hasta tener campo propio
 
     Money precioUnitario = new Money(producto.precio(), producto.moneda());
     carrito.agregarProducto(productoRef, request.cantidad(), precioUnitario);
@@ -92,7 +81,7 @@ public class CarritoService {
 
   @Transactional
   public CarritoResponse modificarCantidad(UUID carritoId, UUID productoId,
-      ModificarCantidadRequest request) {
+                                           ModificarCantidadRequest request) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.modificarCantidad(ProductoId.of(productoId.toString()), request.nuevaCantidad());
 
@@ -122,10 +111,10 @@ public class CarritoService {
   }
 
   @Transactional
-  public CarritoResponse completarCheckout(UUID carritoId) {
+  public CarritoDTO completarCheckout(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.completarCheckout();
-    return CarritoResponse.from(carritoRepository.save(carrito));
+    return CarritoDTO.from(carritoRepository.save(carrito));
   }
 
   @Transactional

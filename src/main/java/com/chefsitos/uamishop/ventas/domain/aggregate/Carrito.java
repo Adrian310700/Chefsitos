@@ -7,10 +7,11 @@ import java.util.List;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
-import com.chefsitos.uamishop.ventas.domain.valueObject.CarritoId;
+import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ItemCarritoId;
@@ -30,6 +31,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
 
 @Entity
 @Table(name = "carritos")
@@ -41,25 +43,31 @@ public class Carrito {
   @AttributeOverride(name = "valor", column = @Column(name = "carrito_id"))
   private CarritoId id;
 
+  @Getter
   @Embedded
   @AttributeOverride(name = "valor", column = @Column(name = "cliente_id"))
   private ClienteId clienteId;
 
+  @Getter
   @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "carrito_descuentos", joinColumns = @JoinColumn(name = "carrito_id"))
-  private List<DescuentoAplicado> descuentos = new ArrayList<>();
+  private final List<DescuentoAplicado> descuentos = new ArrayList<>();
 
+  @Getter
   @OneToMany(cascade = CascadeType.ALL, // Si se guarda Carrito, se guardan sus ítems
       orphanRemoval = true, // Si se quita un ítem de la lista, se borra de la BD
       fetch = FetchType.EAGER) // Carga los ítems junto al Carrito para que las RN se evalúen correctamente
   @JoinColumn(name = "carrito_id") // Columna en la tabla items que referencia al carrito
-  private List<ItemCarrito> items = new ArrayList<>();
+  private final List<ItemCarrito> items = new ArrayList<>();
 
+  @Getter
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private EstadoCarrito estado;
 
+  @Getter
   private LocalDateTime fechaCreacion;
+  @Getter
   private LocalDateTime fechaActualizacion;
 
   protected Carrito() {
@@ -91,7 +99,7 @@ public class Carrito {
     } else {
       if (items.size() >= MAX_ITEMS) {
         // RN-VEN-03: Un carrito puede tener máximo 20 productos diferentes
-        throw new IllegalStateException("Un carrito no puede tener más de " + MAX_ITEMS + " productos");
+        throw new BusinessRuleException("Un carrito no puede tener más de " + MAX_ITEMS + " productos");
       }
       // Si el producto no existe, lo agregamos como nuevo ítem
       items.add(new ItemCarrito(
@@ -159,7 +167,7 @@ public class Carrito {
       boolean yaTieneCupon = descuentos.stream()
           .anyMatch(d -> d.tipo() == TipoDescuento.CUPON);
       if (yaTieneCupon) {
-        throw new IllegalStateException("Solo se permite un cupón de descuento por carrito");
+        throw new BusinessRuleException("Solo se permite un cupón de descuento por carrito");
       }
     }
     // Calcular el monto descontado y almacenar con el monto calculado
@@ -172,16 +180,16 @@ public class Carrito {
   public void iniciarCheckout() {
     // RN-VEN-11: El carrito debe estar en estado ACTIVO para iniciar el checkout
     if (estado != EstadoCarrito.ACTIVO) {
-      throw new IllegalStateException("El carrito no está activo");
+      throw new BusinessRuleException("El carrito no está activo");
     }
     // RN-VEN-10: El carrito debe tener al menos un producto para iniciar el
     // checkout
     if (items.isEmpty()) {
-      throw new IllegalStateException("El carrito debe tener al menos un producto");
+      throw new BusinessRuleException("El carrito debe tener al menos un producto");
     }
     // RN-VEN-12: El monto mínimo de compra para iniciar el checkout es de $50 MXN
     if (calcularSubtotal().cantidad().compareTo(MONTO_MINIMO.cantidad()) < 0) {
-      throw new IllegalStateException("Monto mínimo de compra no alcanzado");
+      throw new BusinessRuleException("Monto mínimo de compra no alcanzado");
     }
     estado = EstadoCarrito.EN_CHECKOUT;
     actualizarFecha();
@@ -190,7 +198,7 @@ public class Carrito {
   public void completarCheckout() {
     // RN-VEN-13: Solo se completa si esta en checkout
     if (estado != EstadoCarrito.EN_CHECKOUT) {
-      throw new IllegalStateException("El carrito no está en checkout");
+      throw new BusinessRuleException("El carrito no está en checkout");
     }
     estado = EstadoCarrito.COMPLETADO;
     actualizarFecha();
@@ -199,7 +207,7 @@ public class Carrito {
   public void abandonar() {
     // RN-VEN-14: Solo se puede abandonar un carrito que esté en checkout
     if (estado != EstadoCarrito.EN_CHECKOUT) {
-      throw new IllegalStateException("El carrito no está en checkout");
+      throw new BusinessRuleException("El carrito no está en checkout");
     }
     estado = EstadoCarrito.ABANDONADO;
     actualizarFecha();
@@ -212,7 +220,7 @@ public class Carrito {
 
   private void validarEditable() {
     if (estado != EstadoCarrito.ACTIVO) {
-      throw new IllegalStateException("Solo se pueden modificar carritos activos");
+      throw new BusinessRuleException("Solo se pueden modificar carritos activos");
     }
   }
 
@@ -226,7 +234,7 @@ public class Carrito {
   private ItemCarrito obtenerItemObligatorio(ProductoId productoId) {
     ItemCarrito item = buscarItem(productoId);
     if (item == null) {
-      throw new IllegalStateException("El producto no existe en el carrito");
+      throw new BusinessRuleException("El producto no existe en el carrito");
     }
     return item;
   }
@@ -239,27 +247,4 @@ public class Carrito {
     return id;
   }
 
-  public LocalDateTime getFechaActualizacion() {
-    return fechaActualizacion;
-  }
-
-  public LocalDateTime getFechaCreacion() {
-    return fechaCreacion;
-  }
-
-  public ClienteId getClienteId() {
-    return clienteId;
-  }
-
-  public EstadoCarrito getEstado() {
-    return estado;
-  }
-
-  public List<ItemCarrito> getItems() {
-    return items;
-  }
-
-  public List<DescuentoAplicado> getDescuentos() {
-    return descuentos;
-  }
 }
