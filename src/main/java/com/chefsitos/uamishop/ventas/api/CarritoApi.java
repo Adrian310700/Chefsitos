@@ -6,8 +6,7 @@ import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 
 public interface CarritoApi {
 
-  public CarritoDTO obtenerCarrito(UUID carritoId);
+  CarritoDTO obtenerCarrito(UUID carritoId);
 
-  public CarritoDTO completarCheckout(UUID carritoId);
-
+  CarritoDTO completarCheckout(UUID carritoId);
 }
