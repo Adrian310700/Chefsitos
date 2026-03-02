@@ -1,15 +1,12 @@
-package com.chefsitos.uamishop.ventas.controller.dto;
+package com.chefsitos.uamishop.ventas.api.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
-import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
-import com.chefsitos.uamishop.ventas.api.dto.DescuentoDTO;
 
-public record CarritoResponse(
+public record CarritoDTO(
     UUID carritoId,
     UUID clienteId,
     List<ItemCarritoDTO> items,
@@ -19,8 +16,8 @@ public record CarritoResponse(
     BigDecimal total,
     String moneda) {
 
-  public static CarritoResponse from(Carrito carrito) {
-    return new CarritoResponse(
+  public static CarritoDTO from(Carrito carrito) {
+    return new CarritoDTO(
         carrito.getCarritoId().getValue(),
         carrito.getClienteId().valor(),
         carrito.getItems().stream().map(ItemCarritoDTO::from).toList(),
@@ -29,17 +26,5 @@ public record CarritoResponse(
         carrito.calcularSubtotal().cantidad(),
         carrito.calcularTotal().cantidad(),
         carrito.calcularTotal().moneda());
-  }
-
-  public static CarritoResponse from(CarritoDTO carrito) {
-    return new CarritoResponse(
-        carrito.carritoId(),
-        carrito.clienteId(),
-        carrito.items(),
-        carrito.descuentos(),
-        carrito.estado(),
-        carrito.subtotal(),
-        carrito.total(),
-        carrito.moneda());
   }
 }

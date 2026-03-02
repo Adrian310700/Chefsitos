@@ -19,6 +19,9 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
+import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.api.ProductoApi;
 
@@ -62,6 +65,7 @@ public class OrdenService implements OrdenesApi {
         .collect(Collectors.toList());
   }
 
+  private final ProductoApi productoService;
   @Override
   @Transactional // Necesario para evitar LazyInitializationException
   public OrdenDTO confirmarOrden(UUID id) {
@@ -78,6 +82,8 @@ public class OrdenService implements OrdenesApi {
     return OrdenDTO.from(ordenRepository.save(orden));
   }
   // Métodos internos usados por OrdenController (REST)
+
+  private final CarritoApi carritoService;
 
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
@@ -137,6 +143,27 @@ public class OrdenService implements OrdenesApi {
    * </pre>
    */
   public OrdenResponseDTO crearDesdeCarrito(CarritoId carritoId, DireccionEnvio direccionEnvio) {
+    CarritoDTO carrito = carritoService.obtenerCarrito(carritoId.getValue());
+
+    // Validación: el carrito debe estar en EN_CHECKOUT
+    if (!"EN_CHECKOUT".equals(carrito.estado())) {
+      throw new IllegalStateException(
+          "El carrito debe estar en checkout para crear una orden");
+    }
+
+    ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
+
+    List<ItemOrden> itemsOrden = carrito.items().stream()
+        .map(OrdenService::mapItemCarritoToItemOrden)
+        .collect(Collectors.toList());
+
+    ResumenPago resumenPendiente = new ResumenPago(
+        "PENDIENTE", null, EstadoPago.PENDIENTE, null);
+
+    Orden nuevaOrden = Orden.crear(clienteOrden, itemsOrden, direccionEnvio, resumenPendiente);
+    nuevaOrden = ordenRepository.save(nuevaOrden);
+    carritoService.completarCheckout(carritoId.getValue());
+    return mapToResponseDTO(nuevaOrden);
     throw new UnsupportedOperationException(
         "Pendiente: requiere VentasApi (API pública del módulo ventas).");
   }
@@ -190,6 +217,17 @@ public class OrdenService implements OrdenesApi {
     Orden orden = obtenerOrden(id);
     orden.cancelar(motivo);
     return mapToResponseDTO(ordenRepository.save(orden));
+  }
+
+  // Helpers
+  public static ItemOrden mapItemCarritoToItemOrden(ItemCarritoDTO item) {
+    ProductoId productoId = ProductoId.of(item.productoId().toString());
+    return new ItemOrden(
+        productoId,
+        item.nombreProducto(),
+        item.sku(), // sku: workaround hasta tener campo propio en catálogo
+        item.cantidad(),
+        new Money(item.precioUnitario(), item.moneda()));
   }
 
   public static OrdenResponseDTO mapToResponseDTO(Orden orden) {
