@@ -25,7 +25,7 @@ import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @Transactional
-class CarritoApiIntegrationTest {
+class CarritoApiTest {
 
   @Autowired
   private CarritoApi carritoApi;
