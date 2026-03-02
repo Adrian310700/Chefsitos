@@ -1,21 +1,5 @@
 package com.chefsitos.uamishop.catalogo.controller;
 
-import java.net.URI;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
@@ -23,18 +7,23 @@ import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 import com.chefsitos.uamishop.catalogo.service.ProductoService;
 import com.chefsitos.uamishop.shared.ApiErrors;
-
-import jakarta.validation.Valid;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/${api.V1}/productos")
@@ -42,12 +31,15 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 @ApiErrors.GlobalErrorResponses
 public class ProductoController {
 
-  @Autowired
-  private ProductoService productoService;
+  private final ProductoService productoService;
+
+  public ProductoController(ProductoService productoService) {
+    this.productoService = productoService;
+  }
 
   @Operation(summary = "Crear producto", description = "Permite registrar un nuevo producto en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/v1/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/v1/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.BadRequest
   @ApiErrors.UnprocessableEntity
@@ -56,21 +48,21 @@ public class ProductoController {
     Producto producto = productoService.crear(request);
     ProductoResponse response = ProductoResponse.from(producto);
     URI location = ServletUriComponentsBuilder
-        .fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(response.idProducto())
-        .toUri();
+      .fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(response.idProducto())
+      .toUri();
     return ResponseEntity.created(location).body(response);
   }
 
   @Operation(summary = "Obtener producto por ID", description = "Devuelve los detalles de un producto específico dado su ID")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @GetMapping("/{id}")
   public ResponseEntity<ProductoResponse> obtener(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     ProductoDTO response = productoService.buscarPorId(id);
 
     return ResponseEntity.ok(ProductoResponse.from(response));
@@ -78,27 +70,27 @@ public class ProductoController {
 
   @Operation(summary = "Listar productos", description = "Devuelve la lista de todos los productos disponibles en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoResponse.class))))
+    @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoResponse.class))))
   })
   @GetMapping
   @ApiErrors.Unauthorized
   @ApiErrors.Forbidden
   public ResponseEntity<List<ProductoResponse>> buscarTodos() {
     List<ProductoResponse> productos = productoService.buscarTodos()
-        .stream().map(ProductoResponse::from)
-        .toList();
+      .stream().map(ProductoResponse::from)
+      .toList();
     return ResponseEntity.ok(productos);
   }
 
   @Operation(summary = "Actualizar producto", description = "Cambia el estado del producto a disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/activar")
   public ResponseEntity<ProductoResponse> activar(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     Producto producto = productoService.activar(id);
     ProductoResponse response = ProductoResponse.from(producto);
     // Tambien se podria usar un status 204 para decir que se activo correctamente
@@ -109,13 +101,13 @@ public class ProductoController {
 
   @Operation(summary = "Desactivar producto", description = "Cambia el estado del producto a no disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/desactivar")
   public ResponseEntity<ProductoResponse> desactivar(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     Producto producto = productoService.desactivar(id);
     ProductoResponse response = ProductoResponse.from(producto);
     return ResponseEntity.ok(response);
@@ -123,22 +115,22 @@ public class ProductoController {
 
   @Operation(summary = "Actualizar producto", description = "Permite actualizar los datos de un producto existente en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PatchMapping("/{id}")
   public ResponseEntity<ProductoResponse> actualizar(
-      @PathVariable UUID id,
-      @RequestBody @Valid ProductoPatchRequest request) {
+    @PathVariable UUID id,
+    @RequestBody @Valid ProductoPatchRequest request) {
 
     Producto productoActualizado = productoService.actualizar(
-        id,
-        request.nombreProducto(),
-        request.descripcion(),
-        request.precio(),
-        request.moneda(),
-        request.idCategoria());
+      id,
+      request.nombreProducto(),
+      request.descripcion(),
+      request.precio(),
+      request.moneda(),
+      request.idCategoria());
 
     return ResponseEntity.ok(ProductoResponse.from(productoActualizado));
   }
