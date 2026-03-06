@@ -6,6 +6,7 @@ import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
@@ -18,18 +19,27 @@ import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 public class CarritoService implements CarritoApi {
 
   private final CarritoJpaRepository carritoRepository;
   private final ProductoApi productoService;
+  private final ApplicationEventPublisher eventPublisher;
+
+  public CarritoService(CarritoJpaRepository carritoRepository,
+                        ProductoApi productoService,
+                        ApplicationEventPublisher eventPublisher) {
+    this.carritoRepository = carritoRepository;
+    this.productoService = productoService;
+    this.eventPublisher = eventPublisher;
+  }
 
   // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
@@ -76,7 +86,21 @@ public class CarritoService implements CarritoApi {
 
     Money precioUnitario = new Money(producto.precio(), producto.moneda());
     carrito.agregarProducto(productoRef, request.cantidad(), precioUnitario);
-    return CarritoResponse.from(carritoRepository.save(carrito));
+
+    Carrito carritoGuardado = carritoRepository.save(carrito);
+
+    ProductoAgregadoAlCarritoEvent evento = new ProductoAgregadoAlCarritoEvent(
+      UUID.randomUUID(),
+      Instant.now(),
+      request.productoId(),
+      carritoGuardado.getCarritoId().valor(),
+      request.cantidad(),
+      producto.precio(),
+      producto.moneda()
+    );
+    eventPublisher.publishEvent(evento);
+
+    return CarritoResponse.from(carritoGuardado);
   }
 
   @Transactional
