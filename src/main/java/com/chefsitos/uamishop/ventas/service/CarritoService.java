@@ -34,8 +34,8 @@ public class CarritoService implements CarritoApi {
   private final ApplicationEventPublisher eventPublisher;
 
   public CarritoService(CarritoJpaRepository carritoRepository,
-                        ProductoApi productoService,
-                        ApplicationEventPublisher eventPublisher) {
+      ProductoApi productoService,
+      ApplicationEventPublisher eventPublisher) {
     this.carritoRepository = carritoRepository;
     this.productoService = productoService;
     this.eventPublisher = eventPublisher;
@@ -44,15 +44,15 @@ public class CarritoService implements CarritoApi {
   // Método privado para buscar un carrito por ID en este servicio
   private Carrito buscarCarrito(CarritoId carritoId) {
     return carritoRepository.findById(carritoId)
-      .orElseThrow(() -> new ResourceNotFoundException(
-        "Carrito no encontrado con ID: " + carritoId.valor()));
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Carrito no encontrado con ID: " + carritoId.valor()));
   }
 
   @Transactional
   public CarritoResponse crear(CarritoRequest request) {
     // Buscar si el cliente ya tiene un carrito activo
     Optional<Carrito> carritoOptExistente = carritoRepository
-      .findByClienteIdAndEstado(ClienteId.of(request.clienteId().toString()), EstadoCarrito.ACTIVO);
+        .findByClienteIdAndEstado(ClienteId.of(request.clienteId().toString()), EstadoCarrito.ACTIVO);
 
     // Si existe retornarlo
     if (carritoOptExistente.isPresent()) {
@@ -80,9 +80,9 @@ public class CarritoService implements CarritoApi {
     ProductoDTO producto = productoService.buscarPorId(request.productoId());
 
     ProductoRef productoRef = new ProductoRef(
-      ProductoId.of(request.productoId().toString()),
-      producto.nombreProducto(),
-      "DEF-000"); // sku: placeholder hasta tener campo propio
+        ProductoId.of(request.productoId().toString()),
+        producto.nombreProducto(),
+        "DEF-000"); // sku: placeholder hasta tener campo propio
 
     Money precioUnitario = new Money(producto.precio(), producto.moneda());
     carrito.agregarProducto(productoRef, request.cantidad(), precioUnitario);
@@ -90,14 +90,13 @@ public class CarritoService implements CarritoApi {
     Carrito carritoGuardado = carritoRepository.save(carrito);
 
     ProductoAgregadoAlCarritoEvent evento = new ProductoAgregadoAlCarritoEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      request.productoId(),
-      carritoGuardado.getCarritoId().valor(),
-      request.cantidad(),
-      producto.precio(),
-      producto.moneda()
-    );
+        UUID.randomUUID(),
+        Instant.now(),
+        request.productoId(),
+        carritoGuardado.getCarritoId().valor(),
+        request.cantidad(),
+        producto.precio(),
+        producto.moneda());
     eventPublisher.publishEvent(evento);
 
     return CarritoResponse.from(carritoGuardado);
@@ -105,7 +104,7 @@ public class CarritoService implements CarritoApi {
 
   @Transactional
   public CarritoResponse modificarCantidad(UUID carritoId, UUID productoId,
-                                           ModificarCantidadRequest request) {
+      ModificarCantidadRequest request) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.modificarCantidad(ProductoId.of(productoId.toString()), request.nuevaCantidad());
 

@@ -6,19 +6,18 @@ import java.util.List;
 import java.util.UUID;
 
 public record ProductoCompradoEvent(
-  UUID eventId,
-  Instant occurredAt,
-  UUID ordenId,
-  UUID clienteId,
-  List<ItemComprado> items
-) {
+    UUID eventId,
+    Instant occurredAt,
+    UUID ordenId,
+    UUID clienteId,
+    List<ItemComprado> items) {
 
   public record ItemComprado(
-    UUID productoId,
-    String sku,
-    int cantidad,
-    BigDecimal precioUnitario,
-    String moneda
-  ) {}
+      UUID productoId,
+      String sku,
+      int cantidad,
+      BigDecimal precioUnitario,
+      String moneda) {
+  }
 
 }

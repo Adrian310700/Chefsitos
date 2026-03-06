@@ -38,7 +38,8 @@ public class OrdenService implements OrdenesApi {
   private final CarritoApi carritoService;
   private final ApplicationEventPublisher eventPublisher;
 
-  public OrdenService(OrdenJpaRepository ordenRepository, ProductoApi productoApi, CarritoApi carritoService, ApplicationEventPublisher eventPublisher) {
+  public OrdenService(OrdenJpaRepository ordenRepository, ProductoApi productoApi, CarritoApi carritoService,
+      ApplicationEventPublisher eventPublisher) {
     this.ordenRepository = ordenRepository;
     this.productoService = productoApi;
     this.carritoService = carritoService;
@@ -52,8 +53,8 @@ public class OrdenService implements OrdenesApi {
 
   public List<OrdenDTO> buscarTodas() {
     return ordenRepository.findAll().stream()
-      .map(OrdenDTO::from)
-      .collect(Collectors.toList());
+        .map(OrdenDTO::from)
+        .collect(Collectors.toList());
   }
 
   @Transactional
@@ -73,26 +74,26 @@ public class OrdenService implements OrdenesApi {
   @Transactional
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
-      request.direccion().nombreDestinatario(),
-      request.direccion().calle(),
-      request.direccion().ciudad(),
-      request.direccion().estado(),
-      request.direccion().codigoPostal(),
-      "México",
-      request.direccion().telefono(),
-      request.direccion().instrucciones());
+        request.direccion().nombreDestinatario(),
+        request.direccion().calle(),
+        request.direccion().ciudad(),
+        request.direccion().estado(),
+        request.direccion().codigoPostal(),
+        "México",
+        request.direccion().telefono(),
+        request.direccion().instrucciones());
 
     List<ItemOrden> items = request.items().stream()
-      .map(i -> {
-        ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
-        return new ItemOrden(
-          ProductoId.of(i.productoId()),
-          producto.nombreProducto(),
-          producto.nombreProducto(),
-          i.cantidad().intValue(),
-          new Money(producto.precio(), producto.moneda()));
-      })
-      .toList();
+        .map(i -> {
+          ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
+          return new ItemOrden(
+              ProductoId.of(i.productoId()),
+              producto.nombreProducto(),
+              producto.nombreProducto(),
+              i.cantidad().intValue(),
+              new Money(producto.precio(), producto.moneda()));
+        })
+        .toList();
 
     ResumenPago resumenPendiente = new ResumenPago("PENDIENTE", null, EstadoPago.PENDIENTE, null);
     Orden orden = Orden.crear(new ClienteId(request.clienteId()), items, direccion, resumenPendiente);
@@ -100,22 +101,20 @@ public class OrdenService implements OrdenesApi {
     Orden ordenGuardada = ordenRepository.save(orden);
 
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = items.stream()
-      .map(item -> new ProductoCompradoEvent.ItemComprado(
-        item.getProductoId().getValue(),
-        item.getSku(),
-        item.getCantidad(),
-        item.getPrecioUnitario().cantidad(),
-        item.getPrecioUnitario().moneda()
-      ))
-      .toList();
+        .map(item -> new ProductoCompradoEvent.ItemComprado(
+            item.getProductoId().getValue(),
+            item.getSku(),
+            item.getCantidad(),
+            item.getPrecioUnitario().cantidad(),
+            item.getPrecioUnitario().moneda()))
+        .toList();
 
     ProductoCompradoEvent evento = new ProductoCompradoEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      ordenGuardada.getId().getValue(),
-      ordenGuardada.getClienteId().valor(),
-      itemsEvento
-    );
+        UUID.randomUUID(),
+        Instant.now(),
+        ordenGuardada.getId().getValue(),
+        ordenGuardada.getClienteId().valor(),
+        itemsEvento);
 
     eventPublisher.publishEvent(evento);
 
@@ -129,33 +128,31 @@ public class OrdenService implements OrdenesApi {
     ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
 
     List<ItemOrden> itemsOrden = carrito.items().stream()
-      .map(OrdenService::mapItemCarritoToItemOrden)
-      .collect(Collectors.toList());
+        .map(OrdenService::mapItemCarritoToItemOrden)
+        .collect(Collectors.toList());
 
     ResumenPago resumenPendiente = new ResumenPago(
-      "PENDIENTE", null, EstadoPago.PENDIENTE, null);
+        "PENDIENTE", null, EstadoPago.PENDIENTE, null);
 
     Orden nuevaOrden = Orden.crear(clienteOrden, itemsOrden, direccionEnvio, resumenPendiente);
 
     nuevaOrden = ordenRepository.save(nuevaOrden);
 
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = itemsOrden.stream()
-      .map(item -> new ProductoCompradoEvent.ItemComprado(
-        item.getProductoId().getValue(),
-        item.getSku(),
-        item.getCantidad(),
-        item.getPrecioUnitario().cantidad(),
-        item.getPrecioUnitario().moneda()
-      ))
-      .toList();
+        .map(item -> new ProductoCompradoEvent.ItemComprado(
+            item.getProductoId().getValue(),
+            item.getSku(),
+            item.getCantidad(),
+            item.getPrecioUnitario().cantidad(),
+            item.getPrecioUnitario().moneda()))
+        .toList();
 
     ProductoCompradoEvent evento = new ProductoCompradoEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      nuevaOrden.getId().getValue(),
-      nuevaOrden.getClienteId().valor(),
-      itemsEvento
-    );
+        UUID.randomUUID(),
+        Instant.now(),
+        nuevaOrden.getId().getValue(),
+        nuevaOrden.getClienteId().valor(),
+        itemsEvento);
 
     eventPublisher.publishEvent(evento);
 
@@ -165,7 +162,7 @@ public class OrdenService implements OrdenesApi {
 
   private Orden obtenerOrden(UUID id) {
     return ordenRepository.findById(new OrdenId(id))
-      .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
   }
 
   public OrdenResponseDTO buscarPorIdResponse(UUID id) {
@@ -174,8 +171,8 @@ public class OrdenService implements OrdenesApi {
 
   public List<OrdenResponseDTO> buscarTodasResponse() {
     return ordenRepository.findAll().stream()
-      .map(OrdenService::mapToResponseDTO)
-      .collect(Collectors.toList());
+        .map(OrdenService::mapToResponseDTO)
+        .collect(Collectors.toList());
   }
 
   public OrdenResponseDTO confirmar(UUID id) {
@@ -218,21 +215,21 @@ public class OrdenService implements OrdenesApi {
   public static ItemOrden mapItemCarritoToItemOrden(ItemCarritoDTO item) {
     ProductoId productoId = ProductoId.of(item.productoId().toString());
     return new ItemOrden(
-      productoId,
-      item.nombreProducto(),
-      item.sku(), // sku: workaround hasta tener campo propio en catálogo
-      item.cantidad(),
-      new Money(item.precioUnitario(), item.moneda()));
+        productoId,
+        item.nombreProducto(),
+        item.sku(), // sku: workaround hasta tener campo propio en catálogo
+        item.cantidad(),
+        new Money(item.precioUnitario(), item.moneda()));
   }
 
   public static OrdenResponseDTO mapToResponseDTO(Orden orden) {
     return new OrdenResponseDTO(
-      orden.getId().valor(),
-      orden.getNumeroOrden(),
-      orden.getClienteId().valor(),
-      orden.getEstado(),
-      orden.getTotal().cantidad(),
-      orden.getTotal().moneda(),
-      orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
+        orden.getId().valor(),
+        orden.getNumeroOrden(),
+        orden.getClienteId().valor(),
+        orden.getEstado(),
+        orden.getTotal().cantidad(),
+        orden.getTotal().moneda(),
+        orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
   }
 }
