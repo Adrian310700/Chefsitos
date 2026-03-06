@@ -24,7 +24,8 @@ import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
-import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent; // IMPORTANTE: Importamos el evento
+import com.chefsitos.uamishop.shared.event.OrdenCreadaEvent;
+import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
@@ -147,16 +148,21 @@ public class OrdenService implements OrdenesApi {
             item.getPrecioUnitario().moneda()))
         .toList();
 
-    ProductoCompradoEvent evento = new ProductoCompradoEvent(
+    ProductoCompradoEvent eventoProductos = new ProductoCompradoEvent(
         UUID.randomUUID(),
         Instant.now(),
         nuevaOrden.getId().getValue(),
         nuevaOrden.getClienteId().valor(),
         itemsEvento);
+    eventPublisher.publishEvent(eventoProductos);
 
-    eventPublisher.publishEvent(evento);
-
-    carritoService.completarCheckout(carritoId.getValue());
+    OrdenCreadaEvent ordenCreadaEvent = new OrdenCreadaEvent(
+        UUID.randomUUID(),
+        Instant.now(),
+        nuevaOrden.getId().getValue(),
+        carritoId.getValue(),
+        nuevaOrden.getClienteId().valor());
+    eventPublisher.publishEvent(ordenCreadaEvent);
     return mapToResponseDTO(nuevaOrden);
   }
 
@@ -217,7 +223,7 @@ public class OrdenService implements OrdenesApi {
     return new ItemOrden(
         productoId,
         item.nombreProducto(),
-        item.sku(), // sku: workaround hasta tener campo propio en catálogo
+        item.sku(),
         item.cantidad(),
         new Money(item.precioUnitario(), item.moneda()));
   }
