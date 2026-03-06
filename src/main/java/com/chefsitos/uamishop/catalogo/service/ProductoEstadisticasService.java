@@ -2,13 +2,13 @@ package com.chefsitos.uamishop.catalogo.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.chefsitos.uamishop.catalogo.domain.ProductoEstadisticas;
 import com.chefsitos.uamishop.catalogo.repository.ProductoEstadisticasJpaRepository;
+import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +43,9 @@ public class ProductoEstadisticasService {
     return estadisticasRepository.findMasVendidos(limit);
   }
 
-  public Optional<ProductoEstadisticas> obtenerEstadisticas(UUID productoId) {
-    return estadisticasRepository.findById(productoId);
+  public ProductoEstadisticas obtenerEstadisticas(UUID productoId) {
+    return estadisticasRepository.findById(productoId)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("Estatisticas no encontradas para el producto: " + productoId));
   }
 }
