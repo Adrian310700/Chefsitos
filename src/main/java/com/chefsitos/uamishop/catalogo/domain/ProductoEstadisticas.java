@@ -9,11 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "producto_estadisticas")
 @AllArgsConstructor
+@NoArgsConstructor
 public class ProductoEstadisticas {
   @Id
   @Column(columnDefinition = "VARBINARY(16)")

@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.chefsitos.uamishop.catalogo.service.ProductoEstadisticasService;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
-import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent;
-
 import lombok.RequiredArgsConstructor;
 
 @Component

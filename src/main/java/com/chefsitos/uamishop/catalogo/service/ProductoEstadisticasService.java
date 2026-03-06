@@ -1,27 +1,49 @@
 package com.chefsitos.uamishop.catalogo.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import com.chefsitos.uamishop.catalogo.domain.ProductoEstadisticas;
+import org.springframework.stereotype.Service;
 
+import com.chefsitos.uamishop.catalogo.domain.ProductoEstadisticas;
+import com.chefsitos.uamishop.catalogo.repository.ProductoEstadisticasJpaRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class ProductoEstadisticasService {
 
-  // crear o actualizar ProductoEstadisticas, incrementar contadores
+  private final ProductoEstadisticasJpaRepository estadisticasRepository;
+
   public void registrarVenta(UUID productoId, int cantidad) {
-    throw new UnsupportedOperationException("Método no implementado");
+    ProductoEstadisticas estadisticas = estadisticasRepository.findById(productoId)
+        .orElse(new ProductoEstadisticas(productoId, 0, 0, 0, null, null));
+
+    estadisticas.setVentasTotales(estadisticas.getVentasTotales() + 1);
+    estadisticas.setCantidadVendida(estadisticas.getCantidadVendida() + cantidad);
+    estadisticas.setUltimaVentaAt(Instant.now());
+
+    estadisticasRepository.save(estadisticas);
   }
 
-  // incrementar vecesAgregadoAlCarrito
   public void registrarAgregadoAlCarrito(UUID productoId) {
-    throw new UnsupportedOperationException("Método no implementado");
+    ProductoEstadisticas estadisticas = estadisticasRepository.findById(productoId)
+        .orElse(new ProductoEstadisticas(productoId, 0, 0, 0, null, null));
+
+    estadisticas.setVecesAgregadoAlCarrito(estadisticas.getVecesAgregadoAlCarrito() + 1);
+    estadisticas.setUltimaAgregadoAlCarritoAt(Instant.now());
+
+    estadisticasRepository.save(estadisticas);
   }
 
-  // consultar por cantidadVendida descendente
-  public ProductoEstadisticas obtenerMasVendidos(int limit) {
-    throw new UnsupportedOperationException("Método no implementado");
+  public List<ProductoEstadisticas> obtenerMasVendidos(int limit) {
+    return estadisticasRepository.findMasVendidos(limit);
   }
 
-  public ProductoEstadisticas obtenerEstadisticas(UUID productoId) {
-    throw new UnsupportedOperationException("Método no implementado");
+  public Optional<ProductoEstadisticas> obtenerEstadisticas(UUID productoId) {
+    return estadisticasRepository.findById(productoId);
   }
 }
