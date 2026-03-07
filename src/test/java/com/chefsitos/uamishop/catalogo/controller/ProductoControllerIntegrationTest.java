@@ -17,22 +17,32 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.transaction.TestTransaction;
 
+import com.chefsitos.uamishop.catalogo.controller.dto.ProductoEstadisticasResponse;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoResponse;
+import com.chefsitos.uamishop.catalogo.domain.ProductoEstadisticas;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 import com.chefsitos.uamishop.catalogo.domain.entity.Categoria;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 import com.chefsitos.uamishop.catalogo.domain.valueObject.Imagen;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
+import com.chefsitos.uamishop.catalogo.repository.ProductoEstadisticasJpaRepository;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.http.MediaType;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
@@ -52,8 +62,12 @@ class ProductoControllerIntegrationTest {
   @Autowired
   private CategoriaJpaRepository categoriaRepository;
 
+  @Autowired
+  private ProductoEstadisticasJpaRepository estadisticasRepository;
+
   @AfterEach
   void cleanUp() {
+    estadisticasRepository.deleteAll();
     productoRepository.deleteAll();
     categoriaRepository.deleteAll();
   }
@@ -904,5 +918,140 @@ class ProductoControllerIntegrationTest {
 
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     assertTrue(response.getBody().contains("Categoria no encontrada"));
+  }
+
+  // 7. OBTENER MAS VENDIDOS -------------------------------------
+  @Nested
+  @Transactional
+  @DisplayName("GET /api/v1/productos/mas-vendidos")
+  class obtenerMasVendidos {
+    // Caso de exito
+    @Test
+    void obtenerMasVendidos_Correctamente() {
+
+      Categoria categoria = crearCategoriaEnBD("Electronicos");
+
+      Producto p1 = crearProductoEnBD("Producto1", new BigDecimal("10"), "MXN", categoria.getCategoriaId());
+      Producto p2 = crearProductoEnBD("Producto2", new BigDecimal("20"), "MXN", categoria.getCategoriaId());
+      Producto p3 = crearProductoEnBD("Producto3", new BigDecimal("30"), "MXN", categoria.getCategoriaId());
+
+      ProductoEstadisticas e1 = new ProductoEstadisticas(
+          p1.getProductoId().valor(), 1, 10, 0, Instant.now(), null);
+
+      ProductoEstadisticas e2 = new ProductoEstadisticas(
+          p2.getProductoId().valor(), 1, 30, 0, Instant.now(), null);
+
+      ProductoEstadisticas e3 = new ProductoEstadisticas(
+          p3.getProductoId().valor(), 1, 20, 0, Instant.now(), null);
+
+      estadisticasRepository.saveAll(List.of(e1, e2, e3));
+      estadisticasRepository.flush();
+
+      TestTransaction.flagForCommit();
+      TestTransaction.end();
+
+      ResponseEntity<ProductoEstadisticasResponse[]> response = restTemplate.getForEntity(
+          BASE_URL + "/mas-vendidos?limit=3",
+          ProductoEstadisticasResponse[].class);
+
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+
+      ProductoEstadisticasResponse[] body = response.getBody();
+
+      assertNotNull(body);
+      assertEquals(3, body.length);
+
+      assertEquals(30, body[0].cantidadVendida());
+      assertEquals(20, body[1].cantidadVendida());
+      assertEquals(10, body[2].cantidadVendida());
+    }
+
+    // Caso de error
+    @Test
+    void obtenerMasVendidos_limitInvalido_retorna400() {
+
+      ResponseEntity<String> response = restTemplate.getForEntity(
+          BASE_URL + "/mas-vendidos?limit=abc",
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+  }
+
+  // 8. OBTENER ESTADISTICAS -------------------------------------
+  @Nested
+  @Transactional
+  @DisplayName("GET /api/v1/productos/{id}/estadisticas")
+  class obtenerEstadisticas {
+    // Caso de exito
+    @Test
+    void obtenerEstadisticas_Correctamente() {
+
+      Categoria categoria = crearCategoriaEnBD("Electronicos");
+
+      Producto producto = crearProductoEnBD(
+          "Producto1",
+          new BigDecimal("100"),
+          "MXN",
+          categoria.getCategoriaId());
+
+      ProductoEstadisticas estadisticas = new ProductoEstadisticas(
+          producto.getProductoId().valor(),
+          5,
+          25,
+          3,
+          Instant.now(),
+          Instant.now());
+
+      estadisticasRepository.save(estadisticas);
+      estadisticasRepository.flush();
+
+      TestTransaction.flagForCommit();
+      TestTransaction.end();
+
+      ResponseEntity<ProductoEstadisticasResponse> response = restTemplate.getForEntity(
+          BASE_URL + "/" + producto.getProductoId().valor() + "/estadisticas",
+          ProductoEstadisticasResponse.class);
+
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+
+      ProductoEstadisticasResponse body = response.getBody();
+
+      assertNotNull(body);
+      assertEquals(producto.getProductoId().valor(), body.productoId());
+      assertEquals(5, body.ventasTotales());
+      assertEquals(25, body.cantidadVendida());
+      assertEquals(3, body.vecesAgregadoAlCarrito());
+    }
+
+    // Casos de error
+    @Test
+    void obtenerEstadisticas_EstadisticasInexistentes_retorna404() {
+
+      Categoria categoria = crearCategoriaEnBD("Electronicos");
+
+      Producto producto = crearProductoEnBD(
+          "Producto1",
+          new BigDecimal("100"),
+          "MXN",
+          categoria.getCategoriaId());
+
+      ResponseEntity<String> response = restTemplate.getForEntity(
+          BASE_URL + "/" + producto.getProductoId().valor() + "/estadisticas",
+          String.class);
+
+      assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void obtenerEstadisticas_idInvalido_retorna400() {
+
+      ResponseEntity<String> response = restTemplate.getForEntity(
+          BASE_URL + "/id-invalido/estadisticas",
+          String.class);
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
   }
 }
