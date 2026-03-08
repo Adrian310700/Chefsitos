@@ -1,5 +1,7 @@
 package com.chefsitos.uamishop.catalogo.listener;
 
+import static com.chefsitos.uamishop.shared.util.LogColor.*;
+
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -8,10 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.chefsitos.uamishop.catalogo.service.ProductoEstadisticasService;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ProductoAgregadoAlCarritoListener {
   private final ProductoEstadisticasService productoEstadisticasService;
 
@@ -23,7 +28,16 @@ public class ProductoAgregadoAlCarritoListener {
   // falla aquí no debe afectar ni bloquear la transacción
   // principal
   public void onProductoAgregadoAlCarrito(ProductoAgregadoAlCarritoEvent event) {
-    productoEstadisticasService.registrarAgregadoAlCarrito(event.productoId());
+    log.info(VERDE + "Evento ProductoAgregadoAlCarrito recibido | productoId={}, carritoId={}, cantidad={}" + RESET,
+        event.productoId(), event.carritoId(), event.cantidad());
+    try {
+      productoEstadisticasService.registrarAgregadoAlCarrito(event.productoId());
+      log.info(VERDE + "Estadistica de agregado al carrito registrada | productoId={}" + RESET, event.productoId());
+    } catch (Exception e) {
+      log.error(ROJO + "Error al registrar agregado al carrito | productoId={}, error={}" + RESET, event.productoId(),
+          e.getMessage(), e);
+      throw e;
+    }
   }
 
 }

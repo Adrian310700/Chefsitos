@@ -23,10 +23,15 @@ import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
+import static com.chefsitos.uamishop.shared.util.LogColor.*;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class CarritoService implements CarritoApi {
 
@@ -99,6 +104,8 @@ public class CarritoService implements CarritoApi {
         producto.precio(),
         producto.moneda());
     eventPublisher.publishEvent(evento);
+    log.info(AZUL + "Evento ProductoAgregadoAlCarrito emitido | productoId={}, carritoId={}, cantidad={}" + RESET,
+        request.productoId(), carritoGuardado.getCarritoId().valor(), request.cantidad());
 
     return CarritoResponse.from(carritoGuardado);
   }

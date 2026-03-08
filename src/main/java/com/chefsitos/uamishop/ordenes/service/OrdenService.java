@@ -9,6 +9,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.chefsitos.uamishop.shared.util.LogColor.*;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.api.ProductoApi;
 import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
@@ -31,6 +35,7 @@ import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
 
+@Slf4j
 @Service
 public class OrdenService implements OrdenesApi {
 
@@ -118,6 +123,8 @@ public class OrdenService implements OrdenesApi {
         itemsEvento);
 
     eventPublisher.publishEvent(evento);
+    log.info(AZUL + "Evento ProductoComprado emitido | ordenId={}, clienteId={}, totalItems={}" + RESET,
+        ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
 
     return mapToResponseDTO(ordenGuardada);
   }
@@ -157,6 +164,8 @@ public class OrdenService implements OrdenesApi {
         nuevaOrden.getClienteId().valor(),
         itemsEvento);
     eventPublisher.publishEvent(eventoProductos);
+    log.info(AZUL + "Evento ProductoComprado emitido | ordenId={}, clienteId={}, totalItems={}" + RESET,
+        nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
 
     OrdenCreadaEvent ordenCreadaEvent = new OrdenCreadaEvent(
         UUID.randomUUID(),
@@ -165,6 +174,9 @@ public class OrdenService implements OrdenesApi {
         carritoId.getValue(),
         nuevaOrden.getClienteId().valor());
     eventPublisher.publishEvent(ordenCreadaEvent);
+    log.info(AZUL + "Evento OrdenCreada emitido | ordenId={}, carritoId={}, clienteId={}" + RESET,
+        nuevaOrden.getId().getValue(), carritoId.getValue(), nuevaOrden.getClienteId().valor());
+
     return mapToResponseDTO(nuevaOrden);
   }
 
