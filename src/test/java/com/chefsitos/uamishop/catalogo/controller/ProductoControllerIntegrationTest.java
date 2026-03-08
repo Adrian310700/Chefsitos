@@ -38,7 +38,6 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.http.MediaType;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
@@ -259,7 +258,7 @@ class ProductoControllerIntegrationTest {
 
       // Construir request con nombre inválido (2 caracteres)
       ProductoRequest body = new ProductoRequest(
-          "TV", // ❌ menor a 3 caracteres
+          "TV",
           "Televisor 4K",
           new BigDecimal("10000.00"),
           "MXN",
@@ -927,6 +926,7 @@ class ProductoControllerIntegrationTest {
   class obtenerMasVendidos {
     // Caso de exito
     @Test
+    @DisplayName("Persiste estadisticas de productos existentes, los recupera devuelve 200 y comprueba orden correcto")
     void obtenerMasVendidos_Correctamente() {
 
       Categoria categoria = crearCategoriaEnBD("Electronicos");
@@ -968,6 +968,7 @@ class ProductoControllerIntegrationTest {
 
     // Caso de error
     @Test
+    @DisplayName("Invoca endpoint con argumento limit invalido y devuelve 400")
     void obtenerMasVendidos_limitInvalido_retorna400() {
 
       ResponseEntity<String> response = restTemplate.getForEntity(
@@ -986,6 +987,7 @@ class ProductoControllerIntegrationTest {
   class obtenerEstadisticas {
     // Caso de exito
     @Test
+    @DisplayName("Persiste un producto y sus estadisticas, las recupera devuelve 200 y comprueba respuesta")
     void obtenerEstadisticas_Correctamente() {
 
       Categoria categoria = crearCategoriaEnBD("Electronicos");
@@ -1027,6 +1029,7 @@ class ProductoControllerIntegrationTest {
 
     // Casos de error
     @Test
+    @DisplayName("Persiste un producto sin estadisticas, trata de recuperarlo y devuelve 404")
     void obtenerEstadisticas_EstadisticasInexistentes_retorna404() {
 
       Categoria categoria = crearCategoriaEnBD("Electronicos");
@@ -1045,6 +1048,7 @@ class ProductoControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Invoca endpoint con un id de producto invalido y devuelve 400")
     void obtenerEstadisticas_idInvalido_retorna400() {
 
       ResponseEntity<String> response = restTemplate.getForEntity(
