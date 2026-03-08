@@ -28,18 +28,10 @@ public class OrdenCreadaListener {
   // falla aquí no debe afectar ni bloquear la transacción
   // principal
   public void onOrdenCreada(OrdenCreadaEvent event) {
-    log.info(VERDE + "Evento: OrdenCreada recibido" + RESET
+    log.info(AZUL + "Evento: OrdenCreada recibido. Se completa Checkout" + RESET
         + " | ordenId={}, carritoId={}, clienteId={}",
         event.ordenId(), event.carritoId(), event.clienteId());
-    try {
-      carritoService.completarCheckout(event.carritoId());
-      log.info(VERDE + "Checkout completado exitosamente" + RESET
-          + " | carritoId={}", event.carritoId());
-    } catch (Exception e) {
-      log.error(ROJO + "Error al completar checkout" + RESET
-          + " | carritoId={}, error={}", event.carritoId(), e.getMessage(), e);
-      throw e;
-    }
+    carritoService.completarCheckout(event.carritoId());
   }
 
 }

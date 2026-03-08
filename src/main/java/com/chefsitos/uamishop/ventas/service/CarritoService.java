@@ -104,7 +104,7 @@ public class CarritoService implements CarritoApi {
         producto.precio(),
         producto.moneda());
     eventPublisher.publishEvent(evento);
-    log.info(AZUL + "Evento: ProductoAgregadoAlCarrito emitido" + RESET
+    log.info(ROSA + "Evento: ProductoAgregadoAlCarrito emitido" + RESET
         + " | productoId={}, carritoId={}, cantidad={}",
         request.productoId(), carritoGuardado.getCarritoId().valor(), request.cantidad());
 
