@@ -28,14 +28,16 @@ public class ProductoAgregadoAlCarritoListener {
   // falla aquí no debe afectar ni bloquear la transacción
   // principal
   public void onProductoAgregadoAlCarrito(ProductoAgregadoAlCarritoEvent event) {
-    log.info(VERDE + "Evento ProductoAgregadoAlCarrito recibido | productoId={}, carritoId={}, cantidad={}" + RESET,
+    log.info(VERDE + "Evento: ProductoAgregadoAlCarrito recibido" + RESET
+        + " | productoId={}, carritoId={}, cantidad={}",
         event.productoId(), event.carritoId(), event.cantidad());
     try {
       productoEstadisticasService.registrarAgregadoAlCarrito(event.productoId());
-      log.info(VERDE + "Estadistica de agregado al carrito registrada | productoId={}" + RESET, event.productoId());
+      log.info(VERDE + "Estadistica de agregado al carrito registrada" + RESET
+          + " | productoId={}", event.productoId());
     } catch (Exception e) {
-      log.error(ROJO + "Error al registrar agregado al carrito | productoId={}, error={}" + RESET, event.productoId(),
-          e.getMessage(), e);
+      log.error(ROJO + "Error al registrar agregado al carrito" + RESET
+          + " | productoId={}, error={}", event.productoId(), e.getMessage(), e);
       throw e;
     }
   }

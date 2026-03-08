@@ -123,7 +123,8 @@ public class OrdenService implements OrdenesApi {
         itemsEvento);
 
     eventPublisher.publishEvent(evento);
-    log.info(AZUL + "Evento ProductoComprado emitido | ordenId={}, clienteId={}, totalItems={}" + RESET,
+    log.info(AZUL + "Evento: ProductoComprado emitido" + RESET
+        + " | ordenId={}, clienteId={}, totalItems={}",
         ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
 
     return mapToResponseDTO(ordenGuardada);
@@ -164,7 +165,8 @@ public class OrdenService implements OrdenesApi {
         nuevaOrden.getClienteId().valor(),
         itemsEvento);
     eventPublisher.publishEvent(eventoProductos);
-    log.info(AZUL + "Evento ProductoComprado emitido | ordenId={}, clienteId={}, totalItems={}" + RESET,
+    log.info(AZUL + "Evento: ProductoComprado emitido" + RESET
+        + " | ordenId={}, clienteId={}, totalItems={}",
         nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
 
     OrdenCreadaEvent ordenCreadaEvent = new OrdenCreadaEvent(
@@ -174,7 +176,8 @@ public class OrdenService implements OrdenesApi {
         carritoId.getValue(),
         nuevaOrden.getClienteId().valor());
     eventPublisher.publishEvent(ordenCreadaEvent);
-    log.info(AZUL + "Evento OrdenCreada emitido | ordenId={}, carritoId={}, clienteId={}" + RESET,
+    log.info(AZUL + "Evento: OrdenCreada emitido" + RESET
+        + " | ordenId={}, carritoId={}, clienteId={}",
         nuevaOrden.getId().getValue(), carritoId.getValue(), nuevaOrden.getClienteId().valor());
 
     return mapToResponseDTO(nuevaOrden);

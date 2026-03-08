@@ -28,18 +28,19 @@ public class ProductoCompradoListener {
   // falla aquí no debe afectar ni bloquear la transacción
   // principal
   public void onProductoComprado(ProductoCompradoEvent event) {
-    log.info(VERDE + "Evento ProductoComprado recibido | ordenId={}, clienteId={}, totalItems={}" + RESET,
+    log.info(VERDE + "Evento: ProductoComprado recibido" + RESET
+        + " | ordenId={}, clienteId={}, totalItems={}",
         event.ordenId(), event.clienteId(), event.items().size());
     try {
       event.items().forEach(item -> {
-        log.debug(VERDE + "Registrando venta | productoId={}, cantidad={}" + RESET, item.productoId(),
+        log.debug(VERDE + "Registrando venta" + RESET + " | productoId={}, cantidad={}", item.productoId(),
             item.cantidad());
         productoEstadisticasService.registrarVenta(item.productoId(), item.cantidad());
       });
-      log.info(VERDE + "Estadisticas de venta registradas | ordenId={}, itemsProcesados={}" + RESET,
+      log.info(VERDE + "Estadisticas registradas de venta" + RESET + " | ordenId={}, itemsProcesados={}",
           event.ordenId(), event.items().size());
     } catch (Exception e) {
-      log.error(ROJO + "Error al registrar estadisticas de venta | ordenId={}, error={}" + RESET,
+      log.error(ROJO + "Error al registrar estadisticas de venta" + RESET + " | ordenId={}, error={}",
           event.ordenId(), e.getMessage(), e);
       throw e;
     }
