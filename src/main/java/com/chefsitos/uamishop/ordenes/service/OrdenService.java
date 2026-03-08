@@ -124,6 +124,8 @@ public class OrdenService implements OrdenesApi {
 
   @Transactional
   public OrdenResponseDTO crearDesdeCarrito(CarritoId carritoId, DireccionEnvio direccionEnvio) {
+    carritoService.validarCarritoEnCheckout(carritoId.getValue());
+
     CarritoDTO carrito = carritoService.obtenerCarrito(carritoId.getValue());
 
     ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());

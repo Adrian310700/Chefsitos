@@ -7,6 +7,7 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
 import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
@@ -138,6 +139,13 @@ public class CarritoService implements CarritoApi {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.completarCheckout();
     return CarritoDTO.from(carritoRepository.save(carrito));
+  }
+
+  public void validarCarritoEnCheckout(UUID carritoId) {
+    Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
+    if (carrito.getEstado() != EstadoCarrito.EN_CHECKOUT) {
+      throw new BusinessRuleException("El carrito debe estar en checkout para crear una orden");
+    }
   }
 
   @Transactional

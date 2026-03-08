@@ -9,4 +9,6 @@ public interface CarritoApi {
   CarritoDTO obtenerCarrito(UUID carritoId);
 
   CarritoDTO completarCheckout(UUID carritoId);
+
+  void validarCarritoEnCheckout(UUID carritoId);
 }
