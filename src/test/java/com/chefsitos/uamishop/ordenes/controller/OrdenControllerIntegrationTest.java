@@ -1,5 +1,6 @@
 package com.chefsitos.uamishop.ordenes.controller;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +30,7 @@ import com.chefsitos.uamishop.catalogo.domain.valueObject.CategoriaId;
 import com.chefsitos.uamishop.catalogo.repository.CategoriaJpaRepository;
 import com.chefsitos.uamishop.catalogo.repository.ProductoJpaRepository;
 import com.chefsitos.uamishop.ordenes.controller.dto.CancelarOrdenRequest;
+import com.chefsitos.uamishop.ordenes.controller.dto.CrearOrdenDesdeCarritoRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.DireccionEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.InfoEnvioRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
@@ -37,6 +40,10 @@ import com.chefsitos.uamishop.ordenes.controller.dto.PagarOrdenRequest;
 import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoOrden;
 import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
 import com.chefsitos.uamishop.shared.ApiError;
+import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
+import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
+import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 
 /**
  * Pruebas de integración para el controlador de Ordenes.
@@ -60,9 +67,13 @@ class OrdenControllerIntegrationTest {
   @Autowired
   private OrdenJpaRepository ordenRepository;
 
+  @Autowired
+  private CarritoJpaRepository carritoRepository;
+
   @AfterEach
   void cleanUp() {
     ordenRepository.deleteAll();
+    carritoRepository.deleteAll();
     productoRepository.deleteAll();
     categoriaRepository.deleteAll();
   }
@@ -108,13 +119,48 @@ class OrdenControllerIntegrationTest {
   private UUID givenOrdenCreada() {
     UUID productoId = givenProductoEnCatalogo();
     UUID clienteId = UUID.randomUUID();
+
     ResponseEntity<OrdenResponseDTO> createResp = restTemplate.postForEntity(
         BASE_URL + "/directa",
         buildOrdenRequest(clienteId, productoId),
         OrdenResponseDTO.class);
+
     assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
     assertNotNull(createResp.getBody());
     return createResp.getBody().id();
+  }
+
+  private UUID givenCarritoEnCheckoutConProducto(UUID clienteId) {
+    ResponseEntity<CarritoResponse> carritoResp = restTemplate.postForEntity(
+        "/api/v1/carritos",
+        new CarritoRequest(clienteId),
+        CarritoResponse.class);
+
+    assertEquals(HttpStatus.CREATED, carritoResp.getStatusCode());
+    assertNotNull(carritoResp.getBody());
+
+    UUID carritoId = carritoResp.getBody().carritoId();
+    UUID productoId = givenProductoEnCatalogo();
+
+    ResponseEntity<CarritoResponse> agregarResp = restTemplate.exchange(
+        "/api/v1/carritos/" + carritoId + "/productos",
+        HttpMethod.POST,
+        new HttpEntity<>(new AgregarProductoRequest(productoId, 2)),
+        CarritoResponse.class);
+
+    assertEquals(HttpStatus.OK, agregarResp.getStatusCode());
+    assertNotNull(agregarResp.getBody());
+
+    ResponseEntity<CarritoResponse> checkoutResp = restTemplate.postForEntity(
+        "/api/v1/carritos/" + carritoId + "/checkout",
+        null,
+        CarritoResponse.class);
+
+    assertEquals(HttpStatus.OK, checkoutResp.getStatusCode());
+    assertNotNull(checkoutResp.getBody());
+    assertEquals("EN_CHECKOUT", checkoutResp.getBody().estado());
+
+    return carritoId;
   }
 
   @Nested
@@ -151,6 +197,62 @@ class OrdenControllerIntegrationTest {
   }
 
   @Nested
+  @DisplayName("POST /api/v1/ordenes/desde-carrito")
+  class CrearOrdenDesdeCarrito {
+
+    @Test
+    @DisplayName("crea la orden y completa el carrito de forma asíncrona")
+    void crearOrdenDesdeCarrito_completaCheckoutAsincronamente() {
+      UUID clienteId = UUID.randomUUID();
+      UUID carritoId = givenCarritoEnCheckoutConProducto(clienteId);
+
+      DireccionEnvioRequest direccion = new DireccionEnvioRequest(
+          "Juan Pérez",
+          "Av. Universidad 3000",
+          "Ciudad de México",
+          "CDMX",
+          "04510",
+          "5512345678",
+          "Dejar en portería");
+
+      CrearOrdenDesdeCarritoRequest request = new CrearOrdenDesdeCarritoRequest(
+          carritoId,
+          direccion);
+
+      ResponseEntity<OrdenResponseDTO> response = restTemplate.exchange(
+          BASE_URL + "/desde-carrito",
+          HttpMethod.POST,
+          new HttpEntity<>(request),
+          OrdenResponseDTO.class);
+
+      assertEquals(HttpStatus.CREATED, response.getStatusCode());
+
+      String location = response.getHeaders().getFirst("Location");
+      assertNotNull(location);
+      assertTrue(location.contains("/api/v1/ordenes/"));
+
+      OrdenResponseDTO bodyResponse = response.getBody();
+      assertNotNull(bodyResponse);
+      assertNotNull(bodyResponse.id());
+      assertEquals(clienteId, bodyResponse.clienteId());
+      assertEquals(EstadoOrden.PENDIENTE, bodyResponse.estado());
+
+      await()
+          .atMost(5, TimeUnit.SECONDS)
+          .pollInterval(200, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> {
+            ResponseEntity<CarritoResponse> carritoResponse = restTemplate.getForEntity(
+                "/api/v1/carritos/" + carritoId,
+                CarritoResponse.class);
+
+            assertEquals(HttpStatus.OK, carritoResponse.getStatusCode());
+            assertNotNull(carritoResponse.getBody());
+            assertEquals("COMPLETADO", carritoResponse.getBody().estado());
+          });
+    }
+  }
+
+  @Nested
   @DisplayName("GET /api/v1/ordenes")
   class ConsultarOrdenes {
 
@@ -159,7 +261,10 @@ class OrdenControllerIntegrationTest {
     void listarOrdenes_retorna200YLista() {
       UUID productoId = givenProductoEnCatalogo();
       UUID clienteId = UUID.randomUUID();
-      restTemplate.postForEntity(BASE_URL + "/directa", buildOrdenRequest(clienteId, productoId),
+
+      restTemplate.postForEntity(
+          BASE_URL + "/directa",
+          buildOrdenRequest(clienteId, productoId),
           OrdenResponseDTO.class);
 
       ResponseEntity<OrdenResponseDTO[]> response = restTemplate.getForEntity(
@@ -189,9 +294,9 @@ class OrdenControllerIntegrationTest {
           OrdenResponseDTO.class);
 
       assertEquals(HttpStatus.CREATED, createResp.getStatusCode());
+      assertNotNull(createResp.getBody());
       UUID ordenId = createResp.getBody().id();
 
-      // Confirmar
       ResponseEntity<OrdenResponseDTO> confirmarResp = restTemplate.postForEntity(
           BASE_URL + "/" + ordenId + "/confirmar",
           null,
@@ -200,7 +305,6 @@ class OrdenControllerIntegrationTest {
       assertEquals(HttpStatus.OK, confirmarResp.getStatusCode());
       assertEquals(EstadoOrden.CONFIRMADA, confirmarResp.getBody().estado());
 
-      // Procesar pago
       PagarOrdenRequest pago = new PagarOrdenRequest("REF123456");
       ResponseEntity<OrdenResponseDTO> pagoResp = restTemplate.exchange(
           BASE_URL + "/" + ordenId + "/pago",
@@ -211,7 +315,6 @@ class OrdenControllerIntegrationTest {
       assertEquals(HttpStatus.OK, pagoResp.getStatusCode());
       assertEquals(EstadoOrden.PAGO_PROCESADO, pagoResp.getBody().estado());
 
-      // Marcar en preparación
       ResponseEntity<OrdenResponseDTO> preparacionResp = restTemplate.postForEntity(
           BASE_URL + "/" + ordenId + "/en-preparacion",
           null,
@@ -220,7 +323,6 @@ class OrdenControllerIntegrationTest {
       assertEquals(HttpStatus.OK, preparacionResp.getStatusCode());
       assertEquals(EstadoOrden.EN_PREPARACION, preparacionResp.getBody().estado());
 
-      // Marcar enviada
       InfoEnvioRequest envio = new InfoEnvioRequest("1234567890", "DHL");
       ResponseEntity<OrdenResponseDTO> enviadaResp = restTemplate.exchange(
           BASE_URL + "/" + ordenId + "/enviada",
@@ -231,7 +333,6 @@ class OrdenControllerIntegrationTest {
       assertEquals(HttpStatus.OK, enviadaResp.getStatusCode());
       assertEquals(EstadoOrden.ENVIADA, enviadaResp.getBody().estado());
 
-      // Marcar entregada
       ResponseEntity<OrdenResponseDTO> entregadaResp = restTemplate.postForEntity(
           BASE_URL + "/" + ordenId + "/entregada",
           null,
