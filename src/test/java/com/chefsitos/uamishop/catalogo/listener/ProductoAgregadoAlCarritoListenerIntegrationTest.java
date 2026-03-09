@@ -15,10 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.transaction.TestTransaction;
 
 import com.chefsitos.uamishop.catalogo.domain.ProductoEstadisticas;
 import com.chefsitos.uamishop.catalogo.repository.ProductoEstadisticasJpaRepository;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
+
+import jakarta.transaction.Transactional;
 
 import java.time.Instant;
 
@@ -119,6 +122,45 @@ class ProductoAgregadoAlCarritoListenerIntegrationTest {
                 "Debe existir estadística para productoId=" + productoId);
             assertEquals(1, estadisticas.getVecesAgregadoAlCarrito());
           }
+        });
+  }
+
+  @Test
+  @DisplayName("Persiste previamente estadisticas y actualiza con el evento")
+  void alPublicarEvento_conEstadisticasExistentes_seActualizaContador() {
+    UUID productoId = UUID.randomUUID();
+    // Insertar estadísticas iniciales
+    ProductoEstadisticas estadisticasIniciales = new ProductoEstadisticas(
+        productoId,
+        0,
+        0,
+        5,
+        null,
+        Instant.now().minusSeconds(3600));
+
+    estadisticasRepository.saveAndFlush(estadisticasIniciales);
+
+    ProductoAgregadoAlCarritoEvent event = new ProductoAgregadoAlCarritoEvent(
+        UUID.randomUUID(),
+        Instant.now(),
+        productoId,
+        UUID.randomUUID(),
+        1,
+        new BigDecimal("100.00"),
+        "MXN");
+
+    eventPublisher.publishEvent(event);
+
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
+
+          ProductoEstadisticas estadisticas = estadisticasRepository.findById(productoId).orElse(null);
+
+          assertNotNull(estadisticas);
+
+          assertEquals(6, estadisticas.getVecesAgregadoAlCarrito());
+          assertNotNull(estadisticas.getUltimaAgregadoAlCarritoAt());
         });
   }
 }
