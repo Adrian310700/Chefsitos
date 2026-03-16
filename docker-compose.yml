@@ -23,10 +23,10 @@ services:
     restart: unless-stopped
 
   uamishop:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: uamishop:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: hansdd/uamishop:latest
     container_name: uamishop
     ports:
       - "8080:8080"
