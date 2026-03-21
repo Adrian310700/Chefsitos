@@ -1,6 +1,6 @@
 package com.chefsitos.uamishop.ventas.service;
 
-import com.chefsitos.uamishop.catalogo.api.ProductoApi;
+import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
@@ -36,11 +36,11 @@ import java.util.UUID;
 public class CarritoService implements CarritoApi {
 
   private final CarritoJpaRepository carritoRepository;
-  private final ProductoApi productoService;
+  private final CatalogoApi productoService;
   private final ApplicationEventPublisher eventPublisher;
 
   public CarritoService(CarritoJpaRepository carritoRepository,
-      ProductoApi productoService,
+      CatalogoApi productoService,
       ApplicationEventPublisher eventPublisher) {
     this.carritoRepository = carritoRepository;
     this.productoService = productoService;

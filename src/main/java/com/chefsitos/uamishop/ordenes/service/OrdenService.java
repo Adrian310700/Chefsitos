@@ -14,7 +14,7 @@ import static com.chefsitos.uamishop.shared.util.LogColor.*;
 import lombok.extern.slf4j.Slf4j;
 
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
-import com.chefsitos.uamishop.catalogo.api.ProductoApi;
+import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
 import com.chefsitos.uamishop.ordenes.api.OrdenesApi;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
@@ -40,11 +40,11 @@ import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
 public class OrdenService implements OrdenesApi {
 
   private final OrdenJpaRepository ordenRepository;
-  private final ProductoApi productoService;
+  private final CatalogoApi productoService;
   private final CarritoApi carritoService;
   private final ApplicationEventPublisher eventPublisher;
 
-  public OrdenService(OrdenJpaRepository ordenRepository, ProductoApi productoApi, CarritoApi carritoService,
+  public OrdenService(OrdenJpaRepository ordenRepository, CatalogoApi productoApi, CarritoApi carritoService,
       ApplicationEventPublisher eventPublisher) {
     this.ordenRepository = ordenRepository;
     this.productoService = productoApi;

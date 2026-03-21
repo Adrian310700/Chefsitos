@@ -27,7 +27,7 @@ import jakarta.transaction.Transactional;
 class ProductoApiIntegrationTest {
 
   @Autowired
-  private ProductoApi productoApi;
+  private CatalogoApi productoApi;
 
   @Autowired
   private ProductoJpaRepository productoRepository;
