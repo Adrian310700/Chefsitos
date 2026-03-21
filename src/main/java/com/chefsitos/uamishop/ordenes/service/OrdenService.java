@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
+import com.chefsitos.uamishop.config.RabbitConfig;
 import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
 import com.chefsitos.uamishop.ordenes.api.OrdenesApi;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
@@ -43,13 +45,15 @@ public class OrdenService implements OrdenesApi {
   private final CatalogoApi productoService;
   private final CarritoApi carritoService;
   private final ApplicationEventPublisher eventPublisher;
+  private final RabbitTemplate rabbitTemplate;
 
   public OrdenService(OrdenJpaRepository ordenRepository, CatalogoApi productoApi, CarritoApi carritoService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher, RabbitTemplate rabbitTemplate) {
     this.ordenRepository = ordenRepository;
     this.productoService = productoApi;
     this.carritoService = carritoService;
     this.eventPublisher = eventPublisher;
+    this.rabbitTemplate = rabbitTemplate;
   }
 
   public OrdenDTO buscarPorId(UUID id) {
@@ -122,7 +126,12 @@ public class OrdenService implements OrdenesApi {
         ordenGuardada.getClienteId().valor(),
         itemsEvento);
 
-    eventPublisher.publishEvent(evento);
+    eventPublisher.publishEvent(evento); // Publicar evento interno
+    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_COMPRADO,
+        evento
+    );
     log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
         ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
@@ -164,7 +173,12 @@ public class OrdenService implements OrdenesApi {
         nuevaOrden.getId().getValue(),
         nuevaOrden.getClienteId().valor(),
         itemsEvento);
-    eventPublisher.publishEvent(eventoProductos);
+    eventPublisher.publishEvent(eventoProductos); // Publicar evento interno
+    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_COMPRADO,
+        eventoProductos
+    );
     log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
         nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
