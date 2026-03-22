@@ -38,6 +38,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: uamishop
       SPRING_RABBITMQ_HOST: rabbitmq
       CATALOGO_SERVICE_URL: "http://uamishop-catalogo:8081"
+      ORDENES_SERVICE_URL: "http://uamishop-ordenes:8082"
     depends_on:
       mysql:
         condition: service_healthy

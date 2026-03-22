@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.config;
+package com.chefsitos.uamishop.ordenes.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
