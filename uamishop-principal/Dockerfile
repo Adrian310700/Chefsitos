@@ -32,7 +32,7 @@ COPY --from=builder /app/target/*.jar app.jar
 
 
 # Puerto por defecto de Spring Boot
-EXPOSE 8081
+EXPOSE 8080
 
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

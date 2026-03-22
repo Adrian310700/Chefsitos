@@ -25,7 +25,7 @@ services:
 
   uamishop:
     build:
-      context: .
+      context: ./uamishop-principal
       dockerfile: Dockerfile
     image: uamishop:latest
     container_name: uamishop
@@ -47,7 +47,7 @@ services:
 
   uamishop-catalogo:
     build:
-      context: ../uamishop-catalogo
+      context: ./uamishop-catalogo
       dockerfile: Dockerfile
     image: uamishop-catalogo:latest
     container_name: uamishop-catalogo
