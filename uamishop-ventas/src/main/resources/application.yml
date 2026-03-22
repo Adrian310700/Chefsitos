@@ -35,3 +35,7 @@ springdoc:
 catalogo:
   service:
     url: http://localhost:8081
+
+carrito:
+  service:
+    url: http://localhost:8083

@@ -4,19 +4,11 @@ import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 
-/**
- * Implementación de CarritoApi que consume el microservicio de Catálogo vía
- * HTTP.
- * Se activa cuando Carrito está externalizado (perfil distinto a
- * carrito-local).
- */
 @Component
-@Profile("carrito-remoto")
 public class CarritoApiHttpClient implements CarritoApi {
 
   private final RestTemplate restTemplate;

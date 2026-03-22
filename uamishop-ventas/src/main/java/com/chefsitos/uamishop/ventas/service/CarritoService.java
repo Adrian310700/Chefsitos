@@ -35,7 +35,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class CarritoService implements CarritoApi {
+public class CarritoService {
 
   private final CarritoJpaRepository carritoRepository;
   private final CatalogoApi productoService;
@@ -79,9 +79,9 @@ public class CarritoService implements CarritoApi {
   }
 
   @Transactional
-  public CarritoDTO obtenerCarrito(UUID carritoId) {
+  public Carrito obtenerCarrito(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
-    return CarritoDTO.from(carrito);
+    return carrito;
   }
 
   @Transactional
@@ -152,10 +152,10 @@ public class CarritoService implements CarritoApi {
   }
 
   @Transactional
-  public CarritoDTO completarCheckout(UUID carritoId) {
+  public Carrito completarCheckout(UUID carritoId) {
     Carrito carrito = buscarCarrito(CarritoId.of(carritoId.toString()));
     carrito.completarCheckout();
-    return CarritoDTO.from(carritoRepository.save(carrito));
+    return carritoRepository.save(carrito);
   }
 
   public void validarCarritoEnCheckout(UUID carritoId) {

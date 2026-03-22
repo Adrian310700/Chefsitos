@@ -43,6 +43,7 @@ public class CarritoApiHttpClient implements CarritoApi {
     return response.getBody();
   }
 
+  //Esto debe hacer una llamada al endpoint de ventas para validar el estado del carrito antes de crear la orden
   @Override
   public void validarCarritoEnCheckout(UUID carritoId) {
     // Reutiliza obtenerCarrito la validación de estado ocurre sobre el DTO obtenido

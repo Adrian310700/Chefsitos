@@ -20,6 +20,7 @@ import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
 import com.chefsitos.uamishop.ventas.controller.dto.ModificarCantidadRequest;
+import com.chefsitos.uamishop.ventas.domain.aggregate.Carrito;
 import com.chefsitos.uamishop.ventas.service.CarritoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,8 +71,8 @@ public class CarritoController {
   @GetMapping("/{carritoId}")
   public ResponseEntity<CarritoResponse> obtenerCarrito(
       @Parameter(description = "ID único del carrito") @PathVariable UUID carritoId) {
-    CarritoDTO carritoDTO = carritoService.obtenerCarrito(carritoId);
-    CarritoResponse response = CarritoResponse.from(carritoDTO);
+    Carrito carrito = carritoService.obtenerCarrito(carritoId);
+    CarritoResponse response = CarritoResponse.from(carrito);
     return ResponseEntity.ok(response);
   }
 
@@ -153,8 +154,8 @@ public class CarritoController {
   @PostMapping("/{carritoId}/checkout/completar")
   public ResponseEntity<CarritoResponse> completarCheckout(
       @Parameter(description = "ID único del carrito") @PathVariable UUID carritoId) {
-    CarritoDTO carritoDTO = carritoService.completarCheckout(carritoId);
-    CarritoResponse response = CarritoResponse.from(carritoDTO);
+    Carrito carrito = carritoService.completarCheckout(carritoId);
+    CarritoResponse response = CarritoResponse.from(carrito);
     return ResponseEntity.ok(response);
   }
 
