@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.config;
+package com.chefsitos.uamishop.ordenes.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -42,15 +42,15 @@ public class RabbitConfig {
   @Bean
   public Binding catalogoProductoCompradoBinding(Queue catalogoProductoCompradoQueue, TopicExchange eventsExchange) {
     return BindingBuilder.bind(catalogoProductoCompradoQueue)
-      .to(eventsExchange)
-      .with(RK_PRODUCTO_COMPRADO);
+        .to(eventsExchange)
+        .with(RK_PRODUCTO_COMPRADO);
   }
 
   @Bean
   public Binding catalogoProductoAgregadoBinding(Queue catalogoProductoAgregadoQueue, TopicExchange eventsExchange) {
     return BindingBuilder.bind(catalogoProductoAgregadoQueue)
-      .to(eventsExchange)
-      .with(RK_PRODUCTO_AGREGADO);
+        .to(eventsExchange)
+        .with(RK_PRODUCTO_AGREGADO);
   }
 
   @Bean
@@ -61,8 +61,8 @@ public class RabbitConfig {
   @Bean
   public Binding ordenCreadaBinding(Queue ordenCreadaQueue, TopicExchange eventsExchange) {
     return BindingBuilder.bind(ordenCreadaQueue)
-      .to(eventsExchange)
-      .with(RK_ORDEN_CREADA);
+        .to(eventsExchange)
+        .with(RK_ORDEN_CREADA);
   }
 
   @Bean
@@ -72,7 +72,7 @@ public class RabbitConfig {
 
   @Bean
   public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
-                                       JacksonJsonMessageConverter messageConverter) {
+      JacksonJsonMessageConverter messageConverter) {
     RabbitTemplate template = new RabbitTemplate(connectionFactory);
     template.setMessageConverter(messageConverter);
     return template;
