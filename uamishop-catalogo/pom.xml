@@ -123,12 +123,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
@@ -139,8 +133,14 @@
       <artifactId>spring-boot-starter-amqp</artifactId>
     </dependency>
 
-  </dependencies>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
 
+  </dependencies>
   <build>
     <plugins>
       <plugin>
