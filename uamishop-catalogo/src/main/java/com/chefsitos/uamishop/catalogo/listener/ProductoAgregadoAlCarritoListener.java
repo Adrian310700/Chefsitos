@@ -2,6 +2,7 @@ package com.chefsitos.uamishop.catalogo.listener;
 
 import static com.chefsitos.uamishop.shared.util.LogColor.*;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.chefsitos.uamishop.catalogo.service.ProductoEstadisticasService;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
+import com.chefsitos.uamishop.catalogo.config.RabbitConfig;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductoAgregadoAlCarritoListener {
   private final ProductoEstadisticasService productoEstadisticasService;
 
+  @RabbitListener(queues =  RabbitConfig.QUEUE_CATALOGO_PRODUCTO_AGREGADO)
   @EventListener
   @Async // El listener se ejecuta en un hilo distinto, las métricas son eventualmente
          // consistentes
