@@ -17,7 +17,7 @@ import java.util.UUID;
  * está externalizado como microservicio independiente.
  */
 @Component
-@Profile("catalogo-remoto")
+// @Profile("catalogo-remoto")
 public class CatalogoApiHttpClient implements CatalogoApi {
 
   private final RestTemplate restTemplate;
