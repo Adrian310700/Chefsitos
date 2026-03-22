@@ -14,11 +14,9 @@ import static com.chefsitos.uamishop.shared.util.LogColor.*;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
-import com.chefsitos.uamishop.config.RabbitConfig;
-import com.chefsitos.uamishop.ordenes.api.dto.OrdenDTO;
-import com.chefsitos.uamishop.ordenes.api.OrdenesApi;
+import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.ordenes.config.RabbitConfig;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenRequest;
 import com.chefsitos.uamishop.ordenes.controller.dto.OrdenResponseDTO;
 import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
@@ -33,13 +31,10 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.event.OrdenCreadaEvent;
 import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-import com.chefsitos.uamishop.ventas.api.CarritoApi;
-import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
-import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
 
 @Slf4j
 @Service
-public class OrdenService implements OrdenesApi {
+public class OrdenService {
 
   private final OrdenJpaRepository ordenRepository;
   private final CatalogoApi productoService;
@@ -48,7 +43,7 @@ public class OrdenService implements OrdenesApi {
   private final RabbitTemplate rabbitTemplate;
 
   public OrdenService(OrdenJpaRepository ordenRepository, CatalogoApi productoApi, CarritoApi carritoService,
-                      ApplicationEventPublisher eventPublisher, RabbitTemplate rabbitTemplate) {
+      ApplicationEventPublisher eventPublisher, RabbitTemplate rabbitTemplate) {
     this.ordenRepository = ordenRepository;
     this.productoService = productoApi;
     this.carritoService = carritoService;
@@ -56,54 +51,52 @@ public class OrdenService implements OrdenesApi {
     this.rabbitTemplate = rabbitTemplate;
   }
 
-  public OrdenDTO buscarPorId(UUID id) {
+  public Orden buscarPorId(UUID id) {
     Orden orden = obtenerOrden(id);
-    return OrdenDTO.from(orden);
+    return orden;
   }
 
-  public List<OrdenDTO> buscarTodas() {
-    return ordenRepository.findAll().stream()
-      .map(OrdenDTO::from)
-      .collect(Collectors.toList());
+  public List<Orden> buscarTodas() {
+    return ordenRepository.findAll();
   }
 
   @Transactional
-  public OrdenDTO confirmarOrden(UUID id) {
+  public Orden confirmarOrden(UUID id) {
     Orden orden = obtenerOrden(id);
     orden.confirmar();
-    return OrdenDTO.from(ordenRepository.save(orden));
+    return ordenRepository.save(orden);
   }
 
   @Transactional
-  public OrdenDTO cancelarOrden(UUID id, String motivo) {
+  public Orden cancelarOrden(UUID id, String motivo) {
     Orden orden = obtenerOrden(id);
     orden.cancelar(motivo);
-    return OrdenDTO.from(ordenRepository.save(orden));
+    return ordenRepository.save(orden);
   }
 
   @Transactional
   public OrdenResponseDTO crear(OrdenRequest request) {
     DireccionEnvio direccion = new DireccionEnvio(
-      request.direccion().nombreDestinatario(),
-      request.direccion().calle(),
-      request.direccion().ciudad(),
-      request.direccion().estado(),
-      request.direccion().codigoPostal(),
-      "México",
-      request.direccion().telefono(),
-      request.direccion().instrucciones());
+        request.direccion().nombreDestinatario(),
+        request.direccion().calle(),
+        request.direccion().ciudad(),
+        request.direccion().estado(),
+        request.direccion().codigoPostal(),
+        "México",
+        request.direccion().telefono(),
+        request.direccion().instrucciones());
 
     List<ItemOrden> items = request.items().stream()
-      .map(i -> {
-        ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
-        return new ItemOrden(
-          ProductoId.of(i.productoId()),
-          producto.nombreProducto(),
-          producto.nombreProducto(),
-          i.cantidad().intValue(),
-          new Money(producto.precio(), producto.moneda()));
-      })
-      .toList();
+        .map(i -> {
+          ProductoDTO producto = productoService.buscarPorId(UUID.fromString(i.productoId()));
+          return new ItemOrden(
+              ProductoId.of(i.productoId()),
+              producto.nombreProducto(),
+              producto.nombreProducto(),
+              i.cantidad().intValue(),
+              new Money(producto.precio(), producto.moneda()));
+        })
+        .toList();
 
     ResumenPago resumenPendiente = new ResumenPago("PENDIENTE", null, EstadoPago.PENDIENTE, null);
     Orden orden = Orden.crear(new ClienteId(request.clienteId()), items, direccion, resumenPendiente);
@@ -111,30 +104,29 @@ public class OrdenService implements OrdenesApi {
     Orden ordenGuardada = ordenRepository.save(orden);
 
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = items.stream()
-      .map(item -> new ProductoCompradoEvent.ItemComprado(
-        item.getProductoId().getValue(),
-        item.getSku(),
-        item.getCantidad(),
-        item.getPrecioUnitario().cantidad(),
-        item.getPrecioUnitario().moneda()))
-      .toList();
+        .map(item -> new ProductoCompradoEvent.ItemComprado(
+            item.getProductoId().getValue(),
+            item.getSku(),
+            item.getCantidad(),
+            item.getPrecioUnitario().cantidad(),
+            item.getPrecioUnitario().moneda()))
+        .toList();
 
     ProductoCompradoEvent evento = new ProductoCompradoEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      ordenGuardada.getId().getValue(),
-      ordenGuardada.getClienteId().valor(),
-      itemsEvento);
+        UUID.randomUUID(),
+        Instant.now(),
+        ordenGuardada.getId().getValue(),
+        ordenGuardada.getClienteId().valor(),
+        itemsEvento);
 
     eventPublisher.publishEvent(evento); // Publicar evento interno
     rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
-      RabbitConfig.EVENTS_EXCHANGE,
-      RabbitConfig.RK_PRODUCTO_COMPRADO,
-      evento
-    );
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_COMPRADO,
+        evento);
     log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
-      ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
+        ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
 
     return mapToResponseDTO(ordenGuardada);
   }
@@ -148,65 +140,63 @@ public class OrdenService implements OrdenesApi {
     ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
 
     List<ItemOrden> itemsOrden = carrito.items().stream()
-      .map(OrdenService::mapItemCarritoToItemOrden)
-      .collect(Collectors.toList());
+        .map(OrdenService::mapItemCarritoToItemOrden)
+        .collect(Collectors.toList());
 
     ResumenPago resumenPendiente = new ResumenPago(
-      "PENDIENTE", null, EstadoPago.PENDIENTE, null);
+        "PENDIENTE", null, EstadoPago.PENDIENTE, null);
 
     Orden nuevaOrden = Orden.crear(clienteOrden, itemsOrden, direccionEnvio, resumenPendiente);
 
     nuevaOrden = ordenRepository.save(nuevaOrden);
 
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = itemsOrden.stream()
-      .map(item -> new ProductoCompradoEvent.ItemComprado(
-        item.getProductoId().getValue(),
-        item.getSku(),
-        item.getCantidad(),
-        item.getPrecioUnitario().cantidad(),
-        item.getPrecioUnitario().moneda()))
-      .toList();
+        .map(item -> new ProductoCompradoEvent.ItemComprado(
+            item.getProductoId().getValue(),
+            item.getSku(),
+            item.getCantidad(),
+            item.getPrecioUnitario().cantidad(),
+            item.getPrecioUnitario().moneda()))
+        .toList();
 
     ProductoCompradoEvent eventoProductos = new ProductoCompradoEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      nuevaOrden.getId().getValue(),
-      nuevaOrden.getClienteId().valor(),
-      itemsEvento);
+        UUID.randomUUID(),
+        Instant.now(),
+        nuevaOrden.getId().getValue(),
+        nuevaOrden.getClienteId().valor(),
+        itemsEvento);
 
     eventPublisher.publishEvent(eventoProductos); // Publicar evento interno
     rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
-      RabbitConfig.EVENTS_EXCHANGE,
-      RabbitConfig.RK_PRODUCTO_COMPRADO,
-      eventoProductos
-    );
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_COMPRADO,
+        eventoProductos);
     log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
-      nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
+        nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
 
     OrdenCreadaEvent ordenCreadaEvent = new OrdenCreadaEvent(
-      UUID.randomUUID(),
-      Instant.now(),
-      nuevaOrden.getId().getValue(),
-      carritoId.getValue(),
-      nuevaOrden.getClienteId().valor());
+        UUID.randomUUID(),
+        Instant.now(),
+        nuevaOrden.getId().getValue(),
+        carritoId.getValue(),
+        nuevaOrden.getClienteId().valor());
 
     eventPublisher.publishEvent(ordenCreadaEvent); // Publicar evento interno
     rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
-      RabbitConfig.EVENTS_EXCHANGE,
-      RabbitConfig.RK_ORDEN_CREADA,
-      ordenCreadaEvent
-    );
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_ORDEN_CREADA,
+        ordenCreadaEvent);
     log.info(ROSA + "Evento: OrdenCreada emitido" + RESET
         + " | ordenId={}, carritoId={}, clienteId={}",
-      nuevaOrden.getId().getValue(), carritoId.getValue(), nuevaOrden.getClienteId().valor());
+        nuevaOrden.getId().getValue(), carritoId.getValue(), nuevaOrden.getClienteId().valor());
 
     return mapToResponseDTO(nuevaOrden);
   }
 
   private Orden obtenerOrden(UUID id) {
     return ordenRepository.findById(new OrdenId(id))
-      .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada con ID: " + id));
   }
 
   public OrdenResponseDTO buscarPorIdResponse(UUID id) {
@@ -215,8 +205,8 @@ public class OrdenService implements OrdenesApi {
 
   public List<OrdenResponseDTO> buscarTodasResponse() {
     return ordenRepository.findAll().stream()
-      .map(OrdenService::mapToResponseDTO)
-      .collect(Collectors.toList());
+        .map(OrdenService::mapToResponseDTO)
+        .collect(Collectors.toList());
   }
 
   public OrdenResponseDTO confirmar(UUID id) {
@@ -259,21 +249,21 @@ public class OrdenService implements OrdenesApi {
   public static ItemOrden mapItemCarritoToItemOrden(ItemCarritoDTO item) {
     ProductoId productoId = ProductoId.of(item.productoId().toString());
     return new ItemOrden(
-      productoId,
-      item.nombreProducto(),
-      item.sku(),
-      item.cantidad(),
-      new Money(item.precioUnitario(), item.moneda()));
+        productoId,
+        item.nombreProducto(),
+        item.sku(),
+        item.cantidad(),
+        new Money(item.precioUnitario(), item.moneda()));
   }
 
   public static OrdenResponseDTO mapToResponseDTO(Orden orden) {
     return new OrdenResponseDTO(
-      orden.getId().valor(),
-      orden.getNumeroOrden(),
-      orden.getClienteId().valor(),
-      orden.getEstado(),
-      orden.getTotal().cantidad(),
-      orden.getTotal().moneda(),
-      orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
+        orden.getId().valor(),
+        orden.getNumeroOrden(),
+        orden.getClienteId().valor(),
+        orden.getEstado(),
+        orden.getTotal().cantidad(),
+        orden.getTotal().moneda(),
+        orden.getDireccionEnvio().calle() + ", " + orden.getDireccionEnvio().ciudad());
   }
 }

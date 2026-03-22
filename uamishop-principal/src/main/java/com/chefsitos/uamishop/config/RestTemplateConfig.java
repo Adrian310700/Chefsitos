@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.ordenes.config;
+package com.chefsitos.uamishop.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

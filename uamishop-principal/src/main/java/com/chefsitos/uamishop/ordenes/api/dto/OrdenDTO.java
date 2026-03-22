@@ -3,7 +3,6 @@ package com.chefsitos.uamishop.ordenes.api.dto;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import com.chefsitos.uamishop.ordenes.domain.aggregate.Orden;
 
 /**
  * DTO inter-módulo: resumen de una orden para consumo externo.
@@ -29,23 +28,4 @@ public record OrdenDTO(
       BigDecimal precioUnitario) {
   }
 
-  public static OrdenDTO from(Orden orden) {
-    List<ItemOrdenResumen> itemsResumen = orden.getItems().stream()
-        .map(item -> new ItemOrdenResumen(
-            item.getProductoId().valor(),
-            item.getNombreProducto(),
-            item.getSku(),
-            item.getCantidad(),
-            item.getPrecioUnitario().cantidad()))
-        .toList();
-
-    return new OrdenDTO(
-        orden.getId().valor(),
-        orden.getNumeroOrden(),
-        orden.getClienteId().valor(),
-        orden.getEstado().name(),
-        orden.getTotal().cantidad(),
-        orden.getTotal().moneda(),
-        itemsResumen);
-  }
 }

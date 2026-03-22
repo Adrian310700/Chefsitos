@@ -15,5 +15,6 @@
   <modules>
     <module>uamishop-catalogo</module>
     <module>uamishop-principal</module>
+    <module>uamishop-ordenes</module>
   </modules>
 </project>
