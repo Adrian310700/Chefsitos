@@ -21,7 +21,10 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+
+import com.chefsitos.uamishop.config.RabbitConfig;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,13 +41,16 @@ public class CarritoService implements CarritoApi {
   private final CarritoJpaRepository carritoRepository;
   private final CatalogoApi productoService;
   private final ApplicationEventPublisher eventPublisher;
+  private final RabbitTemplate rabbitTemplate;
 
   public CarritoService(CarritoJpaRepository carritoRepository,
       CatalogoApi productoService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      RabbitTemplate rabbitTemplate) {
     this.carritoRepository = carritoRepository;
     this.productoService = productoService;
     this.eventPublisher = eventPublisher;
+    this.rabbitTemplate = rabbitTemplate;
   }
 
   // Método privado para buscar un carrito por ID en este servicio
@@ -103,7 +109,11 @@ public class CarritoService implements CarritoApi {
         request.cantidad(),
         producto.precio(),
         producto.moneda());
-    eventPublisher.publishEvent(evento);
+    eventPublisher.publishEvent(evento); // Publicar evento interno
+    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_AGREGADO,
+        evento);
     log.info(ROSA + "Evento: ProductoAgregadoAlCarrito emitido" + RESET
         + " | productoId={}, carritoId={}, cantidad={}",
         request.productoId(), carritoGuardado.getCarritoId().valor(), request.cantidad());
