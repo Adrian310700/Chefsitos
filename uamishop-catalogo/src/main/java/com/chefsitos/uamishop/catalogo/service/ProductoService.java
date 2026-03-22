@@ -1,7 +1,5 @@
 package com.chefsitos.uamishop.catalogo.service;
 
-import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
-import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.CategoriaResponse;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
@@ -22,7 +20,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class ProductoService implements CatalogoApi {
+public class ProductoService {
 
   private final ProductoJpaRepository productoRepository;
   private final CategoriaJpaRepository categoriaRepository;
@@ -40,11 +38,11 @@ public class ProductoService implements CatalogoApi {
     return productoRepository.save(nuevoProducto);
   }
 
-  public ProductoDTO buscarPorId(UUID id) {
+  public Producto buscarPorId(UUID id) {
     Producto producto = productoRepository.findById(ProductoId.of(id + ""))
         .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
-    return ProductoDTO.from(producto);
+    return producto;
   }
 
   public List<Producto> buscarTodos() {

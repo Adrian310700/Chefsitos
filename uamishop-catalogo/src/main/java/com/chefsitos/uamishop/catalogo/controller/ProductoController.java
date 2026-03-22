@@ -1,6 +1,5 @@
 package com.chefsitos.uamishop.catalogo.controller;
 
-import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoEstadisticasResponse;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoPatchRequest;
 import com.chefsitos.uamishop.catalogo.controller.dto.ProductoRequest;
@@ -65,7 +64,7 @@ public class ProductoController {
   @GetMapping("/{id}")
   public ResponseEntity<ProductoResponse> obtener(
       @Parameter(description = "ID único del producto") @PathVariable UUID id) {
-    ProductoDTO response = productoService.buscarPorId(id);
+    Producto response = productoService.buscarPorId(id);
 
     return ResponseEntity.ok(ProductoResponse.from(response));
   }

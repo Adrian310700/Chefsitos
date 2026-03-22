@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 
 public record ProductoResponse(
@@ -29,15 +28,4 @@ public record ProductoResponse(
         producto.getCategoriaId().valor());
   }
 
-  public static ProductoResponse from(ProductoDTO producto) {
-    return new ProductoResponse(
-        producto.idProducto(),
-        producto.nombreProducto(),
-        producto.descripcion(),
-        producto.precio(),
-        producto.moneda(),
-        producto.disponible(),
-        producto.fechaCreacion(),
-        producto.idCategoria());
-  }
 }
