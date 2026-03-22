@@ -1,6 +1,9 @@
 server:
   port: 8081
 
+api:
+  V1: v1
+
 spring:
   application:
     name: uamishop-catalogo
