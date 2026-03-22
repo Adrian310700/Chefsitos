@@ -1,4 +1,4 @@
-# Ejecución del microservicio de ordenes (sin docker)
+# Ejecución del microservicio de ventas (sin docker)
 
 1. Deben estar activos los contenedores de infraestructura (MySQL y RabbitMQ):
 

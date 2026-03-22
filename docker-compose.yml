@@ -80,5 +80,25 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  uamishop-ventas:
+    build:
+      context: ./uamishop-ventas
+      dockerfile: Dockerfile
+    image: uamishop-ventas:latest
+    container_name: uamishop-ventas
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/uamishop_ventas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: uamishop
+      SPRING_DATASOURCE_PASSWORD: uamishop
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   mysql_data:

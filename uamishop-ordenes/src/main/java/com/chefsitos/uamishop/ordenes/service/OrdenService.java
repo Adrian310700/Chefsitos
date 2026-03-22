@@ -31,6 +31,9 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.event.OrdenCreadaEvent;
 import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.ventas.api.CarritoApi;
+import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
 
 @Slf4j
 @Service
