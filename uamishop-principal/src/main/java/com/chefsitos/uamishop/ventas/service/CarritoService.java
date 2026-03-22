@@ -2,6 +2,7 @@ package com.chefsitos.uamishop.ventas.service;
 
 import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.config.RabbitConfig;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
@@ -23,8 +24,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
-
-import com.chefsitos.uamishop.config.RabbitConfig;
 
 import lombok.extern.slf4j.Slf4j;
 
