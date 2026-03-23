@@ -4,7 +4,7 @@ Repositorio para almacenar el proyecto UAMIShop de la UEA Temas Selectos de Inge
 
 ## Arquitectura
 
-El proyecto está compuesto por dos microservicios:
+El proyecto está compuesto por 3 microservicios (y uno de prueba):
 
 | Servicio             | Puerto |
 | -------------------- | ------ |
