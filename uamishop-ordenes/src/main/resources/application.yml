@@ -9,27 +9,25 @@ spring:
     name: uamishop-ordenes
 
   datasource:
-    url: jdbc:mysql://localhost:3306/uamishop_ordenes?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: uamishop
-    password: uamishop
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/uamishop_ordenes?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:uamishop}
+    password: ${SPRING_DATASOURCE_PASSWORD:uamishop}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      # update: crea/modifica tablas automáticamente sin borrar datos existentes
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        # Esquema propio del microservicio dentro de la BD uamishop_ordenes
         default_schema: ordenes
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
 springdoc:
   api-docs:
@@ -39,8 +37,8 @@ springdoc:
 
 catalogo:
   service:
-    url: http://localhost:8081
+    url: ${CATALOGO_SERVICE_URL:http://localhost:8081}
 
 carrito:
   service:
-    url: http://localhost:8083
+    url: ${CARRITO_SERVICE_URL:http://localhost:8083}
