@@ -10,8 +10,6 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.event.ProductoAgregadoAlCarritoEvent;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
-import com.chefsitos.uamishop.ventas.api.CarritoApi;
-import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
