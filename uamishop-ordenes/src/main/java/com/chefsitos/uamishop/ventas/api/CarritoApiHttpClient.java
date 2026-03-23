@@ -22,7 +22,6 @@ public class CarritoApiHttpClient implements CarritoApi {
   }
 
   // Implementacion de obtenerCarritoParaOrden
-  @Override
   public CarritoDTO obtenerCarritoParaOrden(UUID carritoId) {
     String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId;
     ResponseEntity<CarritoDTO> response = restTemplate.getForEntity(url, CarritoDTO.class);
