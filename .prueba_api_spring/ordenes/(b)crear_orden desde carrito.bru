@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/api/v1/ordenes/desde-carrito
+  url: http://localhost:8082/api/v1/ordenes/desde-carrito
   body: json
   auth: inherit
 }
@@ -31,9 +31,9 @@ vars:pre-request {
 
 script:post-response {
   let data = res.getBody();
-  let productoId = data.idProducto;
-  if(productoId){
-    bru.setVar("productoId",productoId)
+  let id = data.id;
+  if(id){
+    bru.setVar("id",id)
   }
 }
 

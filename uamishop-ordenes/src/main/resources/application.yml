@@ -1,0 +1,44 @@
+server:
+  port: 8082
+
+api:
+  V1: v1
+
+spring:
+  application:
+    name: uamishop-ordenes
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/uamishop_ordenes?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:uamishop}
+    password: ${SPRING_DATASOURCE_PASSWORD:uamishop}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: ordenes
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+catalogo:
+  service:
+    url: ${CATALOGO_SERVICE_URL:http://localhost:8081}
+
+carrito:
+  service:
+    url: ${CARRITO_SERVICE_URL:http://localhost:8083}
