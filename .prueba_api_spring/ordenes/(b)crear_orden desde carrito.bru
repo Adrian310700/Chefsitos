@@ -31,9 +31,9 @@ vars:pre-request {
 
 script:post-response {
   let data = res.getBody();
-  let productoId = data.idProducto;
-  if(productoId){
-    bru.setVar("productoId",productoId)
+  let id = data.id;
+  if(id){
+    bru.setVar("id",id)
   }
 }
 
