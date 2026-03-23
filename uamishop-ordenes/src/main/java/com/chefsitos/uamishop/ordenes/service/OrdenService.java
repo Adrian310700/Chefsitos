@@ -136,9 +136,8 @@ public class OrdenService {
 
   @Transactional
   public OrdenResponseDTO crearDesdeCarrito(CarritoId carritoId, DireccionEnvio direccionEnvio) {
-    carritoService.validarCarritoEnCheckout(carritoId.getValue());
 
-    CarritoDTO carrito = carritoService.obtenerCarrito(carritoId.getValue());
+    CarritoDTO carrito = carritoService.obtenerCarritoParaOrden(carritoId.getValue());
 
     ClienteId clienteOrden = ClienteId.of(carrito.clienteId().toString());
 

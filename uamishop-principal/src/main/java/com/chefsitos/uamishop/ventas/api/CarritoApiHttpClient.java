@@ -27,36 +27,24 @@ public class CarritoApiHttpClient implements CarritoApi {
     this.carritoBaseUrl = carritoBaseUrl;
   }
 
+  // Implementacion de obtenerCarritoParaOrden
   @Override
-  public CarritoDTO obtenerCarrito(UUID carritoId) {
+  public CarritoDTO obtenerCarritoParaOrden(UUID carritoId) {
     String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId;
     ResponseEntity<CarritoDTO> response = restTemplate.getForEntity(url, CarritoDTO.class);
 
+    // Validacion de que el carrito exista
     if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
       throw new RuntimeException("Carrito no encontrado en el servicio de ventas: " + carritoId);
     }
 
-    return response.getBody();
-  }
+    CarritoDTO carrito = response.getBody();
 
-  @Override
-  public CarritoDTO completarCheckout(UUID carritoId) {
-    String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId + "/checkout/completar";
-    ResponseEntity<CarritoDTO> response = restTemplate.getForEntity(url, CarritoDTO.class);
-
-    if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-      throw new RuntimeException("No se pudo completar el checkout en el servicio de ventas: " + carritoId);
-    }
-
-    return response.getBody();
-  }
-
-  @Override
-  public void validarCarritoEnCheckout(UUID carritoId) {
-    // Reutiliza obtenerCarrito la validación de estado ocurre sobre el DTO obtenido
-    CarritoDTO carrito = obtenerCarrito(carritoId);
+    // Validacion de que el carrito este en estado EN_CHECKOUT
     if (!"EN_CHECKOUT".equals(carrito.estado())) {
       throw new RuntimeException("El carrito " + carritoId + " debe estar EN_CHECKOUT para crear una orden");
     }
+
+    return carrito;
   }
 }

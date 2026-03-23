@@ -1,4 +1,4 @@
-package com.chefsitos.uamishop.ventas.api.dto;
+package com.chefsitos.uamishop.ventas.controller.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;

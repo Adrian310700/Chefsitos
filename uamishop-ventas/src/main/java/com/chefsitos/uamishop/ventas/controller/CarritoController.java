@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.chefsitos.uamishop.shared.ApiErrors;
-import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.controller.dto.AgregarProductoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoRequest;
 import com.chefsitos.uamishop.ventas.controller.dto.CarritoResponse;
