@@ -67,26 +67,26 @@ services:
     restart: unless-stopped
 
   uamishop-ordenes:
-      build:
-        context: ./uamishop-ordenes
-        dockerfile: Dockerfile
-      image: uamishop-ordenes:latest
-      container_name: uamishop-ordenes
-      ports:
-        - "8082:8082"
-      environment:
-        SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/uamishop_ordenes?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
-        SPRING_DATASOURCE_USERNAME: uamishop
-        SPRING_DATASOURCE_PASSWORD: uamishop
-        SPRING_RABBITMQ_HOST: rabbitmq
-      depends_on:
-        mysql:
-          condition: service_healthy
-        rabbitmq:
-          condition: service_healthy
-      restart: unless-stopped
-
-
+    build:
+      context: ./uamishop-ordenes
+      dockerfile: Dockerfile
+    image: uamishop-ordenes:latest
+    container_name: uamishop-ordenes
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/uamishop_ordenes?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: uamishop
+      SPRING_DATASOURCE_PASSWORD: uamishop
+      SPRING_RABBITMQ_HOST: rabbitmq
+      CATALOGO_SERVICE_URL: "http://uamishop-catalogo:8081"
+      CARRITO_SERVICE_URL: "http://uamishop-ventas:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:3-management
