@@ -11,7 +11,7 @@
   </parent>
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-principal</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.6-SNAPSHOT</version>
   <name>uamishop-principal</name>
   <description>API REST para la gestión de una tienda minorista de productos físicos</description>
   <url />

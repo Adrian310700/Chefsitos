@@ -6,7 +6,7 @@
 
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-parent</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.6-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>UAMIShop Parent</name>
