@@ -1,7 +1,8 @@
 package com.chefsitos.uamishop.ventas.domain.valueObject;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
-import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
+import com.chefsitos.uamishop.shared.enumeration.TipoDescuento;
+
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

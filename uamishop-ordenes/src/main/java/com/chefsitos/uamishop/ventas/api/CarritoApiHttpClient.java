@@ -1,5 +1,7 @@
 package com.chefsitos.uamishop.ventas.api;
 
+import com.chefsitos.uamishop.shared.enumeration.EstadoCarrito;
+import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import java.util.UUID;
 
@@ -18,22 +20,23 @@ public class CarritoApiHttpClient implements CarritoApi {
     this.restTemplate = restTemplate;
     this.carritoBaseUrl = carritoBaseUrl;
   }
-  //Implementacion de obtenerCarritoParaOrden
+
+  // Implementacion de obtenerCarritoParaOrden
   @Override
   public CarritoDTO obtenerCarritoParaOrden(UUID carritoId) {
     String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId;
     ResponseEntity<CarritoDTO> response = restTemplate.getForEntity(url, CarritoDTO.class);
 
-    //Validacion de que el carrito exista
+    // Validacion de que el carrito exista
     if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-      throw new RuntimeException("Carrito no encontrado en el servicio de ventas: " + carritoId);
+      throw new BusinessRuleException("Carrito no encontrado en el servicio de ventas: " + carritoId);
     }
 
     CarritoDTO carrito = response.getBody();
 
-    //Validacion de que el carrito este en estado EN_CHECKOUT
-    if (!"EN_CHECKOUT".equals(carrito.estado())) {
-      throw new RuntimeException("El carrito " + carritoId + " debe estar EN_CHECKOUT para crear una orden");
+    // Validacion de que el carrito este en estado EN_CHECKOUT
+    if (!carrito.estado().equals(EstadoCarrito.EN_CHECKOUT.toString())) {
+      throw new BusinessRuleException("El carrito " + carritoId + " debe estar EN_CHECKOUT para crear una orden");
     }
 
     return carrito;

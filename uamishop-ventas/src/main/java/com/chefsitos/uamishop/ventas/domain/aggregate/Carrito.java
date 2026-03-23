@@ -7,10 +7,10 @@ import java.util.List;
 
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
 import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
+import com.chefsitos.uamishop.shared.enumeration.EstadoCarrito;
+import com.chefsitos.uamishop.shared.enumeration.TipoDescuento;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.ventas.domain.entity.ItemCarrito;
-import com.chefsitos.uamishop.ventas.domain.enumeration.EstadoCarrito;
-import com.chefsitos.uamishop.ventas.domain.enumeration.TipoDescuento;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.ventas.domain.valueObject.DescuentoAplicado;
