@@ -39,3 +39,14 @@ catalogo:
 carrito:
   service:
     url: http://localhost:8083
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      catalogoService:                            # nombre en la anotacion
+        slidingWindowSize: 5                      # evalua las ultimas 5 llamadas
+        minimumNumberOfCalls: 3                   # minimo de llamadas antes de abrir el CB
+        failureRateThreshold: 50                  # porcentaje de fallos antes de abrir el CB
+        waitDurationInOpenState: 10s              # espera 10s antes de pasar a semi abierto
+        permittedNumberOfCallsInHalfOpenState: 3  # prueba con 1 llamada
+        registerHealthIndicator: true             # expone el estado en /actuator/health
