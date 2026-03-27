@@ -23,6 +23,7 @@ El proyecto está compuesto por 3 microservicios (y uno de prueba):
 ## Requisitos
 
 - Java 21 (se puede utilizar [sdkman](https://sdkman.io/))
+- **Maven** instalado localmente en el equipo
 - Docker y Docker Compose
 
 ## Instalación y configuración
@@ -30,6 +31,7 @@ El proyecto está compuesto por 3 microservicios (y uno de prueba):
 1. Clonar el repositorio
 2. `cd Chefsitos`
 3. Si están usando Linux/MacOS: `chmod +x uamishop-principal/mvnw uamishop-catalogo/mvnw uamishop-ordenes/mvnw uamishop-ventas/mvnw`
+4. Desde la raíz del proyecto, ejecutar `mvn clean install -DskipTests` para instalar el paquete shared en los otros módulos como dependencia.
 
 ## Ejecución
 
