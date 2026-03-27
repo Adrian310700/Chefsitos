@@ -1,18 +1,15 @@
 # Etapa 1: Construcción
-FROM maven:3.9-eclipse-temurin-21 AS builder
+ARG SHARED_BUILDER_IMAGE=local/uamishop-shared-builder:latest
+FROM ${SHARED_BUILDER_IMAGE} AS builder
 
+WORKDIR /build
 
-WORKDIR /app
-
-
-# Copiar solo archivos de dependencias primero
-COPY pom.xml .
+# Compilar microservicio
+WORKDIR /build/uamishop-ventas
+COPY uamishop-ventas/pom.xml ./pom.xml
 RUN mvn dependency:go-offline -B
-
-
-# Copiar código fuente y compilar
-COPY src ./src
-RUN mvn package -DskipTests -B
+COPY uamishop-ventas/src ./src
+RUN mvn clean package -DskipTests -B
 
 
 # Etapa 2: Ejecución
@@ -28,7 +25,7 @@ USER appuser
 
 
 # Copiar el JAR generado desde el stage de build
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /build/uamishop-ventas/target/*.jar app.jar
 
 
 # Puerto por defecto de Spring Boot

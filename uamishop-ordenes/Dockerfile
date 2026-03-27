@@ -1,15 +1,15 @@
 # Etapa 1: Construcción
-FROM maven:3.9-eclipse-temurin-21 AS builder
+ARG SHARED_BUILDER_IMAGE=local/uamishop-shared-builder:latest
+FROM ${SHARED_BUILDER_IMAGE} AS builder
 
-WORKDIR /app
+WORKDIR /build
 
-# Copiar solo archivos de dependencias primero
-COPY pom.xml .
+# Compilar microservicio
+WORKDIR /build/uamishop-ordenes
+COPY uamishop-ordenes/pom.xml ./pom.xml
 RUN mvn dependency:go-offline -B
-
-# Copiar código fuente y compilar
-COPY src ./src
-RUN mvn package -DskipTests -B
+COPY uamishop-ordenes/src ./src
+RUN mvn clean package -DskipTests -B
 
 # Etapa 2: Ejecución
 FROM eclipse-temurin:21-jre
@@ -21,7 +21,7 @@ RUN groupadd -g 1001 appgroup && useradd -u 1001 -g appgroup -m appuser
 USER appuser
 
 # Copiar el JAR generado desde el stage de build
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /build/uamishop-ordenes/target/*.jar app.jar
 
 # Puerto del microservicio de órdenes
 EXPOSE 8082
