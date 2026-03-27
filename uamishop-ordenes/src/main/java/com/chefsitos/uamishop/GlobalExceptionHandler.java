@@ -17,6 +17,7 @@ import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
 import com.chefsitos.uamishop.shared.exception.ConflictException;
 import com.chefsitos.uamishop.shared.exception.ForbiddenException;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.shared.exception.ServiceUnavailableException;
 import com.chefsitos.uamishop.shared.exception.UnauthorizedException;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -71,10 +72,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
-    MethodArgumentNotValidException ex,
-    @NonNull HttpHeaders headers,
-    @NonNull HttpStatusCode status,
-    @NonNull WebRequest request) {
+      MethodArgumentNotValidException ex,
+      @NonNull HttpHeaders headers,
+      @NonNull HttpStatusCode status,
+      @NonNull WebRequest request) {
 
     String defaultMessage = ex.getBindingResult().getFieldErrors().stream()
         .findFirst()
@@ -182,6 +183,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         getPath(request));
 
     return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+  }
+
+  /**
+   * 503 - Servicio externo no disponible (circuit breaker)
+   */
+  @ExceptionHandler(ServiceUnavailableException.class)
+  public ResponseEntity<ApiError> handleServiceUnavailable(
+      ServiceUnavailableException ex, WebRequest request) {
+
+    log.warn("Servicio no disponible [{}]: {}", ex.getServiceName(), ex.getMessage());
+
+    ApiError apiError = new ApiError(
+        HttpStatus.SERVICE_UNAVAILABLE.value(),
+        "Service Unavailable",
+        ex.getMessage(),
+        getPath(request));
+
+    return new ResponseEntity<>(apiError, HttpStatus.SERVICE_UNAVAILABLE);
   }
 
   /**

@@ -2,7 +2,11 @@ package com.chefsitos.uamishop.ventas.api;
 
 import com.chefsitos.uamishop.shared.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
+import com.chefsitos.uamishop.shared.exception.ServiceUnavailableException;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +25,7 @@ public class CarritoApiHttpClient implements CarritoApi {
     this.carritoBaseUrl = carritoBaseUrl;
   }
 
+  @CircuitBreaker(name = "carritoService", fallbackMethod = "fallbackMethodobtenerCarritoParaOrden")
   // Implementacion de obtenerCarritoParaOrden
   public CarritoDTO obtenerCarritoParaOrden(UUID carritoId) {
     String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId;
@@ -40,4 +45,10 @@ public class CarritoApiHttpClient implements CarritoApi {
 
     return carrito;
   }
+
+  public CarritoDTO fallbackMethodobtenerCarritoParaOrden(UUID carritoId, Exception ex) {
+    throw new ServiceUnavailableException(
+        "carrito", "Servicio de carrito no disponible temporalmente.", ex);
+  }
+
 }
