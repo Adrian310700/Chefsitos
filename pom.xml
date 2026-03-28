@@ -13,8 +13,9 @@
   <description>App para la gestión de una tienda</description>
 
   <modules>
+    <module>uamishop-shared</module>
     <module>uamishop-catalogo</module>
-    <module>uamishop-principal</module>
+    <!-- <module>uamishop-principal</module> -->
     <module>uamishop-ordenes</module>
     <module>uamishop-ventas</module>
   </modules>
