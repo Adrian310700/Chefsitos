@@ -1,14 +1,6 @@
 name: uamishop-app
 
 services:
-  uamishop-shared-builder:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.shared-builder
-    image: local/uamishop-shared-builder:latest
-    command: ["sh", "-c", "echo uamishop-shared-builder ready"]
-    restart: "no"
-
   mysql:
     image: mysql:latest
     container_name: uamishop-mysql
@@ -31,35 +23,27 @@ services:
       start_period: 15s
     restart: unless-stopped
 
-  # uamishop:
-  #   build:
-  #     context: ./uamishop-principal
-  #     dockerfile: Dockerfile
-  #   image: uamishop:latest
-  #   container_name: uamishop
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     SPRING_PROFILES_ACTIVE: mysql
-  #     SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/uamishop?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
-  #     SPRING_DATASOURCE_USERNAME: uamishop
-  #     SPRING_DATASOURCE_PASSWORD: uamishop
-  #     SPRING_RABBITMQ_HOST: rabbitmq
-  #     CATALOGO_SERVICE_URL: "http://uamishop-catalogo:8081"
-  #     ORDENES_SERVICE_URL: "http://uamishop-ordenes:8082"
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: uamishop-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
 
   uamishop-catalogo:
     build:
       context: .
-      dockerfile: uamishop-catalogo/Dockerfile
+      dockerfile: Dockerfile
       args:
-        SHARED_BUILDER_IMAGE: local/uamishop-shared-builder:latest
+        SERVICE_NAME: uamishop-catalogo
+        PORT: 8081
     image: uamishop-catalogo:latest
     container_name: uamishop-catalogo
     ports:
@@ -79,9 +63,10 @@ services:
   uamishop-ordenes:
     build:
       context: .
-      dockerfile: uamishop-ordenes/Dockerfile
+      dockerfile: Dockerfile
       args:
-        SHARED_BUILDER_IMAGE: local/uamishop-shared-builder:latest
+        SERVICE_NAME: uamishop-ordenes
+        PORT: 8082
     image: uamishop-ordenes:latest
     container_name: uamishop-ordenes
     ports:
@@ -100,26 +85,13 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: uamishop-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
-    restart: unless-stopped
-
   uamishop-ventas:
     build:
       context: .
-      dockerfile: uamishop-ventas/Dockerfile
+      dockerfile: Dockerfile
       args:
-        SHARED_BUILDER_IMAGE: local/uamishop-shared-builder:latest
+        SERVICE_NAME: uamishop-ventas
+        PORT: 8083
     image: uamishop-ventas:latest
     container_name: uamishop-ventas
     ports:

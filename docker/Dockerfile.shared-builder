@@ -1,9 +1,0 @@
-# Etapa base para compilar e instalar la libreria compartida una sola vez
-FROM maven:3.9-eclipse-temurin-21 AS shared-builder
-
-WORKDIR /build/uamishop-shared
-
-COPY uamishop-shared/pom.xml ./pom.xml
-COPY uamishop-shared/src ./src
-
-RUN mvn clean install -DskipTests -B
