@@ -109,5 +109,22 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  uamishop-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: uamishop-gateway
+        SERVICE_PORT: 8080
+    image: uamishop-gateway:latest
+    container_name: uamishop-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - uamishop-catalogo
+      - uamishop-ordenes
+      - uamishop-ventas
+    restart: unless-stopped
+
 volumes:
   mysql_data:

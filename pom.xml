@@ -6,7 +6,7 @@
 
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-parent</artifactId>
-  <version>0.0.6-SNAPSHOT</version>
+  <version>0.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>UAMIShop Parent</name>
@@ -17,5 +17,6 @@
     <module>uamishop-catalogo</module>
     <module>uamishop-ordenes</module>
     <module>uamishop-ventas</module>
+    <module>uamishop-gateway</module>
   </modules>
 </project>

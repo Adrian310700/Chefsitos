@@ -1,0 +1,44 @@
+server:
+  port: 8080 # Puerto del gateway
+
+spring:
+  application:
+    name: uamishop-gateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            # Catalogo - Productos
+            - id: catalogo-productos
+              uri: http://uamishop-catalogo:8081
+              predicates:
+                - Path=/api/v1/productos/**
+
+            # Catalogo - Categorias
+            - id: catalogo-categorias
+              uri: http://uamishop-catalogo:8081
+              predicates:
+                - Path=/api/v1/categorias/**
+
+            # Ordenes
+            - id: ordenes-service
+              uri: http://uamishop-ordenes:8082
+              predicates:
+                - Path=/api/v1/ordenes/**
+
+            # Carritos
+            - id: carritos-service
+              uri: http://uamishop-ventas:8083
+              predicates:
+                - Path=/api/v1/carritos/**
+
+# Endpoints de Actuator
+# - /actuator/mappings muestra todas las rutas registradas del gateway
+# - /actuator/health muestra el estado de salud de la app
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, mappings
+
