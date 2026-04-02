@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: uamishop-catalogo
-        PORT: 8081
+        SERVICE_PORT: 8081
     image: uamishop-catalogo:latest
     container_name: uamishop-catalogo
     ports:
@@ -66,7 +66,7 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: uamishop-ordenes
-        PORT: 8082
+        SERVICE_PORT: 8082
     image: uamishop-ordenes:latest
     container_name: uamishop-ordenes
     ports:
@@ -91,7 +91,7 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: uamishop-ventas
-        PORT: 8083
+        SERVICE_PORT: 8083
     image: uamishop-ventas:latest
     container_name: uamishop-ventas
     ports:
