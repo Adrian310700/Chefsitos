@@ -11,7 +11,7 @@
   </parent>
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-shared</artifactId>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <name>uamishop-shared</name>
   <description>Shared module for UAMI Shop</description>
 
