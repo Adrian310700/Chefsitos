@@ -25,20 +25,22 @@ import lombok.Getter;
 @Entity
 @Table(name = "productos")
 public class Producto {
+
   @EmbeddedId
-  @AttributeOverride(name = "valor", column = @Column(name = "id")) // Cambia 'valor' por 'id'
+  @AttributeOverride(name = "valor", column = @Column(name = "id"))
   private ProductoId id;
 
   @Getter
   private String nombre;
+
   @Getter
   private String descripcion;
 
   @Getter
   @Embedded
   @AttributeOverrides({
-      @AttributeOverride(name = "cantidad", column = @Column(name = "precio_monto")),
-      @AttributeOverride(name = "moneda", column = @Column(name = "precio_moneda"))
+    @AttributeOverride(name = "cantidad", column = @Column(name = "precio_monto")),
+    @AttributeOverride(name = "moneda", column = @Column(name = "precio_moneda"))
   })
   private Money precio;
 
@@ -51,16 +53,20 @@ public class Producto {
   @ElementCollection
   @CollectionTable(name = "producto_imagenes", joinColumns = @JoinColumn(name = "producto_id"))
   private List<Imagen> imagenes;
+
+  @Getter
+  @Column(name = "url_imagen")
+  private String urlImagen;
+
   @Getter
   private boolean disponible;
+
   @Getter
   private LocalDateTime fechaCreacion;
 
-  // Constructor privado para forzar el uso del metodo de crear
   protected Producto() {
   }
 
-  // Factory method para crear un nuevo producto con validaciones de negocio
   public static Producto crear(String nombre, String descripcion, Money precio, CategoriaId categoria) {
 
     // RN-CAT-01
@@ -75,6 +81,7 @@ public class Producto {
     if (descripcion == null || descripcion.trim().length() > 500) {
       throw new BusinessRuleException("La descripción no debe exceder los 500 caracteres");
     }
+
     Producto producto = new Producto();
     producto.id = ProductoId.generar();
     producto.nombre = nombre.trim();
@@ -82,9 +89,21 @@ public class Producto {
     producto.precio = precio;
     producto.categoriaId = categoria;
     producto.imagenes = new ArrayList<>();
-    // El producto esta disponible si tiene al menos una imagen
     producto.disponible = false;
     producto.fechaCreacion = LocalDateTime.now();
+    return producto;
+  }
+
+  public static Producto crear(String nombre, String descripcion, Money precio, CategoriaId categoria, String urlImagen) {
+
+    Producto producto = crear(nombre, descripcion, precio, categoria); // reutiliza lógica existente
+
+    if (urlImagen != null && !urlImagen.isBlank() && !urlImagen.startsWith("http")) {
+      throw new BusinessRuleException("La URL de la imagen no es válida");
+    }
+
+    producto.urlImagen = urlImagen;
+
     return producto;
   }
 
@@ -124,24 +143,26 @@ public class Producto {
   public void activar() {
 
     if (this.disponible) {
-      // throw new BusinessRuleException("El producto ya esta activo");
       return;
     }
+
     // RN-CAT-09:
     if (this.imagenes.isEmpty()) {
       throw new BusinessRuleException(
-          "El producto solo puede volver a activarse si tiene al menos una imagen");
+        "El producto solo puede volver a activarse si tiene al menos una imagen");
     }
+
     // RN-CAT-10
     if (!(this.precio.esMayorQueCero())) {
       throw new BusinessRuleException(
-          "El producto solo puede volver a activarse si tiene un precio mayor a cero");
+        "El producto solo puede volver a activarse si tiene un precio mayor a cero");
     }
+
     this.disponible = true;
   }
 
   public void desactivar() {
-    // RN-CAT-08: Un producto ya desactivado no puede desactivarse nuevamente
+    // RN-CAT-08
     if (!(this.disponible)) {
       throw new BusinessRuleException("No se puede volver a desactivar un producto ya desactivado");
     }
@@ -158,10 +179,10 @@ public class Producto {
   }
 
   public void removerImagen(ImagenId imagenId) {
-    // RN-CAT-13: El producto debe tener al menos una imagen
+    // RN-CAT-13
     if (imagenes.size() <= 1) {
       throw new BusinessRuleException(
-          "El producto debe tener al menos una imagen. No se puede remover la última.");
+        "El producto debe tener al menos una imagen. No se puede remover la última.");
     }
 
     boolean removido = imagenes.removeIf(img -> img.id().equals(imagenId));
@@ -171,8 +192,16 @@ public class Producto {
     }
   }
 
+  public void actualizarUrlImagen(String urlImagen) {
+
+    if (urlImagen != null && !urlImagen.isBlank() && !urlImagen.startsWith("http")) {
+      throw new BusinessRuleException("La URL de la imagen no es válida");
+    }
+
+    this.urlImagen = urlImagen;
+  }
+
   public ProductoId getProductoId() {
     return this.id;
   }
-
 }
