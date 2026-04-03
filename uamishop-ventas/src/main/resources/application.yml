@@ -61,3 +61,19 @@ resilience4j:
         waitDurationInOpenState: 10s # espera 10s antes de pasar a semi abierto
         permittedNumberOfCallsInHalfOpenState: 3 # prueba con 1 llamada
         registerHealthIndicator: true # expone el estado en /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exponemos prometheus para VictoriaMetrics y health para Docker
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      # Esto ayuda a filtrar en Grafana/Victoria por nombre de microservicio
+      application: ${spring.application.name}
