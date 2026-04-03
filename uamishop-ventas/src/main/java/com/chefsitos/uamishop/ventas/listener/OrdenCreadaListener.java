@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.chefsitos.uamishop.shared.event.OrdenCreadaEvent;
 import com.chefsitos.uamishop.ventas.config.RabbitConfig;
 import com.chefsitos.uamishop.ventas.service.CarritoService;
+import com.chefsitos.uamishop.shared.infraestructure.inbox.InboxEvent;
+import com.chefsitos.uamishop.shared.infraestructure.inbox.InboxRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrdenCreadaListener {
   private final CarritoService carritoService;
+  private final InboxRepository inboxRepository;
 
   @RabbitListener(queues = RabbitConfig.QUEUE_CARRITO_ORDEN_CREADA)
   @EventListener
@@ -31,10 +34,19 @@ public class OrdenCreadaListener {
   // falla aquí no debe afectar ni bloquear la transacción
   // principal
   public void onOrdenCreada(OrdenCreadaEvent event) {
+    if (event.eventId() != null && inboxRepository.existsById(event.eventId())) {
+      log.warn(AZUL + "Evento duplicado omitido (Idempotente): {}" + RESET, event.eventId());
+      return;
+    }
+
     log.info(AZUL + "Evento: OrdenCreada recibido. Se completa Checkout" + RESET
         + " | ordenId={}, carritoId={}, clienteId={}",
         event.ordenId(), event.carritoId(), event.clienteId());
     carritoService.completarCheckout(event.carritoId());
+
+    if (event.eventId() != null) {
+      inboxRepository.save(InboxEvent.from(event.eventId()));
+    }
   }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Component
 public class CarritoApiHttpClient implements CarritoApi {
@@ -47,6 +48,13 @@ public class CarritoApiHttpClient implements CarritoApi {
   }
 
   public CarritoDTO fallbackMethodobtenerCarritoParaOrden(UUID carritoId, Exception ex) {
+    if (ex instanceof BusinessRuleException) {
+      throw (BusinessRuleException) ex;
+    }
+    if (ex instanceof HttpClientErrorException) {
+      throw (HttpClientErrorException) ex;
+    }
+
     throw new ServiceUnavailableException(
         "carrito", "Servicio de carrito no disponible temporalmente.", ex);
   }

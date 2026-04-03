@@ -3,6 +3,7 @@ package com.chefsitos.uamishop.ventas.service;
 import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.ventas.config.RabbitConfig;
+import com.chefsitos.uamishop.shared.config.RabbitExchangeConfig;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
@@ -20,10 +21,11 @@ import com.chefsitos.uamishop.ventas.domain.valueObject.ProductoRef;
 import com.chefsitos.uamishop.ventas.repository.CarritoJpaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+
+import com.chefsitos.uamishop.shared.infraestructure.outbox.OutboxStore;
 
 import static com.chefsitos.uamishop.shared.util.LogColor.*;
 
@@ -38,16 +40,16 @@ public class CarritoService {
   private final CarritoJpaRepository carritoRepository;
   private final CatalogoApi productoService;
   private final ApplicationEventPublisher eventPublisher;
-  private final RabbitTemplate rabbitTemplate;
+  private final OutboxStore outboxStore;
 
   public CarritoService(CarritoJpaRepository carritoRepository,
       CatalogoApi productoService,
       ApplicationEventPublisher eventPublisher,
-      RabbitTemplate rabbitTemplate) {
+      OutboxStore outboxStore) {
     this.carritoRepository = carritoRepository;
     this.productoService = productoService;
     this.eventPublisher = eventPublisher;
-    this.rabbitTemplate = rabbitTemplate;
+    this.outboxStore = outboxStore;
   }
 
   // Método privado para buscar un carrito por ID en este servicio
@@ -107,11 +109,14 @@ public class CarritoService {
         producto.precio(),
         producto.moneda());
     eventPublisher.publishEvent(evento); // Publicar evento interno
-    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
-        RabbitConfig.EVENTS_EXCHANGE,
-        RabbitConfig.RK_PRODUCTO_AGREGADO,
-        evento);
-    log.info(ROSA + "Evento: ProductoAgregadoAlCarrito emitido" + RESET
+
+    outboxStore.save( // Registrar en Outbox para publicación asíncrona
+        "ProductoAgregadoAlCarrito",
+        evento,
+        RabbitExchangeConfig.EVENTS_EXCHANGE,
+        RabbitConfig.RK_PRODUCTO_AGREGADO);
+
+    log.info(ROSA + "Evento: ProductoAgregadoAlCarrito emitido por Outbox" + RESET
         + " | productoId={}, carritoId={}, cantidad={}",
         request.productoId(), carritoGuardado.getCarritoId().valor(), request.cantidad());
 
