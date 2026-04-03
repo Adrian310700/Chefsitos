@@ -1,13 +1,11 @@
-package com.chefsitos.uamishop.infraestructure.outbox;
+package com.chefsitos.uamishop.shared.infraestructure.outbox;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
-
-import com.chefsitos.uamishop.shared.infraestructure.outbox.OutboxEvent;
-import com.chefsitos.uamishop.shared.infraestructure.outbox.OutboxMessagePublisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(RabbitTemplate.class)
 public class RabbitOutboxPublisher implements OutboxMessagePublisher {
 
   private final RabbitTemplate rabbitTemplate;
