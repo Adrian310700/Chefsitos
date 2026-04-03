@@ -28,6 +28,17 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    # Confirmación de que el broker recibió el mensaje
+    publisher-confirm-type: correlated
+    # El broker avisa si el mensaje llegó al Exchange pero NO pudo enrutarse a ninguna cola
+    publisher-returns: true
+    template:
+      # Obliga al broker a devolver el mensaje si falla el enrutamiento
+      mandatory: true
+
+outbox:
+  scheduler:
+    delay: 5000
 
 springdoc:
   api-docs:

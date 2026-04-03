@@ -8,48 +8,62 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 
 @Entity
-@Data
+@Getter
 @Table(name = "outbox_event")
 public class OutboxEvent {
   @Id
   private UUID id;
 
-  @Column(name = "aggregate_type", nullable = false)
-  private String aggregateType;
-
-  @Column(name = "aggregate_id", nullable = false)
-  private String aggregateId;
-
-  @Column(nullable = false)
   private String type;
 
   @Lob
-  @Column(nullable = false)
   private String payload;
 
-  @Column(name = "created_at", nullable = false)
-  private LocalDateTime createdAt;
+  private String exchange;
 
-  @Column(nullable = false)
-  private Boolean processed = false;
+  @Column(name = "routing_key")
+  private String routingKey;
+
+  private int attempts = 0;
+
+  private boolean processed = false;
+
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 
   @Column(name = "processed_at")
   private LocalDateTime processedAt;
 
+  @Lob
+  @Column(name = "last_error")
+  private String lastError;
+
   protected OutboxEvent() {
   }
 
-  public OutboxEvent(UUID id, String aggregateType, String aggregateId,
-      String type, String payload) {
-    this.id = id;
-    this.aggregateType = aggregateType;
-    this.aggregateId = aggregateId;
+  public OutboxEvent(String type, String payload, String exchange, String routingKey) {
+    this.id = UUID.randomUUID();
     this.type = type;
     this.payload = payload;
+    this.exchange = exchange;
+    this.routingKey = routingKey;
     this.createdAt = LocalDateTime.now();
-    this.processed = false;
+  }
+
+  public void markAsProcessed() {
+    this.processed = true;
+    this.processedAt = LocalDateTime.now();
+  }
+
+  public void markAsFailed(String error) {
+    this.attempts++;
+    this.lastError = error;
+  }
+
+  public boolean canRetry() {
+    return this.attempts < 5 && !this.processed;
   }
 }

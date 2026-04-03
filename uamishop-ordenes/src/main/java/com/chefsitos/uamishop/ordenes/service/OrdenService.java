@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +30,7 @@ import com.chefsitos.uamishop.shared.domain.valueObject.ProductoId;
 import com.chefsitos.uamishop.shared.event.OrdenCreadaEvent;
 import com.chefsitos.uamishop.shared.event.ProductoCompradoEvent;
 import com.chefsitos.uamishop.shared.exception.ResourceNotFoundException;
+import com.chefsitos.uamishop.shared.infraestructure.outbox.OutboxStore;
 import com.chefsitos.uamishop.ventas.api.CarritoApi;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
 import com.chefsitos.uamishop.ventas.api.dto.ItemCarritoDTO;
@@ -43,15 +43,15 @@ public class OrdenService {
   private final CatalogoApi productoService;
   private final CarritoApi carritoService;
   private final ApplicationEventPublisher eventPublisher;
-  private final RabbitTemplate rabbitTemplate;
+  private final OutboxStore outboxStore;
 
   public OrdenService(OrdenJpaRepository ordenRepository, CatalogoApi productoApi, CarritoApi carritoService,
-      ApplicationEventPublisher eventPublisher, RabbitTemplate rabbitTemplate) {
+      ApplicationEventPublisher eventPublisher, OutboxStore outboxStore) {
     this.ordenRepository = ordenRepository;
     this.productoService = productoApi;
     this.carritoService = carritoService;
     this.eventPublisher = eventPublisher;
-    this.rabbitTemplate = rabbitTemplate;
+    this.outboxStore = outboxStore;
   }
 
   public Orden buscarPorId(UUID id) {
@@ -106,6 +106,7 @@ public class OrdenService {
 
     Orden ordenGuardada = ordenRepository.save(orden);
 
+    // --- Construir evento de dominio ---
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = items.stream()
         .map(item -> new ProductoCompradoEvent.ItemComprado(
             item.getProductoId().getValue(),
@@ -122,12 +123,17 @@ public class OrdenService {
         ordenGuardada.getClienteId().valor(),
         itemsEvento);
 
-    eventPublisher.publishEvent(evento); // Publicar evento interno
-    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+    // Evento interno de Spring
+    eventPublisher.publishEvent(evento);
+
+    // Registrar en Outbox
+    outboxStore.save(
+        "ProductoComprado",
+        evento,
         RabbitConfig.EVENTS_EXCHANGE,
-        RabbitConfig.RK_PRODUCTO_COMPRADO,
-        evento);
-    log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
+        RabbitConfig.RK_PRODUCTO_COMPRADO);
+
+    log.info(ROSA + "Evento: ProductoComprado registrado en Outbox" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
         ordenGuardada.getId().getValue(), ordenGuardada.getClienteId().valor(), itemsEvento.size());
 
@@ -152,6 +158,7 @@ public class OrdenService {
 
     nuevaOrden = ordenRepository.save(nuevaOrden);
 
+    // --- Evento ProductoComprado ---
     List<ProductoCompradoEvent.ItemComprado> itemsEvento = itemsOrden.stream()
         .map(item -> new ProductoCompradoEvent.ItemComprado(
             item.getProductoId().getValue(),
@@ -168,15 +175,17 @@ public class OrdenService {
         nuevaOrden.getClienteId().valor(),
         itemsEvento);
 
-    eventPublisher.publishEvent(eventoProductos); // Publicar evento interno
-    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+    eventPublisher.publishEvent(eventoProductos); // Evento interno Spring
+    outboxStore.save(
+        "ProductoComprado",
+        eventoProductos,
         RabbitConfig.EVENTS_EXCHANGE,
-        RabbitConfig.RK_PRODUCTO_COMPRADO,
-        eventoProductos);
-    log.info(ROSA + "Evento: ProductoComprado emitido" + RESET
+        RabbitConfig.RK_PRODUCTO_COMPRADO);
+    log.info(ROSA + "Evento: ProductoComprado registrado en Outbox" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
         nuevaOrden.getId().getValue(), nuevaOrden.getClienteId().valor(), itemsEvento.size());
 
+    // --- Evento OrdenCreada ---
     OrdenCreadaEvent ordenCreadaEvent = new OrdenCreadaEvent(
         UUID.randomUUID(),
         Instant.now(),
@@ -184,12 +193,13 @@ public class OrdenService {
         carritoId.getValue(),
         nuevaOrden.getClienteId().valor());
 
-    eventPublisher.publishEvent(ordenCreadaEvent); // Publicar evento interno
-    rabbitTemplate.convertAndSend( // Publicar evento via RabbitMQ
+    eventPublisher.publishEvent(ordenCreadaEvent); // Evento interno Spring
+    outboxStore.save(
+        "OrdenCreada",
+        ordenCreadaEvent,
         RabbitConfig.EVENTS_EXCHANGE,
-        RabbitConfig.RK_ORDEN_CREADA,
-        ordenCreadaEvent);
-    log.info(ROSA + "Evento: OrdenCreada emitido" + RESET
+        RabbitConfig.RK_ORDEN_CREADA);
+    log.info(ROSA + "Evento: OrdenCreada registrado en Outbox" + RESET
         + " | ordenId={}, carritoId={}, clienteId={}",
         nuevaOrden.getId().getValue(), carritoId.getValue(), nuevaOrden.getClienteId().valor());
 
