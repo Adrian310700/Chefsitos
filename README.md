@@ -4,19 +4,19 @@ Repositorio para almacenar el proyecto UAMIShop de la UEA Temas Selectos de Inge
 
 ## Arquitectura
 
-| Servicio            | Puerto | Descripción                        |
-| ------------------- | ------ | ---------------------------------- |
-| `uamishop-gateway`  | 8080   | API Gateway (punto de entrada)     |
-| `uamishop-catalogo` | 8081   | Productos y categorías             |
-| `uamishop-ordenes`  | 8082   | Gestión de órdenes                 |
-| `uamishop-ventas`   | 8083   | Carritos de compra                 |
+| Servicio            | Puerto | Descripción                    |
+| ------------------- | ------ | ------------------------------ |
+| `uamishop-gateway`  | 8080   | API Gateway (punto de entrada) |
+| `uamishop-catalogo` | 8081   | Productos y categorías         |
+| `uamishop-ordenes`  | 8082   | Gestión de órdenes             |
+| `uamishop-ventas`   | 8083   | Carritos de compra             |
 
 **Infraestructura:**
 
-| Servicio | Puerto       | Descripción                               |
-| -------- | ------------ | ----------------------------------------- |
-| MySQL    | 3306         | Bases de datos por microservicio          |
-| RabbitMQ | 5672 / 15672 | Mensajería asíncrona / Consola de admin   |
+| Servicio | Puerto       | Descripción                             |
+| -------- | ------------ | --------------------------------------- |
+| MySQL    | 3306         | Bases de datos por microservicio        |
+| RabbitMQ | 5672 / 15672 | Mensajería asíncrona / Consola de admin |
 
 ## Requisitos
 
@@ -96,20 +96,7 @@ cd uamishop-ventas && ./mvnw test
 - Órdenes: http://localhost:8082/swagger-ui.html
 - Ventas: http://localhost:8083/swagger-ui.html
 
-**Otros:**
-
-- RabbitMQ Admin: http://localhost:15672 (guest/guest)
-- Gateway Health: http://localhost:8080/actuator/health
-
 > Ver [`routes.md`](routes.md) para el mapa completo de rutas de la API.
-
-## Tests
-
-```bash
-cd uamishop-catalogo && ./mvnw test
-cd uamishop-ordenes  && ./mvnw test
-cd uamishop-ventas   && ./mvnw test
-```
 
 ## Estándar de codificación
 
@@ -118,3 +105,58 @@ cd uamishop-ventas   && ./mvnw test
 ## Extensiones recomendadas (VSCode)
 
 Ver `.vscode/extensions.json`.
+
+---
+
+## Observabilidad
+
+El proyecto incluye un stack de observabilidad opcional (**VictoriaMetrics**, **vmagent**, **Grafana**) administrado mediante Docker Compose Profiles. Los servicios de observabilidad **no se levantan por defecto** para no afectar el rendimiento del sistema en la fase de desarrollo.
+
+### Ejecución con/sin observabilidad
+
+```bash
+# Sin observabilidad (flujo normal)
+docker compose up -d --build
+
+# Con observabilidad
+docker compose --profile observability up -d --build
+```
+
+### Detener servicios
+
+```bash
+# Sin perfil activo
+docker compose down
+
+# Si se levantó con perfil (evita que la red quede retenida)
+docker compose --profile observability down
+
+# Bajar todos los perfiles y eliminar volúmenes
+docker compose --profile "*" down -v
+```
+
+### URLs
+
+| Servicio            | URL                                       | Descripción                |
+| ------------------- | ----------------------------------------- | -------------------------- |
+| Grafana             | http://localhost:3000                     | Dashboard de métricas      |
+| VictoriaMetrics     | http://localhost:8428                     | Almacenamiento de métricas |
+| RabbitMQ Admin      | http://localhost:15672                    | Consola RabbitMQ           |
+| Gateway Health      | http://localhost:8080/actuator/health     | Estado del gateway         |
+| Gateway Prometheus  | http://localhost:8080/actuator/prometheus | Métricas del gateway       |
+| Catálogo Prometheus | http://localhost:8081/actuator/prometheus | Métricas de catálogo       |
+| Órdenes Prometheus  | http://localhost:8082/actuator/prometheus | Métricas de órdenes        |
+| Ventas Prometheus   | http://localhost:8083/actuator/prometheus | Métricas de ventas         |
+
+### Acceso a Grafana
+
+- **URL:** `http://localhost:3000`
+- **Usuario:** `admin` / **Password:** `admin`
+
+> Si el provisioning está montado correctamente, Grafana cargará automáticamente el Data Source `VictoriaMetrics` y el dashboard de Spring Boot al arrancar.
+
+### Notas
+
+- `vmagent` recolecta métricas desde `/actuator/prometheus` de cada servicio y las envía a VictoriaMetrics.
+- Grafana consulta las métricas directamente desde VictoriaMetrics.
+- Si un panel muestra `No data` recién arrancado, es normal: aún no hay suficientes muestras para calcular tasas (`rate(...)`).

@@ -126,5 +126,59 @@ services:
       - uamishop-ventas
     restart: unless-stopped
 
+  # Almacenamiento de métricas
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest # Cambiado de stable a latest
+    container_name: uamishop-victoriametrics
+    profiles: ["observability"]
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata:/storage
+    restart: unless-stopped
+
+  # Recolector de métricas
+  vmagent:
+    image: victoriametrics/vmagent:latest
+    container_name: uamishop-vmagent
+    profiles: ["observability"]
+    depends_on:
+      - victoriametrics
+      # - uamishop-catalogo
+      # - uamishop-ordenes
+      # - uamishop-ventas
+      # - uamishop-gateway
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - vmagent_data:/vmagentdata
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+      - "--remoteWrite.tmpDataPath=/vmagentdata"
+    restart: unless-stopped
+
+  # Visualizador Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: uamishop-grafana
+    profiles: ["observability"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - victoriametrics
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  vmdata:
+  vmagent_data:
+
+networks:
+  default:
+    name: uamishop-network

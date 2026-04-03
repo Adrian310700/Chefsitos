@@ -40,5 +40,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, mappings
-
+        # Exponemos prometheus para VictoriaMetrics y health para Docker
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      # Esto ayuda a filtrar en Grafana/Victoria por nombre de microservicio
+      application: ${spring.application.name}

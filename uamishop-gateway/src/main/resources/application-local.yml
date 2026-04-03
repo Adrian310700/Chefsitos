@@ -32,3 +32,19 @@ spring:
               uri: http://localhost:8083
               predicates:
                 - Path=/api/v1/carritos/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exponemos prometheus para VictoriaMetrics y health para Docker
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      # Esto ayuda a filtrar en Grafana/Victoria por nombre de microservicio
+      application: ${spring.application.name}
