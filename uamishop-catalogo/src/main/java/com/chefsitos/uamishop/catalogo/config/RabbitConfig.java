@@ -107,8 +107,7 @@ public class RabbitConfig {
    * Configura la plantilla principal de RabbitMQ (RabbitTemplate).
    * Es la herramienta que se utiliza en el código para enviar los mensajes.
    * Se le inyecta el conversor JSON configurado anteriormente para asegurar que
-   * todo
-   * se envíe en dicho formato.
+   * todo se envíe en dicho formato.
    */
   @Bean
   public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
