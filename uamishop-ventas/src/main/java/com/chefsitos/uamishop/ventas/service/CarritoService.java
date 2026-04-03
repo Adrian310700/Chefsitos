@@ -3,6 +3,7 @@ package com.chefsitos.uamishop.ventas.service;
 import com.chefsitos.uamishop.catalogo.api.CatalogoApi;
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
 import com.chefsitos.uamishop.ventas.config.RabbitConfig;
+import com.chefsitos.uamishop.shared.config.RabbitExchangeConfig;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
@@ -112,7 +113,7 @@ public class CarritoService {
     outboxStore.save( // Registrar en Outbox para publicación asíncrona
         "ProductoAgregadoAlCarrito",
         evento,
-        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitExchangeConfig.EVENTS_EXCHANGE,
         RabbitConfig.RK_PRODUCTO_AGREGADO);
 
     log.info(ROSA + "Evento: ProductoAgregadoAlCarrito emitido por Outbox" + RESET

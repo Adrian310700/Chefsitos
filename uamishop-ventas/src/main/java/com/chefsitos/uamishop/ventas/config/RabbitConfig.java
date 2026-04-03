@@ -12,15 +12,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
-  public static final String EVENTS_EXCHANGE = "uamishop.events";
   public static final String QUEUE_CARRITO_ORDEN_CREADA = "carrito.orden-creada";
   public static final String RK_ORDEN_CREADA = "orden.creada";
   public static final String RK_PRODUCTO_AGREGADO = "producto.agregado-carrito";
 
-  @Bean
-  public TopicExchange eventsExchange() {
-    return new TopicExchange(EVENTS_EXCHANGE);
-  }
 
   @Bean
   public Queue carritoOrdenCreadaQueue() {

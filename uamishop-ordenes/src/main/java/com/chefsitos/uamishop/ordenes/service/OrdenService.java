@@ -23,6 +23,7 @@ import com.chefsitos.uamishop.ordenes.domain.entity.ItemOrden;
 import com.chefsitos.uamishop.ordenes.domain.enumeration.EstadoPago;
 import com.chefsitos.uamishop.ordenes.domain.valueObject.*;
 import com.chefsitos.uamishop.ordenes.repository.OrdenJpaRepository;
+import com.chefsitos.uamishop.shared.config.RabbitExchangeConfig;
 import com.chefsitos.uamishop.shared.domain.valueObject.CarritoId;
 import com.chefsitos.uamishop.shared.domain.valueObject.ClienteId;
 import com.chefsitos.uamishop.shared.domain.valueObject.Money;
@@ -130,7 +131,7 @@ public class OrdenService {
     outboxStore.save(
         "ProductoComprado",
         evento,
-        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitExchangeConfig.EVENTS_EXCHANGE,
         RabbitConfig.RK_PRODUCTO_COMPRADO);
 
     log.info(ROSA + "Evento: ProductoComprado registrado en Outbox" + RESET
@@ -179,7 +180,7 @@ public class OrdenService {
     outboxStore.save(
         "ProductoComprado",
         eventoProductos,
-        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitExchangeConfig.EVENTS_EXCHANGE,
         RabbitConfig.RK_PRODUCTO_COMPRADO);
     log.info(ROSA + "Evento: ProductoComprado registrado en Outbox" + RESET
         + " | ordenId={}, clienteId={}, totalItems={}",
@@ -197,7 +198,7 @@ public class OrdenService {
     outboxStore.save(
         "OrdenCreada",
         ordenCreadaEvent,
-        RabbitConfig.EVENTS_EXCHANGE,
+        RabbitExchangeConfig.EVENTS_EXCHANGE,
         RabbitConfig.RK_ORDEN_CREADA);
     log.info(ROSA + "Evento: OrdenCreada registrado en Outbox" + RESET
         + " | ordenId={}, carritoId={}, clienteId={}",
