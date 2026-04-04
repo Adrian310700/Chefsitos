@@ -1,0 +1,30 @@
+version: "3"
+
+vars:
+  # Definimos los perfiles como una variable reutilizable
+  OBS_PROFILES: --profile observability --profile loadtest
+  # Comando base para evitar repetición
+  K6_BASE: docker compose {{.OBS_PROFILES}} run --rm k6 run --out experimental-prometheus-rw
+
+tasks:
+  k6-smoke:
+    desc: "Ejecuta prueba de humo (smoke test)"
+    cmds:
+      - "{{.K6_BASE}} /scripts/api-smoke.js"
+
+  k6-load:
+    desc: "Ejecuta prueba de carga (load test)"
+    cmds:
+      - "{{.K6_BASE}} /scripts/api-load.js"
+
+  k6-stress:
+    desc: "Ejecuta prueba de estrés (stress test)"
+    cmds:
+      - "{{.K6_BASE}} /scripts/api-stress.js"
+
+  k6-all:
+    desc: "Ejecuta todas las pruebas de k6 en secuencia"
+    cmds:
+      - task: k6-smoke
+      - task: k6-load
+      - task: k6-stress
