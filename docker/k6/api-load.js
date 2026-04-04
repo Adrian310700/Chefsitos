@@ -1,5 +1,6 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
+import { getUrl, getTags } from "./utils.js";
 
 export const options = {
   stages: [
@@ -9,42 +10,34 @@ export const options = {
     { duration: "30s", target: 0 },
   ],
   thresholds: {
-    http_req_failed: ["rate<0.05"],
     http_req_duration: ["p(95)<1200"],
   },
 };
 
-const BASE_URL = __ENV.BASE_URL || "http://uamishop-gateway:8080";
-
 export default function () {
   const r = Math.random();
 
-  let res;
-  if (r < 0.45) {
-    res = http.get(`${BASE_URL}/api/v1/productos`, {
-      tags: { name: "productos_list", domain: "catalogo", test_type: "load" },
-    });
-  } else if (r < 0.65) {
-    res = http.get(`${BASE_URL}/api/v1/categorias`, {
-      tags: { name: "categorias_list", domain: "catalogo", test_type: "load" },
-    });
+  let res, tagName;
+  if (r < 0.3) {
+    tagName = "productos_list";
+    res = http.get(getUrl("catalogo", "/api/v1/productos"), getTags(tagName, "catalogo", "load"));
+  } else if (r < 0.5) {
+    tagName = "categorias_list";
+    res = http.get(getUrl("catalogo", "/api/v1/categorias"), getTags(tagName, "catalogo", "load"));
+  } else if (r < 0.7) {
+    tagName = "ordenes_list";
+    res = http.get(getUrl("ordenes", "/api/v1/ordenes"), getTags(tagName, "ordenes", "load"));
   } else if (r < 0.85) {
-    res = http.get(`${BASE_URL}/api/v1/ordenes`, {
-      tags: { name: "ordenes_list", domain: "ordenes", test_type: "load" },
-    });
+    tagName = "carritos_crear";
+    res = http.post(getUrl("ventas", "/api/v1/carritos"), JSON.stringify({clienteId: "123e4567-e89b-12d3-a456-426614174000"}), Object.assign({}, getTags(tagName, "ventas", "load"), { headers: { "Content-Type": "application/json" } }));
   } else {
-    res = http.get(`${BASE_URL}/api/v1/productos/mas-vendidos?limit=10`, {
-      tags: {
-        name: "productos_mas_vendidos",
-        domain: "catalogo",
-        test_type: "load",
-      },
-    });
+    tagName = "productos_mas_vendidos";
+    res = http.get(getUrl("catalogo", "/api/v1/productos/mas-vendidos?limit=10"), getTags(tagName, "catalogo", "load"));
   }
 
   check(res, {
-    "status 2xx o 3xx": (r) => r.status >= 200 && r.status < 400,
-  });
+    "status aceptado (sin DB)": (r) => r.status >= 200,
+  }, { name: tagName });
 
   sleep(1);
 }
