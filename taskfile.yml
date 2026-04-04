@@ -1,30 +1,61 @@
 version: "3"
 
 vars:
-  # Definimos los perfiles como una variable reutilizable
   OBS_PROFILES: --profile observability --profile loadtest
-  # Comando base para evitar repetición
-  K6_BASE: docker compose {{.OBS_PROFILES}} run --rm k6 run --out experimental-prometheus-rw
+  BASE_URL: http://uamishop-gateway:8080
 
 tasks:
-  k6-smoke:
-    desc: "Ejecuta prueba de humo (smoke test)"
+  k6:smoke:
+    desc: "Ejecuta prueba smoke"
     cmds:
-      - "{{.K6_BASE}} /scripts/api-smoke.js"
+      - |
+        TEST_ID="${TEST_ID:-smoke-$(date +%Y%m%d-%H%M%S)}"
+        echo "Running smoke test with TEST_ID=$TEST_ID"
+        docker compose {{.OBS_PROFILES}} run --rm \
+          -e BASE_URL={{.BASE_URL}} \
+          -e K6_PROMETHEUS_RW_STALE_MARKERS=true \
+          k6 run \
+          --tag testid=$TEST_ID \
+          --tag suite=uamishop \
+          --tag test_type=smoke \
+          --out experimental-prometheus-rw \
+          /scripts/api-smoke.js
 
-  k6-load:
-    desc: "Ejecuta prueba de carga (load test)"
+  k6:load:
+    desc: "Ejecuta prueba load"
     cmds:
-      - "{{.K6_BASE}} /scripts/api-load.js"
+      - |
+        TEST_ID="${TEST_ID:-load-$(date +%Y%m%d-%H%M%S)}"
+        echo "Running load test with TEST_ID=$TEST_ID"
+        docker compose {{.OBS_PROFILES}} run --rm \
+          -e BASE_URL={{.BASE_URL}} \
+          -e K6_PROMETHEUS_RW_STALE_MARKERS=true \
+          k6 run \
+          --tag testid=$TEST_ID \
+          --tag suite=uamishop \
+          --tag test_type=load \
+          --out experimental-prometheus-rw \
+          /scripts/api-load.js
 
-  k6-stress:
-    desc: "Ejecuta prueba de estrés (stress test)"
+  k6:stress:
+    desc: "Ejecuta prueba stress"
     cmds:
-      - "{{.K6_BASE}} /scripts/api-stress.js"
+      - |
+        TEST_ID="${TEST_ID:-stress-$(date +%Y%m%d-%H%M%S)}"
+        echo "Running stress test with TEST_ID=$TEST_ID"
+        docker compose {{.OBS_PROFILES}} run --rm \
+          -e BASE_URL={{.BASE_URL}} \
+          -e K6_PROMETHEUS_RW_STALE_MARKERS=true \
+          k6 run \
+          --tag testid=$TEST_ID \
+          --tag suite=uamishop \
+          --tag test_type=stress \
+          --out experimental-prometheus-rw \
+          /scripts/api-stress.js
 
-  k6-all:
-    desc: "Ejecuta todas las pruebas de k6 en secuencia"
+  k6:all:
+    desc: "Ejecuta smoke + load + stress"
     cmds:
-      - task: k6-smoke
-      - task: k6-load
-      - task: k6-stress
+      - task: k6:smoke
+      - task: k6:load
+      - task: k6:stress

@@ -160,3 +160,40 @@ docker compose --profile "*" down -v
 - `vmagent` recolecta métricas desde `/actuator/prometheus` de cada servicio y las envía a VictoriaMetrics.
 - Grafana consulta las métricas directamente desde VictoriaMetrics.
 - Si un panel muestra `No data` recién arrancado, es normal: aún no hay suficientes muestras para calcular tasas (`rate(...)`).
+
+## Pruebas de carga con k6
+
+Es necesario tener instalado go-task en tu sistema y tener los servicios de observabilidad levantados.
+
+```bash
+# Levantar servicios de observabilidad
+docker compose --profile observability up --build -d
+```
+
+### Ejecución de pruebas
+
+Puedes ejecutar las pruebas de forma individual o en suite. Cada ejecución genera un TEST_ID único basado en el timestamp para filtrar los resultados en Grafana.
+
+```bash
+# Prueba de Humo: Verifica que los endpoints básicos respondan bajo mínima carga.
+task k6:smoke
+
+# Prueba de Carga: Evalúa el rendimiento del sistema bajo condiciones normales de uso.
+task k6:load
+
+# Prueba de Estrés: Encuentra el punto de ruptura del sistema aumentando la carga al límite.
+task k6:stress
+
+# Ejecuta las tres pruebas anteriores en secuencia.
+task k6:all
+```
+
+Para eliminar los volumenes de los contenedores es necesario eliminar los dos perfiles.
+
+```bash
+docker compose --profile observability --profile loadtest down -v
+```
+
+### Visualización en Grafana
+
+La visualización se encuentra en el dashboard `UAMIShop - k6 v2` en Grafana.
