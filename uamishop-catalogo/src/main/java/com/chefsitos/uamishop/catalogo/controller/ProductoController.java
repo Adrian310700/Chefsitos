@@ -128,7 +128,9 @@ public class ProductoController {
       request.descripcion(),
       request.precio(),
       request.moneda(),
-      request.idCategoria());
+      request.idCategoria(),
+      request.urlImagen(),
+      request.disponible());
 
     return ResponseEntity.ok(ProductoResponse.from(productoActualizado));
   }

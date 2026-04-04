@@ -3,7 +3,6 @@ package com.chefsitos.uamishop.catalogo.controller.dto;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import jakarta.validation.constraints.Pattern;
 import com.chefsitos.uamishop.shared.validation.ValidUUID;
 
 public record ProductoPatchRequest(
@@ -18,11 +17,8 @@ public record ProductoPatchRequest(
 
     @ValidUUID(message = "El ID de la categoría debe ser un UUID válido") String idCategoria,
 
-    @Pattern(
-      regexp = "^(http|https)://.*$",
-      message = "La URL de la imagen debe ser válida (http/https)")
-      String urlImagen
-
+      String urlImagen,
+      Boolean disponible
 
 ) {
 }

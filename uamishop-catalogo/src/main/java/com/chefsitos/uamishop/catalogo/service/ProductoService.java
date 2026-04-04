@@ -50,35 +50,54 @@ public class ProductoService {
   public List<Producto> buscarTodos() {
     return productoRepository.findAll();
   }
+  public Producto actualizar(UUID id, String nombreProducto, String descripcion, BigDecimal precio,
+                             String moneda, String idCategoria, String urlImagen, Boolean disponible) {
 
-  public Producto actualizar(UUID id, String nombreProducto, String descripcion, BigDecimal precio, String moneda,
-                             String idCategoria) {
-    Producto producto = productoRepository.findById(ProductoId.of(id + ""))
+    // 1. Buscar el producto existente
+    Producto producto = productoRepository.findById(ProductoId.of(id.toString()))
       .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
 
+    // 2. Procesar cambio de estado (Activar/Desactivar)
+    // Esto ejecutará las reglas de negocio de la entidad (RN-CAT-09, RN-CAT-10, etc.)
+    if (disponible != null) {
+      if (disponible) {
+        producto.activar();
+      } else {
+        producto.desactivar();
+      }
+    }
+
+    // 3. Actualizar Categoría si se proporciona
     if (idCategoria != null) {
       Categoria categoria = categoriaRepository.findById(CategoriaId.of(idCategoria))
         .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con ID: " + idCategoria));
       producto.cambiarCategoria(categoria.getCategoriaId());
     }
 
-    String nuevoNombre = nombreProducto != null ? nombreProducto : producto.getNombre();
-    String nuevaDescripcion = descripcion != null ? descripcion : producto.getDescripcion();
-
+    // 4. Actualizar información básica (Nombre y Descripción)
+    String nuevoNombre = (nombreProducto != null) ? nombreProducto : producto.getNombre();
+    String nuevaDescripcion = (descripcion != null) ? descripcion : producto.getDescripcion();
     producto.actualizarInformacion(nuevoNombre, nuevaDescripcion);
 
-    // Lógica para actualizar el precio
+    // 5. Actualizar Precio y Moneda con lógica de mezcla
     if (precio != null && moneda != null) {
       producto.cambiarPrecio(new Money(precio, moneda));
     } else if (precio != null) {
+      // Si solo viene precio, mantenemos la moneda actual
       producto.cambiarPrecio(new Money(precio, producto.getPrecio().moneda()));
     } else if (moneda != null) {
+      // Si solo viene moneda, mantenemos el monto actual
       producto.cambiarPrecio(new Money(producto.getPrecio().cantidad(), moneda));
     }
 
+    // 6. Actualizar la URL de la imagen
+    if (urlImagen != null) {
+      producto.actualizarUrlImagen(urlImagen);
+    }
+
+    // 7. Persistir cambios
     return productoRepository.save(producto);
   }
-
 
   public Producto actualizarUrlImagen(UUID id, String urlImagen) {
 

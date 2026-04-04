@@ -141,21 +141,21 @@ public class Producto {
   }
 
   public void activar() {
-
     if (this.disponible) {
       return;
     }
 
-    // RN-CAT-09:
-    if (this.imagenes.isEmpty()) {
+    boolean tieneImagen = (this.urlImagen != null && !this.urlImagen.isBlank()) ||
+      (this.imagenes != null && !this.imagenes.isEmpty());
+
+    if (!tieneImagen) {
       throw new BusinessRuleException(
-        "El producto solo puede volver a activarse si tiene al menos una imagen");
+        "El producto solo puede activarse si tiene al menos una imagen (URL o galería)");
     }
 
-    // RN-CAT-10
     if (!(this.precio.esMayorQueCero())) {
       throw new BusinessRuleException(
-        "El producto solo puede volver a activarse si tiene un precio mayor a cero");
+        "El producto solo puede activarse si tiene un precio mayor a cero");
     }
 
     this.disponible = true;

@@ -86,7 +86,9 @@ class ProductoControllerIntegrationTest {
         nombre,
         "Descripción " + nombre,
         new Money(precio, moneda),
-        categoriaId);
+        categoriaId,
+      "http://test-image.com/foto.jpg"
+    );
 
     return productoRepository.save(producto);
   }
@@ -132,7 +134,8 @@ class ProductoControllerIntegrationTest {
           "Laptop de alto rendimiento",
           new BigDecimal("45000.00"),
           "MXN",
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       // Ejecutar POST
       ResponseEntity<ProductoResponse> response = restTemplate.exchange(
@@ -174,7 +177,8 @@ class ProductoControllerIntegrationTest {
           "Descripción válida",
           new BigDecimal("100.00"),
           "MXN",
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       ResponseEntity<String> response = restTemplate.exchange(
           BASE_URL,
@@ -196,7 +200,8 @@ class ProductoControllerIntegrationTest {
           "Descripción válida",
           new BigDecimal("-100.00"),
           "MXN",
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       ResponseEntity<String> response = restTemplate.exchange(
           BASE_URL,
@@ -218,7 +223,8 @@ class ProductoControllerIntegrationTest {
           "Descripción válida",
           new BigDecimal("100.00"),
           "MX", // inválido (solo 2 caracteres)
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       ResponseEntity<String> response = restTemplate.exchange(
           BASE_URL,
@@ -238,7 +244,8 @@ class ProductoControllerIntegrationTest {
           "Descripción válida",
           new BigDecimal("100.00"),
           "MXN",
-          "123-no-es-uuid");
+          "123-no-es-uuid",
+      "http://test.com");
 
       ResponseEntity<String> response = restTemplate.exchange(
           BASE_URL,
@@ -262,7 +269,8 @@ class ProductoControllerIntegrationTest {
           "Televisor 4K",
           new BigDecimal("10000.00"),
           "MXN",
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       // Ejecutar POST
       ResponseEntity<String> response = restTemplate.exchange(
@@ -297,7 +305,8 @@ class ProductoControllerIntegrationTest {
           "Laptop profesional",
           new BigDecimal("35000.00"),
           "MXN",
-          categoria.getCategoriaId().valor().toString());
+          categoria.getCategoriaId().valor().toString(),
+        "http://test.com");
 
       // Ejecutar POST
       ResponseEntity<String> response = restTemplate.exchange(
@@ -330,7 +339,8 @@ class ProductoControllerIntegrationTest {
           "Laptop profesional",
           new BigDecimal("45000.00"),
           "MXN",
-          categoriaInexistenteId);
+          categoriaInexistenteId,
+        "http://test.com");
 
       // Ejecutar POST
       ResponseEntity<String> response = restTemplate.exchange(
@@ -712,7 +722,9 @@ class ProductoControllerIntegrationTest {
           "Laptop profesional actualizada",
           new BigDecimal("35000.00"),
           "USD",
-          nuevaCategoria.getCategoriaId().valor().toString());
+          nuevaCategoria.getCategoriaId().valor().toString(),
+        "http://test.com",
+        true);
 
       // Ejecutar PATCH
       ResponseEntity<ProductoResponse> response = restTemplate.exchange(
@@ -744,7 +756,8 @@ class ProductoControllerIntegrationTest {
           "Descripción",
           new BigDecimal("1000"),
           "USD",
-          null);
+          null,
+        "http://test.com",true);
 
       ResponseEntity<String> response = restTemplate.exchange(
           BASE_URL + "/" + idInexistente,
@@ -766,7 +779,8 @@ class ProductoControllerIntegrationTest {
         "Descripción",
         new BigDecimal("1000"),
         "USD",
-        null);
+        null,
+      "http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + idInvalido,
@@ -788,7 +802,8 @@ class ProductoControllerIntegrationTest {
         "Descripción válida",
         null,
         null,
-        null);
+        null,
+      "http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + producto.getProductoId().valor(),
@@ -813,7 +828,7 @@ class ProductoControllerIntegrationTest {
         descripcionLarga,
         null,
         null,
-        null);
+        null,"http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + producto.getProductoId().valor(),
@@ -836,7 +851,7 @@ class ProductoControllerIntegrationTest {
         "Descripción válida",
         new BigDecimal("-100"), // precio inválido
         "USD",
-        null);
+        null,"http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + producto.getProductoId().valor(),
@@ -859,7 +874,7 @@ class ProductoControllerIntegrationTest {
         "Descripción válida",
         null,
         "US", // inválido
-        null);
+        null,"http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + producto.getProductoId().valor(),
@@ -882,7 +897,7 @@ class ProductoControllerIntegrationTest {
         "Descripción válida",
         null,
         null,
-        "no-es-uuid" // inválido
+        "no-es-uuid","http://test.com" ,true
     );
 
     ResponseEntity<String> response = restTemplate.exchange(
@@ -907,7 +922,7 @@ class ProductoControllerIntegrationTest {
         "Descripción válida",
         null,
         null,
-        categoriaInexistente.toString());
+        categoriaInexistente.toString(),"http://test.com",true);
 
     ResponseEntity<String> response = restTemplate.exchange(
         BASE_URL + "/" + producto.getProductoId().valor(),
