@@ -13,8 +13,9 @@ Background:
     }
     """
 
-Scenario: Crear categoria sin padre
+Scenario: Dado crear categoria cuando se envia un request valido sin asignar categoria padre entonces devuelve 201, header y valida respuesta
   * def body = crearCategoriaRequest('Electronica', 'Productos electronicos', null)
+
   Given path 'api', 'v1', 'categorias'
   And request body
   When method POST
@@ -24,9 +25,7 @@ Scenario: Crear categoria sin padre
   And match response.nombreCategoria == 'Electronica'
   And match response.descripcion == 'Productos electronicos'
   And match response.idCategoriaPadre == null
-
-Scenario: Crear categoria con padre
-
+Scenario: Dado crear categoria cuando se envia un request valido asignando una categoria padre previamente creado entonces devuelve 201, header y valida respuesta
   # Creacion de la categoria padre, se persiste en la BD y se recupera el ID para asginarlo a una nueva categoria
   * def categoriaPadre = crearCategoriaRequest('Electrodomesticos', 'Categoria padre', null)
 
@@ -47,9 +46,7 @@ Scenario: Crear categoria con padre
   Then status 201
   And match response.idCategoriaPadre == idPadre
   And match response.nombreCategoria == 'Lavadoras'
-
-Scenario: Buscar categoria por Id
-
+Scenario: Dadp buscar categoria por Id cuando se crea la categoria previamente y se utiliza su id entonces devuelve 200, y valida respuesta
   # Crear la categoria para generar un id y recuperarlo posteriormente
   * def categoriaBuscar = crearCategoriaRequest('Muebles', 'Categoria a buscar', null)
   Given path 'api', 'v1', 'categorias'
@@ -67,11 +64,12 @@ Scenario: Buscar categoria por Id
   And match response.nombreCategoria == 'Muebles'
   And match response.descripcion == 'Categoria a buscar'
   And match response.idCategoriaPadre == null
-
-Scenario: Obtener una lista de todos las categorias
+Scenario: Dado obtener todas las categorias cuando se crean al menos 2 categorias previamente entonces devuelve 200 y valida que la lista
+  de respuesta tenga al menos las 2 categorias creadas en este test
   # Crear 2 categorias independientemente si se ejecutaron otros test anteriormente que hayan persistido en la BD
   * def categoria1 = crearCategoriaRequest('Ropa', 'Categoria 1', null)
   * def categoria2 = crearCategoriaRequest('Celulares', 'Categoria 2', null)
+
   Given path 'api', 'v1', 'categorias'
   And request categoria1
   When method POST
@@ -89,9 +87,8 @@ Scenario: Obtener una lista de todos las categorias
   Then status 200
   And match response[*].nombreCategoria contains nombre1
   And match response[*].nombreCategoria contains nombre2
-
-Scenario: Actualizar categoria
-
+Scenario: Dado actualizar categoria cuando se crea una categoria previamente y se envia un request patch valido entonces devuelve 200, header
+  y valida respuesta con la informacion actualizada
   # Crear una categoria
   * def categoriaOriginal = crearCategoriaRequest('Bebidas', 'Descripcion original', null)
 
@@ -109,9 +106,6 @@ Scenario: Actualizar categoria
   And request requestUpdate
   When method PUT
   Then status 200
-
-
-  # Validar cambios
   And match response.nombreCategoria == 'Bebidas actualizada'
   And match response.descripcion == 'Nueva descripcion de bebidas'
   And match response.idCategoriaPadre == null
