@@ -32,49 +32,6 @@ Background:
         }
     }
     """
-    * def crearCarritoRequest =
-    """
-    function() {
-      return {
-        clienteId: java.util.UUID.randomUUID() + ''
-      }
-    }
-    """
-    * def cantidadProducto =
-    """
-    function(idProducto, cantidad) {
-      return {
-        productoId: idProducto,
-        cantidad: cantidad
-      }
-    }
-    """
-  * def ordenDesdeCarrito =
-  """
-    function(carritoId, nombreDestinatario, calle, ciudad, estado, codigoPostal, telefono) {
-      return {
-        carritoId: carritoId,
-        direccion: {
-          nombreDestinatario: nombreDestinatario,
-          calle: calle,
-          ciudad: ciudad,
-          estado: estado,
-          codigoPostal: codigoPostal,
-          telefono: telefono,
-          instrucciones: ""
-        }
-      }
-    }
-  """
-  * def asignarProveedor =
-  """
-    function(){
-      return{
-        numeroGuia: java.util.UUID.randomUUID() + '',
-        proveedorLogistico: 'FedEx'
-      }
-    }
-  """
 Scenario: Dado crear producto cuando se envia un request de producto valido entonces devuelve 201, header y valida respuesta
   # Crear primero una categoria
   * def bodyCategoria = crearCategoriaRequest('Electronica', 'Productos electronicos', null)

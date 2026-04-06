@@ -5,17 +5,14 @@ Background:
 Scenario:
 
   * def args = __arg ? __arg : {}
-  # 🔹 recibir parámetros
   * def nombre = args.nombreProducto
   * def precio = args.precio
   * def moneda = args.moneda
 
-  # valores por defecto (opcional)
   * if (!nombre) nombre = 'Producto de prueba #' + java.util.UUID.randomUUID()
   * if (!precio) precio = 100
   * if (!moneda) moneda = 'MXN'
 
-  # crear categoria
   * def categoria =
   """
   {
@@ -32,8 +29,6 @@ Scenario:
 
   * def idCategoria = response.idCategoria
 
-
-  # crear producto
   * def producto =
   """
   {

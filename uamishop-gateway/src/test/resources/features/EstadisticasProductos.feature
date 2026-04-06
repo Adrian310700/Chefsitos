@@ -2,144 +2,70 @@ Feature: Pruebas sobre los endpoints de estadisticas sobre productos en el micro
 
 Background:
     * url baseUrl
-    * def crearCarritoRequest =
-    """
-    function() {
-      return {
-        clienteId: java.util.UUID.randomUUID() + ''
-      }
-    }
-    """
-    * def cantidadProducto =
-    """
-    function(idProducto, cantidad) {
-      return {
-        productoId: idProducto,
-        cantidad: cantidad
-      }
-    }
-    """
-  * def ordenDesdeCarrito =
-  """
-    function(carritoId, nombreDestinatario, calle, ciudad, estado, codigoPostal, telefono) {
-      return {
-        carritoId: carritoId,
-        direccion: {
-          nombreDestinatario: nombreDestinatario,
-          calle: calle,
-          ciudad: ciudad,
-          estado: estado,
-          codigoPostal: codigoPostal,
-          telefono: telefono,
-          instrucciones: ""
-        }
-      }
-    }
-  """
-  * def asignarProveedor =
-  """
-    function(){
-      return{
-        numeroGuia: java.util.UUID.randomUUID() + '',
-        proveedorLogistico: 'FedEx'
-      }
-    }
-  """
-
-  # POR REFACTORIZAR
-Scenario: Dado obtener estadisticas de producto cuando se crea un producto, se agrega a un carrito y a una ordene craendo estadisticas y
-  se utiliza su id entonces devuelve 200 y valida response con estadisticas correctas
-  # Se crea un producto con un helper externo
-  * def producto = call read('classpath:helpers/productos.feature')
-  * def idProducto = producto.result.idProducto
-  # Se crea un carrito para el producto
-  * def bodyCarrito = crearCarritoRequest()
-  Given path 'api', 'v1', 'carritos'
-  And request bodyCarrito
-  When method POST
-  Then status 201
-  And match response != null
-  * def idCarrito = response.carritoId
-  # Se añade al carrito con cantidad = 2
-  * def bodyProducto = cantidadProducto(idProducto, 2)
-  Given path 'api', 'v1', 'carritos', idCarrito, 'productos'
-  And request bodyProducto
-  When method POST
-  Then status 200
-  And match response != null
-  # Se cambia el estado a EN_CHECKOUT
-  Given path 'api', 'v1', 'carritos', idCarrito, 'checkout'
-  When method POST
-  Then status 200
-  And match response != null
-  # Se crea la orden desde carrito y al mismo tiempo se genera estadisticas del producto
-  # Crear request para la orden
-  * def body = ordenDesdeCarrito(idCarrito, "Manuel", "Calle 7", "Iztapalapa", "CDMX", "12345", "5501020304")
-  Given path 'api', 'v1', 'ordenes', 'desde-carrito'
-  And request body
-  When method POST
-  Then status 201
-  And match header Location != null
-  And match response != null
-  # Recupera id de la orden
-  * def idOrden = response.id
-  # Se cambia el estado a confirmada
-  Given path 'api', 'v1', 'ordenes', idOrden, 'confirmar'
-  When method POST
-  Then status 200
-  And match response != null
-  # Se procesa el pago
-  * def bodyPago = { referenciaPago: java.util.UUID.randomUUID() + '' }
-  Given path 'api', 'v1', 'ordenes', idOrden, 'pago'
-  And request bodyPago
-  When method POST
-  Then status 200
-  And match response != null
-  # Se marca en preparacion
-  Given path 'api', 'v1', 'ordenes', idOrden, 'en-preparacion'
-  When method POST
-  Then status 200
-  And match response != null
-  # Se marca la orden como enviada
-  * def bodyProveedor = asignarProveedor()
-  Given path 'api', 'v1', 'ordenes', idOrden, 'enviada'
-  And request bodyProveedor
-  When method POST
-  Then status 200
-  And match response != null
-  # Se marca como entregada
-  Given path 'api', 'v1', 'ordenes', idOrden, 'entregada'
-  When method POST
-  Then status 200
-  And match response != null
-
-  # Se ejecuta el endpoint a probar
-  # esperar a que se generen estadísticas
-  * configure retry = { count: 10, interval: 1000 }
-  Given path 'api', 'v1', 'productos', idProducto, 'estadisticas'
-  And retry until response.ventasTotales > 0
-  When method GET
-  Then status 200
-  And match response != null
-  # Validar respuesta
-  And match response.productoId == idProducto
-  And match response.ventasTotales == 1
-  And match response.cantidadVendida == 2
-  And match response.vecesAgregadoAlCarrito == 1
-
- # INCOMPLETO
 Scenario: Dado obtener productos mas vendidos, cuando se crean 3 productos y se registran ventas con diferentes cantidades entonces
   devuelve 200 y valida lista de response comprobando que esten los productos en orden descendente
 
   * def p1 = call read('classpath:helpers/producto-con-estadisticas.feature') { cantidad: 9 }
+  * def idP1 = p1.result.idProducto
   * def p2 = call read('classpath:helpers/producto-con-estadisticas.feature') { cantidad: 10 }
+  * def idP2 = p2.result.idProducto
   * def p3 = call read('classpath:helpers/producto-con-estadisticas.feature') { cantidad: 8 }
+  * def idP3 = p3.result.idProducto
 
   * configure retry = { count: 10, interval: 1000 }
 
-  Given path 'api', 'v1', 'productos', p1.idProducto, 'estadisticas'
-  And retry until response.cantidadVendida >= 2
+  # Por cada producto espera a que se actualicen las estadisticas asincronicas
+  Given path 'api', 'v1', 'productos', idP1, 'estadisticas'
+  And retry until response.ventasTotales > 0
   When method GET
   Then status 200
   And match response != null
   And match response.cantidadVendida == 9
+
+  Given path 'api', 'v1', 'productos', idP2, 'estadisticas'
+  And retry until response.ventasTotales > 0
+  When method GET
+  Then status 200
+  And match response != null
+  And match response.cantidadVendida == 10
+
+  Given path 'api', 'v1', 'productos', idP3, 'estadisticas'
+  And retry until response.ventasTotales > 0
+  When method GET
+  Then status 200
+  And match response != null
+  And match response.cantidadVendida == 8
+
+  # Ejecuta el endpoint a probar
+  Given path 'api', 'v1', 'productos', 'mas-vendidos'
+  # Espera a que todas las estadisticas sean creadas
+  And retry until response.length >= 3
+  When method GET
+  Then status 200
+  And match response != null
+  # Validar que los productos estan en orden correcto
+  And match response[0].cantidadVendida == 10
+  And match response[1].cantidadVendida == 9
+  And match response[2].cantidadVendida == 8
+  # POR REFACTORIZAR
+Scenario: Dado obtener estadisticas de producto cuando se crea un producto, se agrega a un carrito y a una orden craendo estadisticas y
+  se utiliza su id entonces devuelve 200 y valida response con estadisticas correctas
+
+  # Se crea un producto y se realiza todo el flujo de compra completo para disparar el evento que genera
+  # las estadisticas de un producto
+  * def prodcutoConEstadisticas = call read('classpath:helpers/producto-con-estadisticas.feature') { cantidad: 2 }
+  * def id = prodcutoConEstadisticas.result.idProducto
+
+  # Se ejecuta el endpoint a probar
+  # esperar a que se generen estadísticas, debido a que el evento es asincrono toma unos segundos
+  * configure retry = { count: 10, interval: 1000 }
+  Given path 'api', 'v1', 'productos', id, 'estadisticas'
+  And retry until response.ventasTotales > 0 && response.vecesAgregadoAlCarrito > 0
+  When method GET
+  Then status 200
+  And match response != null
+  # Validar respuesta de estadisticas
+  And match response.productoId == id
+  And match response.ventasTotales == 1
+  And match response.cantidadVendida == 2
+  And match response.vecesAgregadoAlCarrito == 1

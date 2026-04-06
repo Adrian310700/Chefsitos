@@ -12,16 +12,13 @@ Background:
     """
 
 Scenario:
-  # recibir argumentos opcionales
   * def args = __arg ? __arg : {}
 
   * def cantidad = args.cantidad ? args.cantidad : 1
 
-  # 🔹 1. crear producto (reusar helper existente)
   * def producto = call read('classpath:helpers/productos.feature') args
   * def idProducto = producto.result.idProducto
 
-  # 🔹 2. crear carrito
   * def bodyCarrito = crearCarritoRequest()
   Given path 'api', 'v1', 'carritos'
   And request bodyCarrito
@@ -31,7 +28,6 @@ Scenario:
   * def idCarrito = response.carritoId
   * def idCliente = response.clienteId
 
-  # 🔹 3. agregar producto al carrito
   * def bodyProducto =
   """
   {
@@ -50,8 +46,6 @@ Scenario:
   Then status 200
   And match response != null
 
-
-  # 🔹 4. retornar datos útiles
   * def result =
   """
   {
