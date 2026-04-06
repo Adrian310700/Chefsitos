@@ -126,11 +126,26 @@ services:
       - uamishop-ventas
     restart: unless-stopped
 
+  chefsitos-frontend:
+    image: hansdd/chefsitos-front:latest
+    container_name: chefsitos-frontend
+    profiles: ["frontend", "all"]
+    ports:
+      - "8084:80"
+    depends_on:
+      - uamishop-gateway
+      - uamishop-catalogo
+      - uamishop-ordenes
+      - uamishop-ventas
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
   # Almacenamiento de métricas
   victoriametrics:
     image: victoriametrics/victoria-metrics:latest # Cambiado de stable a latest
     container_name: uamishop-victoriametrics
-    profiles: ["observability"]
+    profiles: ["observability", "all"]
     ports:
       - "8428:8428"
     volumes:
@@ -141,7 +156,7 @@ services:
   vmagent:
     image: victoriametrics/vmagent:latest
     container_name: uamishop-vmagent
-    profiles: ["observability"]
+    profiles: ["observability", "all"]
     depends_on:
       - victoriametrics
       # - uamishop-catalogo
@@ -161,7 +176,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: uamishop-grafana
-    profiles: ["observability"]
+    profiles: ["observability", "all"]
     ports:
       - "3000:3000"
     volumes:

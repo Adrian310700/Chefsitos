@@ -33,10 +33,20 @@ Repositorio para almacenar el proyecto UAMIShop de la UEA Temas Selectos de Inge
 
 ## Ejecución
 
-### Opción 1: Todo en Docker (recomendada)
+### Opción 1: Todo en Docker (incluyendo frontend)
 
 ```bash
-docker compose up -d --build
+docker compose --profile frontend up --build -d
+# Para bajar la aplicación completa (incluyendo frontend)
+docker compose --profile frontend down
+```
+
+### Opción 1.1: Solo microservicios en Docker (sin frontend)
+
+```bash
+docker compose up --build -d
+# Para bajar la aplicación
+docker compose down
 ```
 
 ### Opción 2: Solo infraestructura en Docker
@@ -61,9 +71,18 @@ cd uamishop-gateway  && ./mvnw spring-boot:run -DskipTests -Dspring-boot.run.pro
 
 ### Detener servicios
 
+Dependiendo si hay algún perfil activo, se puede utilizar la forma normal.
+
 ```bash
 docker compose down        # Detener contenedores
 docker compose down -v     # Detener y borrar datos de MySQL
+```
+
+O se puede utilizar el perfil específico para evitar que la red quede retenida.
+
+```bash
+docker compose --profile nombre-perfil down
+docker compose --profile nombre-perfil down -v
 ```
 
 ### Tests
@@ -98,6 +117,10 @@ cd uamishop-ventas && ./mvnw test
 
 > Ver [`routes.md`](routes.md) para el mapa completo de rutas de la API.
 
+### Ruta de la aplicación frontend
+
+- Frontend: [http://localhost:8084](http://localhost:8084)
+
 ## Estándar de codificación
 
 [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
@@ -112,26 +135,23 @@ Ver `.vscode/extensions.json`.
 
 El proyecto incluye un stack de observabilidad opcional (**VictoriaMetrics**, **vmagent**, **Grafana**) administrado mediante Docker Compose Profiles. Los servicios de observabilidad **no se levantan por defecto** para no afectar el rendimiento del sistema en la fase de desarrollo.
 
-### Ejecución con/sin observabilidad
+### Ejecución
 
 ```bash
-# Sin observabilidad (flujo normal)
-docker compose up -d --build
-
-# Con observabilidad
+# Con observabilidad solo para los microservicios de backend
 docker compose --profile observability up -d --build
+
+# Con observabilidad para backend + frontend
+docker compose --profile all up -d --build
 ```
 
 ### Detener servicios
 
 ```bash
-# Sin perfil activo
-docker compose down
-
-# Si se levantó con perfil (evita que la red quede retenida)
+# Si se levantó con perfil observability
 docker compose --profile observability down
 
-# Bajar todos los perfiles y eliminar volúmenes
+# Bajar todos los servicios (incluyendo frontend)
 docker compose --profile "*" down -v
 ```
 
@@ -163,7 +183,7 @@ docker compose --profile "*" down -v
 
 ## Pruebas de carga con k6
 
-Es necesario tener instalado go-task en tu sistema y tener los servicios de observabilidad levantados.
+Es necesario tener instalado [go-task](https://taskfile.dev/) en tu sistema y tener los servicios de [observabilidad](#observabilidad) levantados.
 
 ```bash
 # Levantar servicios de observabilidad
@@ -196,4 +216,4 @@ docker compose --profile observability --profile loadtest down -v
 
 ### Visualización en Grafana
 
-La visualización se encuentra en el dashboard `UAMIShop - k6 v2` en Grafana.
+La visualización de los resultados de k6 se encuentra en el dashboard `UAMIShop - k6 v2` en Grafana.
