@@ -40,7 +40,7 @@ public class ProductoController {
 
   @Operation(summary = "Crear producto", description = "Permite registrar un nuevo producto en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/v1/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "201", description = "Producto creado exitosamente", headers = @Header(name = "Location", description = "URI del producto creado (ej: /api/v1/productos/{id})", schema = @Schema(type = "string", format = "uri")), content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.BadRequest
   @ApiErrors.UnprocessableEntity
@@ -49,21 +49,21 @@ public class ProductoController {
     Producto producto = productoService.crear(request);
     ProductoResponse response = ProductoResponse.from(producto);
     URI location = ServletUriComponentsBuilder
-        .fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(response.idProducto())
-        .toUri();
+      .fromCurrentRequest()
+      .path("/{id}")
+      .buildAndExpand(response.idProducto())
+      .toUri();
     return ResponseEntity.created(location).body(response);
   }
 
   @Operation(summary = "Obtener producto por ID", description = "Devuelve los detalles de un producto específico dado su ID")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto encontrado", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @GetMapping("/{id}")
   public ResponseEntity<ProductoResponse> obtener(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     Producto response = productoService.buscarPorId(id);
 
     return ResponseEntity.ok(ProductoResponse.from(response));
@@ -71,44 +71,41 @@ public class ProductoController {
 
   @Operation(summary = "Listar productos", description = "Devuelve la lista de todos los productos disponibles en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoResponse.class))))
+    @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoResponse.class))))
   })
   @GetMapping
   @ApiErrors.Unauthorized
   @ApiErrors.Forbidden
   public ResponseEntity<List<ProductoResponse>> buscarTodos() {
     List<ProductoResponse> productos = productoService.buscarTodos()
-        .stream().map(ProductoResponse::from)
-        .toList();
+      .stream().map(ProductoResponse::from)
+      .toList();
     return ResponseEntity.ok(productos);
   }
 
   @Operation(summary = "Actualizar producto", description = "Cambia el estado del producto a disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto activado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/activar")
   public ResponseEntity<ProductoResponse> activar(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     Producto producto = productoService.activar(id);
     ProductoResponse response = ProductoResponse.from(producto);
-    // Tambien se podria usar un status 204 para decir que se activo correctamente
-    // pero no devolver nuevamente el producto
-    // return ResponseEntity.noContent().build();
     return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Desactivar producto", description = "Cambia el estado del producto a no disponible en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto desactivado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PostMapping("/{id}/desactivar")
   public ResponseEntity<ProductoResponse> desactivar(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     Producto producto = productoService.desactivar(id);
     ProductoResponse response = ProductoResponse.from(producto);
     return ResponseEntity.ok(response);
@@ -116,48 +113,66 @@ public class ProductoController {
 
   @Operation(summary = "Actualizar producto", description = "Permite actualizar los datos de un producto existente en el catálogo")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
   })
   @ApiErrors.NotFound
   @ApiErrors.UnprocessableEntity
   @PatchMapping("/{id}")
   public ResponseEntity<ProductoResponse> actualizar(
-      @PathVariable UUID id,
-      @RequestBody @Valid ProductoPatchRequest request) {
+    @PathVariable UUID id,
+    @RequestBody @Valid ProductoPatchRequest request) {
 
     Producto productoActualizado = productoService.actualizar(
-        id,
-        request.nombreProducto(),
-        request.descripcion(),
-        request.precio(),
-        request.moneda(),
-        request.idCategoria());
+      id,
+      request.nombreProducto(),
+      request.descripcion(),
+      request.precio(),
+      request.moneda(),
+      request.idCategoria(),
+      request.urlImagen(),
+      request.disponible());
 
     return ResponseEntity.ok(ProductoResponse.from(productoActualizado));
+  }
+
+  @PatchMapping("/{id}/imagen")
+  @Operation(summary = "Actualizar imagen del producto", description = "Permite actualizar únicamente la URL de la imagen de un producto")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Imagen actualizada exitosamente", content = @Content(schema = @Schema(implementation = ProductoResponse.class)))
+  })
+  @ApiErrors.NotFound
+  @ApiErrors.UnprocessableEntity
+  public ResponseEntity<ProductoResponse> actualizarImagen(
+    @Parameter(description = "ID único del producto") @PathVariable UUID id,
+    @RequestBody @Valid ProductoPatchRequest request) {
+
+    Producto producto = productoService.actualizarUrlImagen(id, request.urlImagen());
+
+    return ResponseEntity.ok(ProductoResponse.from(producto));
   }
 
   @GetMapping("/mas-vendidos")
   @Operation(summary = "Productos más vendidos", description = "Devuelve una lista de los productos más vendidos ordenados por cantidad vendida descendente")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lista de productos más vendidos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoEstadisticasResponse.class))))
+    @ApiResponse(responseCode = "200", description = "Lista de productos más vendidos obtenida exitosamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductoEstadisticasResponse.class))))
   })
   public ResponseEntity<List<ProductoEstadisticasResponse>> obtenerMasVendidos(
-      @Parameter(description = "Número máximo de productos a devolver") @RequestParam(defaultValue = "10") int limit) {
+    @Parameter(description = "Número máximo de productos a devolver") @RequestParam(defaultValue = "10") int limit) {
     List<ProductoEstadisticasResponse> masVendidos = productoEstadisticasService.obtenerMasVendidos(limit)
-        .stream()
-        .map(ProductoEstadisticasResponse::from)
-        .toList();
+      .stream()
+      .map(ProductoEstadisticasResponse::from)
+      .toList();
     return ResponseEntity.ok(masVendidos);
   }
 
   @GetMapping("/{id}/estadisticas")
   @Operation(summary = "Estadísticas de producto", description = "Devuelve las estadísticas de ventas y carrito de un producto específico")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Estadísticas del producto obtenidas exitosamente", content = @Content(schema = @Schema(implementation = ProductoEstadisticasResponse.class)))
+    @ApiResponse(responseCode = "200", description = "Estadísticas del producto obtenidas exitosamente", content = @Content(schema = @Schema(implementation = ProductoEstadisticasResponse.class)))
   })
   @ApiErrors.NotFound
   public ResponseEntity<ProductoEstadisticasResponse> obtenerEstadisticas(
-      @Parameter(description = "ID único del producto") @PathVariable UUID id) {
+    @Parameter(description = "ID único del producto") @PathVariable UUID id) {
     return ResponseEntity.ok(ProductoEstadisticasResponse.from(productoEstadisticasService.obtenerEstadisticas(id)));
   }
 }

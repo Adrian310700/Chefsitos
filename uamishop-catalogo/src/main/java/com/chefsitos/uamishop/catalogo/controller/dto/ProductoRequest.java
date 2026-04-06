@@ -18,5 +18,12 @@ public record ProductoRequest(
     // ISO 4217: codigo alfabetico de 3 letras para representar divisas
     @NotBlank(message = "La moneda es obligatoria") @Size(min = 3, max = 3, message = "La moneda debe tener exactamente 3 caracteres") String moneda,
 
-    @NotBlank(message = "El ID de la categoría es obligatorio") @ValidUUID(message = "El ID de la categoría debe ser un UUID válido") String idCategoria) {
+    @NotBlank(message = "El ID de la categoría es obligatorio") @ValidUUID(message = "El ID de la categoría debe ser un UUID válido") String idCategoria,
+
+    String urlImagen)
+
+
+{
+
+
 }
