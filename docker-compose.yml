@@ -159,10 +159,10 @@ services:
     profiles: ["observability", "all"]
     depends_on:
       - victoriametrics
-      # - uamishop-catalogo
-      # - uamishop-ordenes
-      # - uamishop-ventas
-      # - uamishop-gateway
+      - uamishop-catalogo
+      - uamishop-ordenes
+      - uamishop-ventas
+      - uamishop-gateway
     volumes:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - vmagent_data:/vmagentdata
