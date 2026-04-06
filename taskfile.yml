@@ -1,0 +1,74 @@
+version: "3"
+
+vars:
+  OBS_PROFILES: --profile observability --profile loadtest
+  BASE_URL: http://uamishop-gateway:8080
+
+tasks:
+  run-k6:
+    internal: true
+    cmds:
+      - |
+        TEST_ID="${TEST_ID:-{{.T_TYPE}}-{{.MODE}}-$(date +%Y%m%d-%H%M%S)}"
+        echo "Ejecutando prueba {{.T_TYPE}} en modo {{.MODE}} (TEST_ID=$TEST_ID)"
+        docker compose {{.OBS_PROFILES}} run --rm \
+          -e BASE_URL={{.BASE_URL}} \
+          -e ROUTING_MODE={{.MODE}} \
+          -e K6_PROMETHEUS_RW_STALE_MARKERS=true \
+          k6 run \
+          --tag testid=$TEST_ID \
+          --tag suite=uamishop \
+          --tag test_type={{.T_TYPE}} \
+          --tag routing_mode={{.MODE}} \
+          --out experimental-prometheus-rw \
+          /scripts/api-{{.T_TYPE}}.js
+
+  k6:smoke:
+    desc: "Ejecuta prueba smoke (por api gateway)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "smoke", MODE: "gateway" }
+
+  k6:smoke:direct:
+    desc: "Ejecuta prueba smoke (por conexion directa)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "smoke", MODE: "direct" }
+
+  k6:load:
+    desc: "Ejecuta prueba load (por api gateway)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "load", MODE: "gateway" }
+
+  k6:load:direct:
+    desc: "Ejecuta prueba load (por conexion directa)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "load", MODE: "direct" }
+
+  k6:stress:
+    desc: "Ejecuta prueba stress (por api gateway)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "stress", MODE: "gateway" }
+
+  k6:stress:direct:
+    desc: "Ejecuta prueba stress (por conexion directa)"
+    cmds:
+      - task: run-k6
+        vars: { T_TYPE: "stress", MODE: "direct" }
+
+  k6:all:
+    desc: "Ejecuta smoke + load + stress (por api gateway)"
+    cmds:
+      - task: k6:smoke
+      - task: k6:load
+      - task: k6:stress
+
+  k6:all:direct:
+    desc: "Ejecuta smoke + load + stress (por api gateway)"
+    cmds:
+      - task: k6:smoke:direct
+      - task: k6:load:direct
+      - task: k6:stress:direct
