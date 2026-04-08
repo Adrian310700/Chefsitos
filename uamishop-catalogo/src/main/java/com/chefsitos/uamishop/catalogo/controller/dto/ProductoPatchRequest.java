@@ -15,5 +15,10 @@ public record ProductoPatchRequest(
 
     @Size(min = 3, max = 3, message = "La moneda debe tener exactamente 3 caracteres") String moneda,
 
-    @ValidUUID(message = "El ID de la categoría debe ser un UUID válido") String idCategoria) {
+    @ValidUUID(message = "El ID de la categoría debe ser un UUID válido") String idCategoria,
+
+      String urlImagen,
+      Boolean disponible
+
+) {
 }

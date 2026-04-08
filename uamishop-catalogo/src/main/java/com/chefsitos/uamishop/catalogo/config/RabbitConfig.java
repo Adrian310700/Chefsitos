@@ -13,12 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-  /**
-   * Nombre del exchange (intercambiador) principal donde se publican los eventos
-   * del sistema.
-   */
-  public static final String EVENTS_EXCHANGE = "uamishop.events";
-
   /** Cola que recibe mensajes cuando se compra un producto. */
   public static final String QUEUE_CATALOGO_PRODUCTO_COMPRADO = "catalogo.producto-comprado";
 
@@ -38,17 +32,8 @@ public class RabbitConfig {
   public static final String RK_PRODUCTO_AGREGADO = "producto.agregado-carrito";
 
   /**
-   * Crea el TopicExchange (intercambiador).
-   * Es el componente de RabbitMQ encargado de recibir los mensajes publicados y
-   * distribuirlos a las colas correctas utilizando reglas basadas en patrones
-   * (routing keys).
-   */
-  @Bean
-  public TopicExchange eventsExchange() {
-    return new TopicExchange(EVENTS_EXCHANGE);
-  }
-
-  /**
+   *
+   * /**
    * Define y crea la cola para los eventos de productos comprados.
    * El segundo parámetro (true) indica que la cola es "duradera" (durable),
    * lo que significa que no se perderá si el servidor de RabbitMQ se reinicia.
@@ -107,8 +92,7 @@ public class RabbitConfig {
    * Configura la plantilla principal de RabbitMQ (RabbitTemplate).
    * Es la herramienta que se utiliza en el código para enviar los mensajes.
    * Se le inyecta el conversor JSON configurado anteriormente para asegurar que
-   * todo
-   * se envíe en dicho formato.
+   * todo se envíe en dicho formato.
    */
   @Bean
   public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,

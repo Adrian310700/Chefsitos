@@ -25,9 +25,36 @@ spring:
     port: 5672
     username: guest
     password: guest
+    # Confirmación de que el broker recibió el mensaje
+    publisher-confirm-type: correlated
+    # El broker avisa si el mensaje llegó al Exchange pero NO pudo enrutarse a ninguna cola
+    publisher-returns: true
+    template:
+      # Obliga al broker a devolver el mensaje si falla el enrutamiento
+      mandatory: true
+
+outbox:
+  scheduler:
+    delay: 5000
 
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exponemos prometheus para VictoriaMetrics y health para Docker
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      # Esto ayuda a filtrar en Grafana/Victoria por nombre de microservicio
+      application: ${spring.application.name}

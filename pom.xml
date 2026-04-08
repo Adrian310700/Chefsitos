@@ -6,16 +6,17 @@
 
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-parent</artifactId>
-  <version>0.0.6-SNAPSHOT</version>
+  <version>0.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>UAMIShop Parent</name>
   <description>App para la gestión de una tienda</description>
 
   <modules>
+    <module>uamishop-shared</module>
     <module>uamishop-catalogo</module>
-    <module>uamishop-principal</module>
     <module>uamishop-ordenes</module>
     <module>uamishop-ventas</module>
+    <module>uamishop-gateway</module>
   </modules>
 </project>

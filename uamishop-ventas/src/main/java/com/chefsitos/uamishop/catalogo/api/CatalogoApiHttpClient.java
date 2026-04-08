@@ -1,6 +1,8 @@
 package com.chefsitos.uamishop.catalogo.api;
 
 import com.chefsitos.uamishop.catalogo.api.dto.ProductoDTO;
+import com.chefsitos.uamishop.shared.exception.ServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ public class CatalogoApiHttpClient implements CatalogoApi {
     this.catalogoBaseUrl = catalogoBaseUrl;
   }
 
+  @CircuitBreaker(name = "catalogoService", fallbackMethod = "fallbackMethodBuscarPorId")
   public ProductoDTO buscarPorId(UUID id) {
     String url = catalogoBaseUrl + "/api/v1/productos/" + id;
     ResponseEntity<ProductoDTO> response = restTemplate.getForEntity(url, ProductoDTO.class);
@@ -31,4 +34,10 @@ public class CatalogoApiHttpClient implements CatalogoApi {
 
     return response.getBody();
   }
+
+  public ProductoDTO fallbackMethodBuscarPorId(UUID id, Exception ex) {
+    throw new ServiceUnavailableException(
+        "catalogo", "Servicio de catalogo no disponible temporalmente.", ex);
+  }
+
 }

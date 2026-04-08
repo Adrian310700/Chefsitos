@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.4</version>
+    <version>4.0.5</version>
     <relativePath />
   </parent>
   <groupId>com.chefsitos</groupId>
   <artifactId>uamishop-ventas</artifactId>
-  <version>0.0.6-SNAPSHOT</version>
+  <version>0.0.7-SNAPSHOT</version>
   <name>uamishop-ventas</name>
   <description>API REST para la gestión de una tienda minorista de productos físicos</description>
   <url />
@@ -31,6 +31,11 @@
     <java.version>21</java.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>com.chefsitos</groupId>
+      <artifactId>uamishop-shared</artifactId>
+      <version>0.0.7</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -138,6 +143,23 @@
       <artifactId>awaitility</artifactId>
       <version>4.3.0</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-spring-boot3</artifactId>
+      <version>2.2.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
+      <version>3.5.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
 
   </dependencies>

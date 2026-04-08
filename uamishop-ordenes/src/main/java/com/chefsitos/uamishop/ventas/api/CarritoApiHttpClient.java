@@ -2,13 +2,18 @@ package com.chefsitos.uamishop.ventas.api;
 
 import com.chefsitos.uamishop.shared.enumeration.EstadoCarrito;
 import com.chefsitos.uamishop.shared.exception.BusinessRuleException;
+import com.chefsitos.uamishop.shared.exception.ServiceUnavailableException;
 import com.chefsitos.uamishop.ventas.api.dto.CarritoDTO;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Component
 public class CarritoApiHttpClient implements CarritoApi {
@@ -21,6 +26,7 @@ public class CarritoApiHttpClient implements CarritoApi {
     this.carritoBaseUrl = carritoBaseUrl;
   }
 
+  @CircuitBreaker(name = "carritoService", fallbackMethod = "fallbackMethodobtenerCarritoParaOrden")
   // Implementacion de obtenerCarritoParaOrden
   public CarritoDTO obtenerCarritoParaOrden(UUID carritoId) {
     String url = carritoBaseUrl + "/api/v1/carritos/" + carritoId;
@@ -40,4 +46,17 @@ public class CarritoApiHttpClient implements CarritoApi {
 
     return carrito;
   }
+
+  public CarritoDTO fallbackMethodobtenerCarritoParaOrden(UUID carritoId, Exception ex) {
+    if (ex instanceof BusinessRuleException) {
+      throw (BusinessRuleException) ex;
+    }
+    if (ex instanceof HttpClientErrorException) {
+      throw (HttpClientErrorException) ex;
+    }
+
+    throw new ServiceUnavailableException(
+        "carrito", "Servicio de carrito no disponible temporalmente.", ex);
+  }
+
 }

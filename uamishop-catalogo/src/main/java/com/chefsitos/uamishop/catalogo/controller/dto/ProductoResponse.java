@@ -7,25 +7,28 @@ import java.util.UUID;
 import com.chefsitos.uamishop.catalogo.domain.aggregate.Producto;
 
 public record ProductoResponse(
-    UUID idProducto,
-    String nombreProducto,
-    String descripcion,
-    BigDecimal precio,
-    String moneda,
-    boolean disponible,
-    LocalDateTime fechaCreacion,
-    UUID idCategoria) {
+  UUID idProducto,
+  String nombreProducto,
+  String descripcion,
+  BigDecimal precio,
+  String moneda,
+  boolean disponible,
+  LocalDateTime fechaCreacion,
+  UUID idCategoria,
+  String urlImagen
+) {
 
   public static ProductoResponse from(Producto producto) {
     return new ProductoResponse(
-        producto.getProductoId().valor(),
-        producto.getNombre(),
-        producto.getDescripcion(),
-        producto.getPrecio().cantidad(),
-        producto.getPrecio().moneda(),
-        producto.isDisponible(),
-        producto.getFechaCreacion(),
-        producto.getCategoriaId().valor());
+      producto.getProductoId().valor(),
+      producto.getNombre(),
+      producto.getDescripcion(),
+      producto.getPrecio().cantidad(),
+      producto.getPrecio().moneda(),
+      producto.isDisponible(),
+      producto.getFechaCreacion(),
+      producto.getCategoriaId().valor(),
+      producto.getUrlImagen()
+    );
   }
-
 }

@@ -25,6 +25,17 @@ spring:
     port: 5672
     username: guest
     password: guest
+    # Confirmación de que el broker recibió el mensaje
+    publisher-confirm-type: correlated
+    # El broker avisa si el mensaje llegó al Exchange pero NO pudo enrutarse a ninguna cola
+    publisher-returns: true
+    template:
+      # Obliga al broker a devolver el mensaje si falla el enrutamiento
+      mandatory: true
+
+outbox:
+  scheduler:
+    delay: 5000
 
 springdoc:
   api-docs:
@@ -39,3 +50,30 @@ catalogo:
 carrito:
   service:
     url: http://localhost:8083
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      catalogoService: # nombre en la anotacion
+        slidingWindowSize: 5 # evalua las ultimas 5 llamadas
+        minimumNumberOfCalls: 3 # minimo de llamadas antes de abrir el CB
+        failureRateThreshold: 50 # porcentaje de fallos antes de abrir el CB
+        waitDurationInOpenState: 10s # espera 10s antes de pasar a semi abierto
+        permittedNumberOfCallsInHalfOpenState: 3 # prueba con 1 llamada
+        registerHealthIndicator: true # expone el estado en /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Exponemos prometheus para VictoriaMetrics y health para Docker
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    tags:
+      # Esto ayuda a filtrar en Grafana/Victoria por nombre de microservicio
+      application: ${spring.application.name}
